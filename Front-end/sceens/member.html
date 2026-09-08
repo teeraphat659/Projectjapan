@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - JP Learning</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style/user.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+    <link rel="stylesheet" href="../style/member-dashboard.css">
+</head>
+<body class="user-dashboard-page member-page member-dashboard">
+
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+    <div class="main-container">
+        <section class="greeting member-hero">
+            <div class="member-hero-copy">
+                <p class="dashboard-eyebrow"><span></span> YOUR LEARNING SPACE</p>
+                <h1>สวัสดี <span id="user-firstname">...</span></h1>
+                <p>ค่อย ๆ เรียนรู้ทีละตัวอักษร แล้วให้ความคุ้นเคยพาคุณอ่านภาษาญี่ปุ่นได้มากขึ้นในทุกวัน</p>
+                <div class="member-hero-actions">
+                    <a class="dashboard-primary-action" href="../data/kanatable.php">เริ่มเรียนตัวอักษร <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="dashboard-secondary-action" href="../data/ex2.php">ไปหน้าฝึกเขียน</a>
+                </div>
+            </div>
+            <aside class="member-kana-note" aria-label="ตัวอย่างบทเรียนคาตากานะ">
+                <div class="member-kana-note-top"><span>Katakana</span><span>เริ่มต้น</span></div>
+                <div class="member-kana-character">ア</div>
+                <div class="member-kana-note-bottom"><strong>a</strong><span>เปิดตารางเพื่อเริ่มเรียน</span></div>
+            </aside>
+        </section>
+
+        <section class="bottom-section">
+            <div class="dashboard-section-heading">
+                <div><p class="dashboard-eyebrow"><span></span> LEARN &amp; PRACTICE</p><h2 class="section-title">เลือกรายการที่สนใจ</h2></div>
+                <p>เรียน ดูรายละเอียด ฝึกเขียน และทบทวนความคืบหน้าได้จากพื้นที่เดียว</p>
+            </div>
+
+            <div class="menu-grid">
+                <a href="../data/kanatable.php" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-solid fa-book-open"></i></div>
+                    <div class="menu-title">ตารางตัวอักษร</div>
+                    <div class="menu-desc">ดูตารางและรายละเอียดของตัวอักษรญี่ปุ่น พร้อมเสียงและลำดับการเขียน</div>
+                    <div class="accent-dot accent-dot-1"></div>
+                    <div class="accent-dot accent-dot-2"></div>
+                </a>
+
+                <a href="../data/ex2.php" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-solid fa-pen"></i></div>
+                    <div class="menu-title">ฝึกเขียนตัวอักษร</div>
+                    <div class="menu-desc">ฝึกเขียนตัวอักษร Katakana ให้ถูกต้องตามหลัก</div>
+                    <div class="accent-dot accent-dot-1"></div>
+                    <div class="accent-dot accent-dot-2"></div>
+                </a>
+
+                <a href="../data/jpmatch.php" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-regular fa-circle-play"></i></div>
+                    <div class="menu-title">แบบทดสอบจับคู่</div>
+                    <div class="menu-desc">ทดสอบความจำด้วยโหมดจับคู่ตัวอักษรและเสียงอ่าน</div>
+                    <div class="accent-dot accent-dot-1"></div>
+                    <div class="accent-dot accent-dot-2"></div>
+                </a>
+                <a href="../data/history.php" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div class="menu-title">ประวัติการทดสอบ</div>
+                    <div class="menu-desc">ดูประวัติย้อนหลังและสถิติการทำแบบทดสอบของคุณ</div>
+                    <div class="accent-dot accent-dot-1"></div>
+                    <div class="accent-dot accent-dot-2"></div>
+                </a>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchDashboardData);
+
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('../connectapi/dashboard_stats.php', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+                const result = await response.json().catch(() => null);
+                if (response.status === 401) {
+                    window.location.replace('../sceens/login.html');
+                    return;
+                }
+                if (!response.ok || !result || !result.success) {
+                    throw new Error(result && result.message ? result.message : 'ไม่สามารถโหลดสถิติได้');
+                }
+                updateDashboardUI(result.data);
+            } catch (error) {
+                console.error('Dashboard stats error:', error);
+            }
+        }
+
+        function updateDashboardUI(data) {
+            const user = data.user || {};
+            const navUsername = document.getElementById('navUsername');
+            if (navUsername) navUsername.textContent = user.navUsername || 'ผู้ใช้งาน';
+            document.getElementById('user-firstname').textContent = user.firstname || 'ผู้ใช้งาน';
+        }
+    </script>
+</body>
+</html>

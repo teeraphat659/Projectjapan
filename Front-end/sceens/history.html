@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประวัติการทดสอบ</title>
+
+    <link rel="stylesheet" href="../style/history.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-history">
+
+    <!-- ส่วนเนื้อหาหลัก -->
+    <script>
+        fetch('../data/history.php', { redirect: 'manual' })
+            .then(response => {
+                if (response.type === 'opaqueredirect' || response.status === 302) {
+                    throw new Error('unauthorized');
+                }
+            })
+            .catch(() => {
+                window.location.replace('../sceens/login.html');
+            });
+    </script>
+
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+    <div class="main-content">
+        <div class="history-container">
+            <div class="history-title-wrap">
+                <div>
+                    <p class="history-eyebrow"><i class="fa-solid fa-chart-line"></i> LEARNING LOG</p>
+                    <h1>ประวัติการฝึกเขียน</h1>
+                    <p class="history-description">ติดตามความคืบหน้า แยกโหมดการฝึก และกลับไปทำรอบที่ค้างไว้ต่อ</p>
+                </div>
+                <div class="history-title-meta">
+                    <span class="history-mode-mark"><i class="fa-solid fa-pen-nib"></i><span>Writing practice</span></span>
+                    <span class="history-count" id="historyCount">กำลังโหลด...</span>
+                </div>
+            </div>
+            <div class="history-stats" aria-label="สรุปประวัติการฝึก">
+                <div class="history-stat history-stat--accent"><span class="history-stat__icon"><i class="fa-solid fa-layer-group"></i></span><span><small>รอบทั้งหมด</small><strong id="historyTotalStat">-</strong></span></div>
+                <div class="history-stat"><span class="history-stat__icon"><i class="fa-solid fa-circle-check"></i></span><span><small>ทำครบแล้ว</small><strong id="historyCompleteStat">-</strong></span></div>
+                <div class="history-stat"><span class="history-stat__icon"><i class="fa-solid fa-puzzle-piece"></i></span><span><small>แบบจับคู่</small><strong id="historyMatchingStat">-</strong></span></div>
+                <div class="history-stat"><span class="history-stat__icon"><i class="fa-solid fa-pen-nib"></i></span><span><small>แบบฝึกเขียน</small><strong id="historyWritingStat">-</strong></span></div>
+            </div>
+            <div class="history-mode-legend" aria-label="คำอธิบายโหมดการฝึก">
+                <span><i class="fa-solid fa-wand-magic-sparkles"></i> มีตัวช่วย <small>ระบบแสดงเส้นนำทาง</small></span>
+                <span><i class="fa-solid fa-bullseye"></i> ไม่มีตัวช่วย <small>วาดจากความจำ</small></span>
+            </div>
+            <div class="history-grid-layout history-header">
+                <div>ชุดตัวอักษร / โหมด</div>
+                <div>วรรค</div>
+                <div>จำนวนที่วาด</div>
+                <div>สถานะ</div>
+                <div>เวลาที่ใช้</div>
+                <div>วันที่ทำ</div>
+                <div>การดำเนินการ</div>
+            </div>
+            <div id="testHistoryRows" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <div class="history-detail-modal" id="historyDetailModal" hidden role="dialog" aria-modal="true" aria-labelledby="historyDetailTitle">
+        <div class="history-detail-modal__dialog">
+            <button class="history-detail-modal__close" id="historyDetailClose" type="button" aria-label="ปิดรายละเอียด"><i class="fa-solid fa-xmark"></i></button>
+            <p class="history-eyebrow">รายละเอียดผลย้อนหลัง</p>
+            <h2 id="historyDetailTitle">กำลังโหลด...</h2>
+            <p id="historyDetailSummary" class="history-detail-modal__summary"></p>
+            <div id="historyDetailStatus" class="history-detail-modal__status"></div>
+            <div class="history-overview-grid">
+                <div><span>คะแนน</span><strong id="historyOverviewScore">-</strong></div>
+                <div><span>เปอร์เซ็นต์</span><strong id="historyOverviewPercent">-</strong></div>
+                <div><span>เวลา</span><strong id="historyOverviewTime">-</strong></div>
+                <div><span>วันที่ทำ</span><strong id="historyOverviewDate">-</strong></div>
+            </div>
+            <div class="history-overview-criteria">
+                <strong>เกณฑ์การประเมิน</strong>
+                <div><span>ความแม่นยำของรูปทรง</span><b id="historyOverviewShape">0%</b></div>
+                <div><span>ตำแหน่งอยู่ในเส้นแม่แบบ</span><b id="historyOverviewAlign">0%</b></div>
+            </div>
+            <div class="history-detail-modal__attempt-picker" id="historyDetailAttempts"></div>
+            <div class="history-result-modal" id="historyResultModal" hidden>
+                <div class="history-result-modal__dialog">
+                <button class="history-result-modal__close" id="historyResultClose" type="button" aria-label="ปิดรายละเอียดตัวอักษร"><i class="fa-solid fa-xmark"></i></button>
+                <div class="history-result-modal__header">
+                    <strong id="historyResultTitle">ข้อที่ -</strong>
+                    <span id="historyResultStatus">-</span>
+                </div>
+                <div class="history-result-modal__comparison">
+                    <div class="history-result-modal__comparison-box">
+                        <b>ตัวอักษรของคุณ</b>
+                        <div class="history-result-modal__switch">
+                            <button type="button" data-history-view="image" class="is-active">รูปที่วาดเสร็จ</button>
+                            <button type="button" data-history-view="replay">วิดีโอการขีด</button>
+                        </div>
+                        <div class="history-result-modal__canvas" id="historyUserCanvas"></div>
+                    </div>
+                    <div class="history-result-modal__comparison-box">
+                        <b>ตัวอักษรที่ถูกต้อง</b>
+                        <div class="history-result-modal__canvas history-result-modal__correct" id="historyCorrectCanvas"></div>
+                    </div>
+                </div>
+                <div class="history-result-modal__controls">
+                    <button type="button" id="historyReplayButton"><i class="fa-solid fa-play"></i> เล่นการขีด</button>
+                    <button type="button" id="historyPauseButton"><i class="fa-solid fa-pause"></i> หยุด</button>
+                    <span id="historyReplayStatus">พร้อมเล่น</span>
+                </div>
+                <div class="history-result-modal__scores">
+                    <div class="history-score-row"><span>ความแม่นยำของรูปร่าง</span><div><i id="historyShapeFill"></i></div><b id="historyShapeScore">0%</b></div>
+                    <div class="history-score-row"><span>ตำแหน่งอยู่ในเส้นแม่แบบ</span><div><i id="historyAlignFill"></i></div><b id="historyAlignScore">0%</b></div>
+                    <div class="history-score-row"><strong>คะแนนรวม</strong><div><i id="historyTotalFill"></i></div><b id="historyTotalScore">0%</b></div>
+                </div>
+                <div class="history-result-modal__metrics" id="historyStrokeMetrics" hidden></div>
+                <div class="history-result-modal__explanation" id="historyExplanation" hidden></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-matching-modal" id="historyMatchingModal" hidden role="dialog" aria-modal="true" aria-labelledby="historyMatchingTitle">
+        <div class="history-matching-modal__dialog">
+            <button class="history-detail-modal__close" id="historyMatchingClose" type="button" aria-label="ปิดรายละเอียด"><i class="fa-solid fa-xmark"></i></button>
+            <p class="history-eyebrow"><i class="fa-solid fa-puzzle-piece"></i> MATCHING REVIEW</p>
+            <h2 id="historyMatchingTitle">รายละเอียดแบบจับคู่</h2>
+            <p id="historyMatchingSummary" class="history-detail-modal__summary"></p>
+            <div class="history-matching-list" id="historyMatchingList"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const rowsContainer = document.getElementById('testHistoryRows');
+            const countElement = document.getElementById('historyCount');
+            const detailModal = document.getElementById('historyDetailModal');
+            const detailClose = document.getElementById('historyDetailClose');
+            const detailTitle = document.getElementById('historyDetailTitle');
+            const detailSummary = document.getElementById('historyDetailSummary');
+            const detailStatus = document.getElementById('historyDetailStatus');
+            const detailAttempts = document.getElementById('historyDetailAttempts');
+            const totalStat = document.getElementById('historyTotalStat');
+            const completeStat = document.getElementById('historyCompleteStat');
+            const matchingStat = document.getElementById('historyMatchingStat');
+            const writingStat = document.getElementById('historyWritingStat');
+            const resultModal = document.getElementById('historyResultModal');
+            const resultClose = document.getElementById('historyResultClose');
+            const matchingModal = document.getElementById('historyMatchingModal');
+            const matchingClose = document.getElementById('historyMatchingClose');
+            const matchingTitle = document.getElementById('historyMatchingTitle');
+            const matchingSummary = document.getElementById('historyMatchingSummary');
+            const matchingList = document.getElementById('historyMatchingList');
+            const userCanvas = document.getElementById('historyUserCanvas');
+            const correctCanvas = document.getElementById('historyCorrectCanvas');
+            const replayStatus = document.getElementById('historyReplayStatus');
+            let selectedAttempt = null;
+            let replayFrame = null;
+
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>'"]/g, function (char) {
+                    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char];
+                });
+            }
+
+            function formatDuration(milliseconds) {
+                const seconds = Math.max(0, Math.round(Number(milliseconds) / 1000));
+                return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+            }
+
+            function formatDate(value) {
+                if (!value) return '-';
+                const date = new Date(String(value).replace(' ', 'T'));
+                if (Number.isNaN(date.getTime())) return String(value);
+                return new Intl.DateTimeFormat('th-TH', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                }).format(date);
+            }
+
+            function renderHistory(history) {
+                countElement.textContent = `${history.length} รอบแบบทดสอบ`;
+                totalStat.textContent = history.length;
+                completeStat.textContent = history.filter(item => item.record_type === 'matching' || (item.completed_at && Number(item.total_characters) > 0 && Number(item.completed_characters) >= Number(item.total_characters))).length;
+                matchingStat.textContent = history.filter(item => item.record_type === 'matching').length;
+                writingStat.textContent = history.filter(item => item.record_type !== 'matching').length;
+                if (!history.length) {
+                    rowsContainer.innerHTML = '<div class="history-empty"><i class="fa-solid fa-clipboard-list"></i><p>ยังไม่มีประวัติการฝึก</p><span>ผลการฝึกเขียนและแบบทดสอบจับคู่จะปรากฏที่นี่</span></div>';
+                    return;
+                }
+
+                rowsContainer.innerHTML = history.map(function (item) {
+                    const isMatching = item.record_type === 'matching';
+                    const total = Number(item.total_characters) || 0;
+                    const completed = Number(item.completed_characters) || 0;
+                    const matchingTotal = Number(item.total_questions) || 0;
+                    const matchingScore = Number(item.score) || 0;
+                    const finishedAll = isMatching || (item.completed_at && total > 0 && completed >= total);
+                    const type = String(item.writing_type || '').toLowerCase() === 'katakana' ? 'Katakana' : 'Hiragana';
+                    const statusText = isMatching ? (Number(item.percentage) >= 70 ? 'ผ่าน' : 'ควรฝึกเพิ่ม') : (finishedAll ? 'ทำครบแล้ว' : 'บันทึกแล้ว');
+                    const statusClass = isMatching ? (Number(item.percentage) >= 70 ? 'badge-good' : 'badge-partial') : (finishedAll ? 'badge-good' : 'badge-partial');
+                    const assisted = String(item.writing_mode || '').toLowerCase() === 'assisted';
+                    const modeLabel = isMatching ? 'โหมดจับคู่' : (assisted ? 'มีตัวช่วย' : 'ไม่มีตัวช่วย');
+                    const modeIcon = isMatching ? 'fa-puzzle-piece' : (assisted ? 'fa-wand-magic-sparkles' : 'fa-bullseye');
+                    const sessionId = encodeURIComponent(item.writing_session_id);
+                    const typeParam = type.toLowerCase();
+                    const practiceMode = String(item.practice_mode || 'test').toLowerCase() === 'guide' ? 'guide' : 'test';
+                    const continueUrl = `../data/writing.php?type=${typeParam}&group_id=${encodeURIComponent(item.group_name || '')}&mode=${practiceMode}&writing_mode=${assisted ? 'assisted' : 'unassisted'}&session_id=${sessionId}`;
+                    const matchingUrl = `../data/jpmatch.php?type=${typeParam}&quiz_set_id=${encodeURIComponent(item.quiz_set_id || '')}`;
+                    const action = isMatching
+                        ? `<div class="history-action-stack"><a class="history-view-button history-detail-button" href="../data/matchhistorydetail.php?quiz_id=${encodeURIComponent(item.quiz_id)}"><i class="fa-solid fa-list-check"></i> ดูรายละเอียด</a><a class="history-view-button history-retry-button" href="${matchingUrl}" aria-label="เล่นแบบจับคู่ซ้ำ"><i class="fa-solid fa-rotate-right"></i></a></div>`
+                        : finishedAll
+                        ? `<a class="history-view-button" href="../data/testhistorydetail.php?session_id=${sessionId}">ดูรายละเอียด</a>`
+                        : `<a class="history-view-button history-continue-button" href="${continueUrl}"><i class="fa-solid fa-play"></i> ทำต่อ</a>`;
+
+                    return `
+                        <div class="history-grid-layout history-row">
+                            <div class="history-type-cell"><strong>${isMatching ? 'จับคู่' : type}</strong><span class="history-type-subtitle">${type}</span><span class="history-mode-badge ${isMatching || assisted ? 'is-assisted' : 'is-test'}"><i class="fa-solid ${modeIcon}"></i>${modeLabel}</span></div>
+                            <div data-label="${isMatching ? 'ชุดคำถาม' : 'วรรค'}">${escapeHtml(isMatching ? (item.quiz_set_id ? `ชุดที่ ${item.quiz_set_id}` : 'ชุดสุ่ม') : (item.group_name || '-'))}</div>
+                            <div data-label="${isMatching ? 'คะแนน' : 'จำนวนที่วาด'}">${isMatching ? `${matchingScore} / ${matchingTotal}` : `${completed} / ${total}`}</div>
+                            <div data-label="สถานะ"><span class="${statusClass}">${statusText}</span></div>
+                            <div data-label="เวลาที่ใช้">${formatDuration(item.total_time_ms)}</div>
+                            <div data-label="วันที่ทำ">${formatDate(item.completed_at || item.started_at)}</div>
+                            <div data-label="การดำเนินการ">${action}</div>
+                        </div>`;
+                }).join('');
+                rowsContainer.querySelectorAll('[data-session-id]').forEach(button => {
+                    button.addEventListener('click', () => openHistoryDetail(button.dataset.sessionId));
+                });
+                rowsContainer.querySelectorAll('[data-matching-id]').forEach(button => {
+                    button.addEventListener('click', () => openMatchingDetail(history.find(item => String(item.quiz_id) === button.dataset.matchingId)));
+                });
+            }
+
+            function openMatchingDetail(item) {
+                if (!item) return;
+                const answers = Array.isArray(item.answer_details) ? item.answer_details : [];
+                const type = String(item.writing_type || '').toLowerCase() === 'katakana' ? 'Katakana' : 'Hiragana';
+                const isCorrectAnswer = answer => answer.correct === true || answer.correct === 1 || answer.correct === '1' || answer.correct === 'true';
+                const correctCount = answers.filter(isCorrectAnswer).length;
+                matchingTitle.textContent = `คำตอบแบบจับคู่ ${type}`;
+                matchingSummary.textContent = `ตอบถูก ${correctCount}/${answers.length || Number(item.total_questions) || 0} ข้อ · คะแนน ${Number(item.percentage || 0).toFixed(0)}% · ${formatDate(item.completed_at)}`;
+                matchingList.innerHTML = answers.length ? answers.map((answer, index) => {
+                    const correct = isCorrectAnswer(answer);
+                    return `<article class="history-matching-answer ${correct ? 'is-correct' : 'is-wrong'}">
+                        <span class="history-matching-answer__number">${String(index + 1).padStart(2, '0')}</span>
+                        <div><strong>${escapeHtml(answer.question || `ข้อที่ ${index + 1}`)}</strong><small>คำตอบของคุณ: ${escapeHtml(answer.selectedAnswer || '-')}</small>${correct ? '' : `<small>คำตอบที่ถูก: ${escapeHtml(answer.correctAnswer || '-')}</small>`}</div>
+                        <b><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}"></i>${correct ? 'ถูกต้อง' : 'ไม่ถูก'}</b>
+                    </article>`;
+                }).join('') : '<div class="history-matching-empty"><i class="fa-solid fa-circle-info"></i><p>รอบนี้ไม่มีรายละเอียดคำตอบที่บันทึกไว้</p><span>คำตอบจะเริ่มแสดงสำหรับรอบที่เล่นหลังจากระบบอัปเดตนี้</span></div>';
+                matchingModal.hidden = false;
+            }
+
+            async function openHistoryDetail(sessionId) {
+                detailModal.hidden = false;
+                detailTitle.textContent = 'กำลังโหลดรายละเอียด...';
+                detailSummary.textContent = '';
+                detailStatus.textContent = '';
+                detailAttempts.innerHTML = '<div class="history-detail-modal__loading"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดผลการตรวจ</div>';
+                try {
+                    const response = await fetch(`../connectapi/writing_progress.php?action=get_test_history_detail&writing_session_id=${encodeURIComponent(sessionId)}`, {
+                        credentials: 'same-origin', cache: 'no-store'
+                    });
+                    const payload = await response.json().catch(() => null);
+                    if (!response.ok || !payload || payload.status !== 'success' || !payload.session) {
+                        throw new Error(payload?.message || 'ไม่สามารถโหลดรายละเอียดได้');
+                    }
+                    renderHistoryDetail(payload.session, Array.isArray(payload.attempts) ? payload.attempts : []);
+                } catch (error) {
+                    detailStatus.className = 'history-detail-modal__status is-error';
+                    detailStatus.textContent = error.message || 'ไม่สามารถโหลดรายละเอียดได้';
+                    detailAttempts.innerHTML = '';
+                }
+            }
+
+            function renderHistoryDetail(session, attempts) {
+                const completed = Number(session.completed_characters) || 0;
+                const total = Number(session.total_characters) || 0;
+                const scored = attempts.filter(attempt => Number(attempt.is_completed) === 1);
+                const average = scored.length
+                    ? scored.reduce((sum, attempt) => sum + clamp(Number(attempt.total_score)), 0) / scored.length
+                    : 0;
+                const passed = scored.filter(attempt => Number(attempt.is_passed) === 1 || Number(attempt.total_score) >= 60).length;
+                const mode = String(session.writing_mode || '').toLowerCase() === 'assisted' ? 'มีตัวช่วย' : 'ไม่มีตัวช่วย';
+                const type = String(session.writing_type || '').toLowerCase() === 'katakana' ? 'Katakana' : 'Hiragana';
+                detailTitle.textContent = `ผลการทำแบบทดสอบ ${type}`;
+                detailSummary.textContent = `วรรค ${session.group_name || '-'} · โหมด${mode} · ทำได้ ${completed}/${total} · คะแนนเฉลี่ย ${formatScore(average)}% · ผ่าน ${passed}/${scored.length}`;
+                detailStatus.className = 'history-detail-modal__status is-ready';
+                detailStatus.textContent = 'รายละเอียดสิ่งที่ทำและผลการตรวจ';
+                const averageShape = scored.length ? scored.reduce((sum, attempt) => sum + clamp(attempt.shape_accuracy), 0) / scored.length : 0;
+                const averageAlign = scored.length ? scored.reduce((sum, attempt) => sum + clamp(attempt.alignment_score), 0) / scored.length : 0;
+                document.getElementById('historyOverviewScore').textContent = `${completed} / ${total}`;
+                document.getElementById('historyOverviewPercent').textContent = `${total ? Math.round((completed / total) * 100) : 0}%`;
+                document.getElementById('historyOverviewTime').textContent = formatDuration(session.total_time_ms);
+                document.getElementById('historyOverviewDate').textContent = formatDate(session.completed_at || session.started_at);
+                document.getElementById('historyOverviewShape').textContent = `${formatScore(averageShape)}%`;
+                document.getElementById('historyOverviewAlign').textContent = `${formatScore(averageAlign)}%`;
+                detailAttempts.innerHTML = attempts.length ? attempts.map((attempt, index) => {
+                    const score = clamp(Number(attempt.total_score));
+                    const passedAttempt = Number(attempt.is_passed) === 1 || score >= 60;
+                    const reasons = Array.isArray(attempt.error_reasons) ? attempt.error_reasons : [];
+                    return `<button type="button" class="history-detail-attempt" data-attempt-index="${index}">
+                        <div class="history-detail-attempt__image">${attempt.image_url ? `<img src="${escapeHtml(attempt.image_url)}" alt="ภาพที่วาด ${escapeHtml(attempt.target_character || '')}">` : '<span>ไม่มีภาพ</span>'}</div>
+                        <div class="history-detail-attempt__body">
+                            <div class="history-detail-attempt__heading"><strong>ข้อที่ ${index + 1}: ${escapeHtml(attempt.target_character || '-')}</strong><b class="${passedAttempt ? 'is-passed' : 'is-failed'}">${passedAttempt ? 'ผ่าน' : 'ต้องปรับปรุง'} · ${formatScore(score)}%</b></div>
+                            <p>คุณวาด ${Number(attempt.stroke_count) || 0} เส้น ใช้เวลา ${formatDuration(attempt.time_spent_ms)} · รูปทรง ${formatScore(attempt.shape_accuracy)}% · ตำแหน่ง ${formatScore(attempt.alignment_score)}%</p>
+                            ${reasons.length ? `<small>จุดที่ควรแก้: ${reasons.map(escapeHtml).join(' และ ')}</small>` : `<small>${escapeHtml(attempt.feedback || 'ระบบบันทึกผลการวาดเรียบร้อย')}</small>`}
+                        </div>
+                    </button>`;
+                }).join('') : '<p class="history-detail-modal__empty">ยังไม่มีรายละเอียดการวาด</p>';
+                detailAttempts.querySelectorAll('[data-attempt-index]').forEach(button => {
+                    button.addEventListener('click', () => openAttempt(attempts[Number(button.dataset.attemptIndex)]));
+                });
+                resultModal.hidden = true;
+            }
+
+            function openAttempt(attempt) {
+                selectedAttempt = attempt;
+                stopReplay();
+                resultModal.hidden = false;
+                const character = attempt.target_character || attempt.romaji || '-';
+                const score = clamp(attempt.total_score);
+                const passed = Number(attempt.is_passed) === 1 || score >= 60;
+                document.getElementById('historyResultTitle').textContent = `ข้อที่ ${attempt.sequence_no || '-'}: ${character}`;
+                document.getElementById('historyResultStatus').textContent = passed ? 'ผ่าน' : 'ต้องปรับปรุง';
+                document.getElementById('historyResultStatus').className = passed ? 'is-passed' : 'is-failed';
+                const trajectory = normalizeTrajectory(attempt.trajectory);
+                userCanvas.innerHTML = trajectory.strokes?.length
+                    ? `<img data-history-content="image" src="${escapeHtml(attempt.image_url || '')}" alt="ภาพที่วาด"><canvas data-history-content="replay" hidden></canvas>`
+                    : (attempt.image_url ? `<img data-history-content="image" src="${escapeHtml(attempt.image_url)}" alt="ภาพที่วาด">` : '<span>ไม่มีภาพ</span>');
+                correctCanvas.innerHTML = `<span class="history-answer-character">${escapeHtml(character)}</span>`;
+                setHistoryView('image');
+                setScore('historyShapeFill', 'historyShapeScore', attempt.shape_accuracy);
+                setScore('historyAlignFill', 'historyAlignScore', attempt.alignment_score);
+                setScore('historyTotalFill', 'historyTotalScore', score);
+                renderMetrics(attempt);
+            }
+
+            function normalizeTrajectory(value) {
+                if (typeof value !== 'string') return value && typeof value === 'object' ? value : { strokes: [] };
+                try { return JSON.parse(value) || { strokes: [] }; } catch (error) { return { strokes: [] }; }
+            }
+
+            function setHistoryView(view) {
+                const trajectory = normalizeTrajectory(selectedAttempt?.trajectory);
+                const hasStrokes = Array.isArray(trajectory.strokes) && trajectory.strokes.length;
+                if (view === 'replay' && !hasStrokes) view = 'image';
+                document.querySelectorAll('[data-history-view]').forEach(button => button.classList.toggle('is-active', button.dataset.historyView === view));
+                const image = userCanvas.querySelector('[data-history-content="image"]');
+                const replay = userCanvas.querySelector('[data-history-content="replay"]');
+                if (image) image.hidden = view !== 'image';
+                if (replay) replay.hidden = view !== 'replay';
+                if (view === 'replay' && replay) drawTrajectory(replay, trajectory);
+            }
+
+            function drawTrajectory(canvas, trajectory, visibleStrokes = Infinity) {
+                const strokes = Array.isArray(trajectory?.strokes) ? trajectory.strokes : [];
+                const width = canvas.clientWidth || 260;
+                const height = canvas.clientHeight || 260;
+                const ratio = window.devicePixelRatio || 1;
+                canvas.width = width * ratio; canvas.height = height * ratio;
+                const context = canvas.getContext('2d');
+                context.setTransform(ratio, 0, 0, ratio, 0, 0);
+                context.clearRect(0, 0, width, height);
+                context.strokeStyle = '#172033'; context.lineWidth = 8; context.lineCap = 'round'; context.lineJoin = 'round';
+                strokes.slice(0, visibleStrokes).forEach(stroke => {
+                    const points = Array.isArray(stroke.points) ? stroke.points : [];
+                    if (points.length < 2) return;
+                    const maxX = Math.max(...points.map(point => Number(point.x) || 0), 620);
+                    const maxY = Math.max(...points.map(point => Number(point.y) || 0), 420);
+                    context.beginPath();
+                    context.moveTo((Number(points[0].x) || 0) * width / maxX, (Number(points[0].y) || 0) * height / maxY);
+                    points.slice(1).forEach(point => context.lineTo((Number(point.x) || 0) * width / maxX, (Number(point.y) || 0) * height / maxY));
+                    context.stroke();
+                });
+            }
+
+            function playReplay() {
+                stopReplay(); setHistoryView('replay');
+                const canvas = userCanvas.querySelector('canvas');
+                const strokes = normalizeTrajectory(selectedAttempt?.trajectory).strokes || [];
+                if (!canvas || !strokes.length) return;
+                const started = performance.now();
+                function frame(now) {
+                    const count = Math.min(strokes.length, Math.floor((now - started) / 700) + 1);
+                    drawTrajectory(canvas, normalizeTrajectory(selectedAttempt.trajectory), count);
+                    replayStatus.textContent = count >= strokes.length ? 'เล่นจบแล้ว' : `กำลังเล่นเส้นที่ ${count}`;
+                    if (count < strokes.length) replayFrame = requestAnimationFrame(frame);
+                }
+                replayFrame = requestAnimationFrame(frame);
+            }
+
+            function stopReplay() { if (replayFrame) cancelAnimationFrame(replayFrame); replayFrame = null; }
+            function setScore(fillId, textId, value) { const score = clamp(value); document.getElementById(fillId).style.width = `${score}%`; document.getElementById(textId).textContent = `${formatScore(score)}%`; }
+            function renderMetrics(attempt) {
+                const metrics = Array.isArray(attempt.stroke_metrics) ? attempt.stroke_metrics : [];
+                const reasons = Array.isArray(attempt.error_reasons) ? attempt.error_reasons : [];
+                const metricsBox = document.getElementById('historyStrokeMetrics');
+                metricsBox.hidden = !metrics.length;
+                metricsBox.innerHTML = metrics.length ? `<strong>วิเคราะห์แยกรายเส้น</strong>${metrics.map(metric => `<div><b>เส้นที่ ${Number(metric.stroke_number) || '-'}</b> รูปทรง ${formatScore(metric.shape_score)}% · ทิศทาง ${formatScore(metric.direction_score)}% · ตำแหน่ง ${formatScore(metric.position_score)}%</div>`).join('')}` : '';
+                const explanation = document.getElementById('historyExplanation');
+                const feedback = attempt.ai_explanation || attempt.feedback || '';
+                explanation.hidden = !reasons.length && !feedback;
+                explanation.innerHTML = reasons.length ? `<strong>จุดที่ควรแก้</strong><ul>${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><p>${escapeHtml(feedback)}</p>` : `<strong>ผลการตรวจ</strong><p>${escapeHtml(feedback)}</p>`;
+            }
+
+            document.querySelectorAll('[data-history-view]').forEach(button => button.addEventListener('click', () => setHistoryView(button.dataset.historyView)));
+            document.getElementById('historyReplayButton').addEventListener('click', playReplay);
+            document.getElementById('historyPauseButton').addEventListener('click', () => { stopReplay(); replayStatus.textContent = 'หยุดชั่วคราว'; });
+
+            function clamp(value) { return Math.max(0, Math.min(100, Number(value) || 0)); }
+            function formatScore(value) { return Number(value).toFixed(1).replace(/\.0$/, ''); }
+            function closeResultDetail() { stopReplay(); resultModal.hidden = true; }
+            function closeHistoryDetail() { closeResultDetail(); detailModal.hidden = true; }
+            function closeMatchingDetail() { matchingModal.hidden = true; }
+            detailClose.addEventListener('click', closeHistoryDetail);
+            resultClose.addEventListener('click', closeResultDetail);
+            matchingClose.addEventListener('click', closeMatchingDetail);
+            resultModal.addEventListener('click', event => { if (event.target === resultModal) closeResultDetail(); });
+            detailModal.addEventListener('click', event => { if (event.target === detailModal) closeHistoryDetail(); });
+            matchingModal.addEventListener('click', event => { if (event.target === matchingModal) closeMatchingDetail(); });
+            document.addEventListener('keydown', event => { if (event.key !== 'Escape') return; if (!matchingModal.hidden) closeMatchingDetail(); else if (!detailModal.hidden) closeHistoryDetail(); });
+
+            try {
+                const response = await fetch('../connectapi/writing_progress.php?action=get_test_history', {
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => null);
+                if (response.status === 401) {
+                    window.location.replace('../sceens/login.html');
+                    return;
+                }
+                if (!response.ok || !payload || payload.status !== 'success') {
+                    throw new Error(payload && payload.message ? payload.message : 'ไม่สามารถโหลดประวัติได้');
+                }
+                renderHistory(Array.isArray(payload.history) ? payload.history : []);
+            } catch (error) {
+                countElement.textContent = 'โหลดไม่สำเร็จ';
+                rowsContainer.innerHTML = `<div class="history-empty history-error">${escapeHtml(error.message || 'ไม่สามารถโหลดประวัติแบบทดสอบได้')}</div>`;
+            }
+        });
+    </script>
+
+
+</body>
+</html>

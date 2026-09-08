@@ -1,0 +1,142 @@
+:root {
+    --ink: #202b3c;
+    --muted: #657083;
+    --paper: #fffdfa;
+    --canvas: #f6f4ef;
+    --line: #e8e5df;
+    --coral: #e85d4a;
+}
+
+.auth-page {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'Noto Sans Thai', sans-serif;
+}
+
+.auth-page .login-section,
+.auth-page .register-section {
+    padding: 64px 20px 72px;
+    background-color: var(--canvas);
+    background-image: radial-gradient(rgba(232, 93, 74, .16) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.auth-page .login-card,
+.auth-page .register-card {
+    max-width: 1060px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--paper);
+    box-shadow: 0 22px 50px rgba(32, 43, 60, .09);
+}
+
+.auth-page .login-promo,
+.auth-page .register-promo {
+    background: linear-gradient(145deg, #26354a 0%, var(--ink) 72%);
+    padding: 58px 50px;
+}
+
+.auth-page .login-promo::before,
+.auth-page .register-promo::before {
+    color: rgba(255, 255, 255, .055);
+}
+
+.auth-page .login-promo > p,
+.auth-page .register-promo > p {
+    color: #c2cad5;
+}
+
+.auth-page .promo-list .icon {
+    background: rgba(255, 255, 255, .08);
+    border-color: rgba(255, 255, 255, .12);
+}
+
+.auth-page .promo-list .text p { color: #c2cad5; }
+
+.auth-page .login-form-container,
+.auth-page .form-container {
+    background: var(--paper);
+}
+
+.auth-page .login-form-container h1,
+.auth-page .form-container h1 { color: var(--ink); }
+
+.auth-page .login-form-container p.subtitle { color: var(--muted); }
+
+.auth-page .login-form-container .icon-top,
+.auth-page .form-container .icon-top { color: var(--coral); }
+
+.auth-page .form-group label { color: var(--ink); }
+
+.auth-page .form-control {
+    border-color: #dfddd6;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+}
+
+.auth-page .form-control:focus {
+    border-color: var(--coral);
+    box-shadow: 0 0 0 4px rgba(232, 93, 74, .13);
+}
+
+.auth-page .forgot-password,
+.auth-page .register-link,
+.auth-page .login-link { color: var(--muted); }
+
+.auth-page .forgot-password:hover,
+.auth-page .register-link a,
+.auth-page .login-link a { color: #cf4839; }
+
+.auth-page .btn-login,
+.auth-page .submit-btn {
+    background: var(--ink);
+    border-radius: 10px;
+    box-shadow: 0 9px 18px rgba(32, 43, 60, .16);
+}
+
+.auth-page .btn-login:hover,
+.auth-page .submit-btn:hover {
+    background: var(--coral);
+    box-shadow: 0 12px 22px rgba(232, 93, 74, .24);
+}
+
+.auth-page .alert { border-radius: 10px; }
+
+.auth-page .modal-box {
+    border: 1px solid var(--line);
+    background: var(--paper);
+}
+
+.auth-page .modal-box h3 { color: var(--ink); }
+.auth-page .btn-confirm { background: var(--ink); border-color: var(--ink); }
+.auth-page .btn-confirm:hover { background: var(--coral); border-color: var(--coral); }
+
+.auth-page .auth-footer {
+    margin-top: auto;
+    padding: 22px;
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    color: #7b8390;
+    font-size: 12px;
+}
+
+.auth-page .auth-footer span { padding: 0 6px; color: #c4c5c8; }
+
+.auth-page .nav-links .nav-login.is-active {
+    background: var(--coral);
+    box-shadow: 0 6px 14px rgba(232, 93, 74, .2);
+}
+
+@media (max-width: 860px) {
+    .auth-page .login-section,
+    .auth-page .register-section { padding: 42px 16px 52px; }
+
+    .auth-page .login-promo,
+    .auth-page .register-promo { padding: 38px 30px; }
+}
+
+@media (max-width: 640px) {
+    .auth-page .login-form-container,
+    .auth-page .form-container { padding: 40px 24px; }
+}

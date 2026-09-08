@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - JP Learning</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style/user.css">
+    <link rel="stylesheet" href="../style/navbar.css">
+</head>
+<body class="user-dashboard-page">
+ <nav>
+        <!-- เก็บปุ่มโปรไฟล์ของหน้านี้ไว้ชั่วคราว เพื่อให้ Script ดึงไปใส่ใน Navbar กลาง -->
+        <div id="nav-extra" style="display: none;">
+            <a href="../data/member.php" class="user-profile" id="userProfileLink">
+                <span id="navUsername">{{navUsername}}</span>
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+    (function(){
+        // ดึงปุ่มโปรไฟล์เตรียมไว้
+        try{ window.NAV_EXTRA_HTML_DEFAULT = document.querySelector('#nav-extra')?.innerHTML || ''; }catch(e){}
+        
+        const navbarPath = window.location.pathname.includes('/data/') ? '../sceens/_navbar.html' : './_navbar.html';
+        
+        fetch(navbarPath).then(r=>r.text()).then(html=>{
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newNav = doc.querySelector('nav');
+            const extra = newNav.querySelector('#nav-extra');
+            
+            // นำปุ่มโปรไฟล์ไปใส่ในโครงสร้างของ _navbar.html
+            if(window.NAV_EXTRA_HTML && extra) extra.innerHTML = window.NAV_EXTRA_HTML;
+            else if(window.NAV_EXTRA_HTML_DEFAULT && extra) extra.innerHTML = window.NAV_EXTRA_HTML_DEFAULT;
+            
+            // นำ Navbar ใหม่มาทับของเดิม
+            document.querySelector('nav').outerHTML = newNav.outerHTML;
+            const insertedNav = document.querySelector('.site-navbar') || document.querySelector('nav');
+            if (insertedNav) applyNavbarAuth(insertedNav);
+        }).catch(err => console.log('Navbar load failed:', err));
+
+        function applyNavbarAuth(navElement) {
+            const authArea = navElement.querySelector('#navAuthArea');
+            const logoLink = navElement.querySelector('#navLogoLink');
+            if (!authArea) return;
+
+            function getNavLogoHref(target) {
+                const isDataPage = window.location.pathname.includes('/data/');
+                const basePath = isDataPage ? '../sceens/' : './';
+                return target === 'member' ? `${basePath}member.html` : `${basePath}index.html`;
+            }
+            function setLogoTarget(target) {
+                if (logoLink) logoLink.href = getNavLogoHref(target);
+            }
+            const guestActions = `
+                <button type="button" class="nav-button" onclick="window.location.href='../sceens/login.html'">เข้าสู่ระบบ</button>
+                <button type="button" class="nav-button nav-button--primary" onclick="window.location.href='../sceens/register.html'">สมัครสมาชิก</button>
+            `;
+            const userActions = (name) => `
+                <button type="button" class="nav-user" title="คลิกเพื่อออกจากระบบ" onclick="logoutUser(event)">
+                    <span id="navUsername">${name}</span>
+                    <i class="fa-solid fa-user"></i>
+                </button>
+            `;
+
+            if (!window.logoutUser) {
+                window.logoutUser = function (event) {
+                    if (event) event.preventDefault();
+                    if (!confirm('ต้องการออกจากระบบหรือไม่?')) return;
+                    fetch('../connectapi/logout.php', { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                        .then(() => { authArea.innerHTML = guestActions; const isDataPage = window.location.pathname.includes('/data/'); const basePath = isDataPage ? '../sceens/' : './'; if (logoLink) logoLink.href = `${basePath}index.html`; try { localStorage.setItem('authChanged', Date.now().toString()); } catch (e) {} })
+                        .catch(() => { authArea.innerHTML = guestActions; const isDataPage = window.location.pathname.includes('/data/'); const basePath = isDataPage ? '../sceens/' : './'; if (logoLink) logoLink.href = `${basePath}index.html`; try { localStorage.setItem('authChanged', Date.now().toString()); } catch (e) {} });
+                };
+            }
+
+            fetch('../connectapi/nav_state.php', { cache: 'no-store', credentials: 'same-origin' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.loggedIn) {
+                        authArea.innerHTML = userActions(data.username || data.name || 'ผู้ใช้');
+                        setLogoTarget('member');
+                    } else {
+                        authArea.innerHTML = guestActions;
+                        setLogoTarget('index');
+                    }
+                })
+                .catch(() => {
+                    authArea.innerHTML = guestActions;
+                    setLogoTarget('index');
+                });
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'authChanged') {
+                const insertedNav = document.querySelector('.site-navbar');
+                const authArea = insertedNav?.querySelector('#navAuthArea');
+                const logoLink = insertedNav?.querySelector('#navLogoLink');
+                if (authArea) {
+                    authArea.innerHTML = `
+                        <button type="button" class="nav-button" onclick="window.location.href='../sceens/login.html'">เข้าสู่ระบบ</button>
+                        <button type="button" class="nav-button nav-button--primary" onclick="window.location.href='../sceens/register.html'">สมัครสมาชิก</button>
+                    `;
+                }
+                const isDataPage = window.location.pathname.includes('/data/');
+                const basePath = isDataPage ? '../sceens/' : './';
+                if (logoLink) logoLink.href = `${basePath}index.html`;
+            }
+        });
+    })();
+    </script>
+
+    <div class="main-container">
+        <section class="greeting">
+            <h1>สวัสดี {{firstname}}</h1>
+            <p>พร้อมฝึกฝนภาษาญี่ปุ่นกันหรือยัง?</p>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>แบบทดสอบทั้งหมด</span>
+                    <div class="stat-icon yellow"><i class="fa-solid fa-medal"></i></div>
+                </div>
+                <div class="stat-value">{{totalTests}}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>ทำแบบทดสอบไปแล้ว</span>
+                    <div class="stat-icon purple"><i class="fa-solid fa-circle-play"></i></div>
+                </div>
+                <div class="stat-value">{{passedTests}}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>คะแนนเฉลี่ย (จับคู่)</span>
+                    <div class="stat-icon green"><i class="fa-solid fa-chart-line"></i></div>
+                </div>
+                <div class="stat-value">{{averageScore}}<span class="percent-suffix">%</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>คะแนนสะสม</span>
+                    <div class="stat-icon yellow"><i class="fa-solid fa-star"></i></div>
+                </div>
+                <div class="stat-value">{{totalPoints}}</div>
+            </div>
+        </section>
+
+        <section class="bottom-section">
+            <h2 class="section-title">เรียนรู้ตัวอักษร</h2>
+
+            <div class="menu-grid">
+                <a href="../data/kanatable.php" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-solid fa-book-open"></i></div>
+                    <div class="menu-title">ตารางตัวอักษร</div>
+                    <div class="menu-desc">ดูตารางและรายละเอียดของตัวอักษรญี่ปุ่น พร้อมเสียงและลำดับการเขียน</div>
+                </a>
+
+                <a href="../data/ex2.php" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-solid fa-pen"></i></div>
+                    <div class="menu-title">ฝึกเขียนตัวอักษร</div>
+                    <div class="menu-desc">ฝึกเขียนตัวอักษร Katakana ให้ถูกต้องตามหลัก</div>
+                </a>
+
+                <a href="../sceens/jpmatch.html" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-regular fa-circle-play"></i></div>
+                    <div class="menu-title">แบบทดสอบจับคู่</div>
+                    <div class="menu-desc">ทดสอบความจำด้วยโหมดจับคู่ตัวอักษรและเสียงอ่าน</div>
+                </a>
+
+                <a href="#" class="menu-card">
+                    <div class="menu-icon-box"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div class="menu-title">ประวัติการทดสอบ</div>
+                    <div class="menu-desc">ดูประวัติย้อนหลังและสถิติการทำแบบทดสอบของคุณ</div>
+                </a>
+            </div>
+        </section>
+{{recentTestsHtml}}
+    </div>
+</body>
+</html>

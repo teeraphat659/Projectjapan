@@ -1,0 +1,148 @@
+:root {
+    --bg: #f3f5ff;
+    --card: #fff;
+    --accent: #d94a35;
+    --text: #222;
+    --border: #666; /* เพิ่มสีเส้นขอบให้คล้ายในรูป */
+}
+
+* { box-sizing: border-box; font-family: 'Noto Sans Thai', sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+
+/* Match Page Styles (จากของเดิม) */
+.match-page { max-width: 1180px; margin: 28px auto; padding: 0 20px; display: flex; flex-direction: column; align-items: center; }
+.match-header { width: 100%; max-width: 760px; text-align: center; margin-bottom: 18px; }
+.match-header h1 { font-size: 28px; margin: 0; }
+.match-card { background: var(--card); padding: 28px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 8px 30px rgba(0,0,0,0.04); width: 100%; max-width: 760px; }
+.match-card h3 { margin-top: 0; text-align: left; }
+.form-row { margin: 12px 0; }
+.form-row label { display: block; color: #666; margin-bottom: 6px; }
+.form-row select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; }
+.form-actions { text-align: center; margin-top: 18px; }
+.start-btn { background: #111; color: #fff; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; min-width: 160px; }
+
+/* ---------------------------------------------------
+   Play Page Styles (จัด UI ตามรูป image_0c63d8.png)
+   --------------------------------------------------- */
+.play-page {
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 30px;
+    background: var(--card);
+    border: 1px solid var(--border); /* กรอบรอบนอกสุดเหมือนในรูป */
+    display: flex;
+    flex-direction: column;
+}
+
+/* ส่วนหัว: แบ่ง 3 คอลัมน์ ซ้าย-กลาง-ขวา */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 50px;
+}
+
+.progress-box, .timer-box {
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    font-size: 14px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.title-box {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.title-box h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ส่วนแสดงโจทย์ตรงกลาง */
+.question-container {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.question-text {
+    font-size: 80px; /* ตัวอักษรโจทย์ใหญ่ๆ */
+    font-weight: 400;
+    margin: 0 0 20px 0;
+    line-height: 1;
+}
+
+.instruction-text {
+    font-size: 18px;
+    color: var(--text);
+    margin: 0;
+}
+
+/* ส่วนปุ่มตัวเลือก 4 ข้อ (Grid 2x2) */
+.choices-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 700px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.choice-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px; /* มุมมนเล็กน้อย */
+    padding: 30px 20px;
+    font-size: 60px; /* ตัวอักษรตัวเลือกใหญ่ๆ */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text);
+    font-family: sans-serif;
+}
+
+.choice-btn:hover {
+    background: #f5f5f5;
+    border-color: #333;
+}
+
+/* Responsive สำหรับมือถือ */
+@media (max-width: 800px) {
+    .group-grid, .alphabet-grid { grid-template-columns: repeat(2, 1fr); }
+    .match-card { padding: 20px; }
+    
+    .game-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .question-text { font-size: 60px; }
+    
+    .choice-btn {
+        font-size: 40px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 500px) {
+    /* ถ้าจอมือถือเล็กมาก ปรับตัวเลือกเป็นแนวตั้งคอลัมน์เดียว */
+    .choices-container { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1024px) {
+    .match-page { width: min(100% - 32px, 1180px); }
+    .play-page { width: min(100% - 32px, 960px); }
+}
+
+@media (max-width: 640px) {
+    .match-page { width: calc(100% - 24px); margin-top: 22px; }
+    .match-header h1 { font-size: 24px; }
+    .match-card { padding: 18px 16px; }
+    .start-btn { width: 100%; }
+}

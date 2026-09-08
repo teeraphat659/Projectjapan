@@ -1,0 +1,303 @@
+[2026-08-30 08:54:35] login_attempt: login=admin
+[2026-08-30 08:54:35] admin_lookup: found admin_id=1 for login=admin
+[2026-08-30 08:54:35] upgraded_plaintext_to_hash: admin_id=1
+[2026-08-30 08:54:35] admin_login_success: admin_id=1 login=admin
+[2026-08-30 08:55:38] login_attempt: login=admin@test.com
+[2026-08-30 08:55:38] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 08:55:38] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 08:57:12] login_attempt: login=teeraphat@gmail.com
+[2026-08-30 08:57:12] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-08-30 08:57:22] login_attempt: login=admin@test.com
+[2026-08-30 08:57:22] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 08:57:22] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 08:59:24] login_attempt: login=admin@test.com
+[2026-08-30 08:59:24] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 08:59:24] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 08:59:34] login_attempt: login=admin@test.com
+[2026-08-30 08:59:34] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 08:59:34] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 09:00:22] login_attempt: login=admin@test.com
+[2026-08-30 09:00:22] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 09:00:22] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 09:00:52] login_attempt: login=teeraphat@gmail.com
+[2026-08-30 09:00:52] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-08-30 09:03:40] login_attempt: login=admin@test.com
+[2026-08-30 09:03:40] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 09:03:40] login_failed: login=admin@test.com
+[2026-08-30 09:03:40] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 09:03:51] login_attempt: login=teera@gmail.com
+[2026-08-30 09:03:51] login_failed: login=teera@gmail.com
+[2026-08-30 09:03:51] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 09:04:12] login_attempt: login=teera@gmail.com
+[2026-08-30 09:04:12] login_failed: login=teera@gmail.com
+[2026-08-30 09:04:12] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 09:04:29] login_attempt: login=admin@test.com
+[2026-08-30 09:04:29] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 09:04:29] login_failed: login=admin@test.com
+[2026-08-30 09:04:29] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 09:08:40] login_attempt: login=admin@test.com
+[2026-08-30 09:08:40] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 09:08:40] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 11:16:59] login_attempt: login=admin@test.com
+[2026-08-30 11:16:59] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 11:16:59] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 11:21:03] login_attempt: login=teeraphat@gmail.com
+[2026-08-30 11:21:03] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-08-30 11:24:59] login_attempt: login=kom@gmail.com
+[2026-08-30 11:24:59] member_login_success: id=9 login=kom@gmail.com
+[2026-08-30 13:15:51] login_attempt: login=teeraphat@gmail.com
+[2026-08-30 13:15:51] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-08-30 14:08:54] login_attempt: login=Admin
+[2026-08-30 14:08:54] admin_lookup: found admin_id=1 for login=Admin
+[2026-08-30 14:08:54] login_failed: login=Admin
+[2026-08-30 14:08:54] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 14:09:07] login_attempt: login=admin
+[2026-08-30 14:09:07] admin_lookup: found admin_id=1 for login=admin
+[2026-08-30 14:09:07] admin_login_success: admin_id=1 login=admin
+[2026-08-30 16:28:18] login_attempt: login=b
+[2026-08-30 16:28:18] member_login_success: id=5 login=b
+[2026-08-30 16:28:30] login_attempt: login=admin@test.com
+[2026-08-30 16:28:30] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 16:28:30] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 17:31:52] login_attempt: login=admin@test.com
+[2026-08-30 17:31:52] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 17:31:52] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-30 18:17:33] login_attempt: login=teera@gmail.com
+[2026-08-30 18:17:33] login_failed: login=teera@gmail.com
+[2026-08-30 18:17:33] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 18:17:40] login_attempt: login=teera@gmail.com
+[2026-08-30 18:17:40] login_failed: login=teera@gmail.com
+[2026-08-30 18:17:40] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 18:17:49] login_attempt: login=teera@gmail.com
+[2026-08-30 18:17:49] login_failed: login=teera@gmail.com
+[2026-08-30 18:17:49] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 18:18:01] login_attempt: login=teera@gmail.com
+[2026-08-30 18:18:01] login_failed: login=teera@gmail.com
+[2026-08-30 18:18:01] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-30 18:18:16] login_attempt: login=teeraphat@gmail.com
+[2026-08-30 18:18:17] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-08-30 18:25:35] login_attempt: login=admin@test.com
+[2026-08-30 18:25:35] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-30 18:25:35] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-31 08:08:16] login_attempt: login=admin@test.com
+[2026-08-31 08:08:16] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-31 08:08:16] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-31 08:15:28] login_attempt: login=teeraphat@gmail.com
+[2026-08-31 08:15:29] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-08-31 08:35:03] login_attempt: login=admin@test.com
+[2026-08-31 08:35:03] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-31 08:35:03] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-31 08:52:08] login_attempt: login=teeraphat@gmail.com
+[2026-08-31 08:52:08] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-08-31 13:30:24] login_attempt: login=admin@test.com
+[2026-08-31 13:30:24] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-31 13:30:24] admin_login_success: admin_id=1 login=admin@test.com
+[2026-08-31 13:36:10] login_attempt: login=admin@test.com
+[2026-08-31 13:36:10] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-08-31 13:36:10] login_failed: login=admin@test.com
+[2026-08-31 13:36:10] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-08-31 13:36:18] login_attempt: login=teeraphat@gmail.com
+[2026-08-31 13:36:18] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-01 14:41:00] login_attempt: login=teeraphat@gmail.com
+[2026-09-01 14:41:00] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-01 15:15:41] login_attempt: login=admin@test.com
+[2026-09-01 15:15:41] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 15:15:41] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-01 15:19:22] login_attempt: login=teeraphat@gmail.com
+[2026-09-01 15:19:22] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-01 17:33:15] login_attempt: login=teeraphat@gmail.com
+[2026-09-01 17:33:15] login_failed: login=teeraphat@gmail.com
+[2026-09-01 17:33:15] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-01 17:33:22] login_attempt: login=teeraphat@gmail.com
+[2026-09-01 17:33:22] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-01 18:22:01] login_attempt: login=admin@test.com
+[2026-09-01 18:22:01] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 18:22:01] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-01 19:07:02] login_attempt: login=teeraphat@gmail.com
+[2026-09-01 19:07:02] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-01 19:18:37] login_attempt: login=teeraphat@gmail.com
+[2026-09-01 19:18:37] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-01 19:29:12] login_attempt: login=admin@test.com
+[2026-09-01 19:29:12] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 19:29:13] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-01 19:30:31] login_attempt: login=admin@test.com
+[2026-09-01 19:30:31] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 19:30:31] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-01 19:30:43] login_attempt: login=teera@gmail.com
+[2026-09-01 19:30:43] login_failed: login=teera@gmail.com
+[2026-09-01 19:30:43] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-01 19:30:52] login_attempt: login=admin@test.com
+[2026-09-01 19:30:52] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 19:30:52] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-01 19:34:13] login_attempt: login=admin@test.com
+[2026-09-01 19:34:13] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 19:34:13] login_failed: login=admin@test.com
+[2026-09-01 19:34:13] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-01 19:34:21] login_attempt: login=admin@test.com
+[2026-09-01 19:34:21] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 19:34:21] login_failed: login=admin@test.com
+[2026-09-01 19:34:21] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-01 19:34:27] login_attempt: login=admin@test.com
+[2026-09-01 19:34:27] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-01 19:34:27] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-01 19:41:59] login_attempt: login=teeraphat@gmail.com
+[2026-09-01 19:41:59] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-01 19:47:39] login_attempt: login=465464
+[2026-09-01 19:47:39] login_failed: login=465464
+[2026-09-01 19:47:39] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-01 19:48:33] login_attempt: login=Admin
+[2026-09-01 19:48:33] admin_lookup: found admin_id=1 for login=Admin
+[2026-09-01 19:48:33] admin_login_success: admin_id=1 login=Admin
+[2026-09-02 15:22:38] login_attempt: login=teeraphat@gmail.com
+[2026-09-02 15:22:38] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-03 13:18:48] login_attempt: login=teeraphat@gmail.com
+[2026-09-03 13:18:49] login_failed: login=teeraphat@gmail.com
+[2026-09-03 13:18:49] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 13:18:55] login_attempt: login=teeraphat@gmail.com
+[2026-09-03 13:18:55] login_failed: login=teeraphat@gmail.com
+[2026-09-03 13:18:55] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 13:19:08] login_attempt: login=teeraphat@gmail.com
+[2026-09-03 13:19:08] login_failed: login=teeraphat@gmail.com
+[2026-09-03 13:19:08] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 13:19:22] login_attempt: login=teera@gmail.com
+[2026-09-03 13:19:22] login_failed: login=teera@gmail.com
+[2026-09-03 13:19:22] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 13:19:29] login_attempt: login=teeraphat@gmail.com
+[2026-09-03 13:19:29] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-03 14:23:56] login_attempt: login=admin@test.com
+[2026-09-03 14:23:56] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:23:56] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:24:02] login_attempt: login=admin@test.com
+[2026-09-03 14:24:02] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:24:02] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:24:08] login_attempt: login=admin@test.com
+[2026-09-03 14:24:08] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:24:08] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:24:19] login_attempt: login=Admin
+[2026-09-03 14:24:19] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:24:19] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:24:34] login_attempt: login=admin@test.com
+[2026-09-03 14:24:34] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:24:34] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:25:53] login_attempt: login=admin@test.com
+[2026-09-03 14:25:53] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:25:53] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:28:25] login_attempt: login=admin@test.com
+[2026-09-03 14:28:25] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:28:25] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:28:48] login_attempt: login=admin@test.com
+[2026-09-03 14:28:48] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:28:48] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:28:59] login_attempt: login=admin@test.com
+[2026-09-03 14:28:59] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:28:59] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:29:14] login_attempt: login=admin@test.com
+[2026-09-03 14:29:14] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:29:14] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:29:20] login_attempt: login=admin@test.com
+[2026-09-03 14:29:20] pdo_exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'firstname' in 'field list'
+[2026-09-03 14:29:20] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-09-03 14:31:06] login_attempt: login=admin@test.com
+[2026-09-03 14:31:06] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:31:06] login_failed: login=admin@test.com
+[2026-09-03 14:31:06] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:31:18] login_attempt: login=admin@test.com
+[2026-09-03 14:31:18] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:31:18] login_failed: login=admin@test.com
+[2026-09-03 14:31:18] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:31:34] login_attempt: login=admin@test.com
+[2026-09-03 14:31:34] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:31:34] login_failed: login=admin@test.com
+[2026-09-03 14:31:34] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:31:39] login_attempt: login=teeraphat@gmail.com
+[2026-09-03 14:31:39] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-03 14:31:55] login_attempt: login=admin@test.com
+[2026-09-03 14:31:55] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:31:55] login_failed: login=admin@test.com
+[2026-09-03 14:31:55] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:32:18] login_attempt: login=admin@test.com
+[2026-09-03 14:32:18] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:32:18] login_failed: login=admin@test.com
+[2026-09-03 14:32:18] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:32:42] login_attempt: login=Admin
+[2026-09-03 14:32:42] admin_lookup: found admin_id=1 for login=Admin
+[2026-09-03 14:32:42] login_failed: login=Admin
+[2026-09-03 14:32:42] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:34:25] login_attempt: login=Ben@gmail.com
+[2026-09-03 14:34:25] login_failed: login=Ben@gmail.com
+[2026-09-03 14:34:25] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:34:45] login_attempt: login=reera1234@gamil.com
+[2026-09-03 14:34:46] member_login_success: id=5 login=reera1234@gamil.com
+[2026-09-03 14:35:08] login_attempt: login=tee1@gmail.com
+[2026-09-03 14:35:08] login_failed: login=tee1@gmail.com
+[2026-09-03 14:35:08] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:35:25] login_attempt: login=Bee
+[2026-09-03 14:35:26] login_failed: login=Bee
+[2026-09-03 14:35:26] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:36:09] login_attempt: login=admin
+[2026-09-03 14:36:09] admin_lookup: found admin_id=1 for login=admin
+[2026-09-03 14:36:09] login_failed: login=admin
+[2026-09-03 14:36:09] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:37:23] login_attempt: login=admin@test.com
+[2026-09-03 14:37:23] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:37:23] login_failed: login=admin@test.com
+[2026-09-03 14:37:23] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:39:20] login_attempt: login=admin@test.com
+[2026-09-03 14:39:20] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:39:21] upgraded_plaintext_admin_password: id=1
+[2026-09-03 14:39:21] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-03 14:42:50] login_attempt: login=admin@test.com
+[2026-09-03 14:42:50] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 14:42:50] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-03 14:44:22] login_attempt: login=teeraphat@gmail.com
+[2026-09-03 14:44:22] login_failed: login=teeraphat@gmail.com
+[2026-09-03 14:44:22] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-03 14:44:30] login_attempt: login=teeraphat@gmail.com
+[2026-09-03 14:44:30] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-03 15:49:59] login_attempt: login=tee2@gmail.com
+[2026-09-03 15:49:59] member_login_success: id=10 login=tee2@gmail.com
+[2026-09-03 17:01:47] login_attempt: login=admin@test.com
+[2026-09-03 17:01:47] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 17:01:47] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-03 21:23:50] login_attempt: login=admin@test.com
+[2026-09-03 21:23:50] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-03 21:23:50] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-04 06:29:33] login_attempt: login=admin@test.com
+[2026-09-04 06:29:33] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-04 06:29:33] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-04 11:07:54] login_attempt: login=admin@test.com
+[2026-09-04 11:07:54] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-04 11:07:54] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-05 00:13:34] login_attempt: login=teera@gmail.com
+[2026-09-05 00:13:34] login_failed: login=teera@gmail.com
+[2026-09-05 00:13:34] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-05 00:13:42] login_attempt: login=teeraphat@gmail.com
+[2026-09-05 00:13:42] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-05 08:32:26] login_attempt: login=admin@test.com
+[2026-09-05 08:32:26] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-05 08:32:26] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-05 08:54:31] login_attempt: login=teeraphat@gmail.com
+[2026-09-05 08:54:31] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-05 10:16:49] login_attempt: login=admin@test.com
+[2026-09-05 10:16:49] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-05 10:16:49] upgraded_plaintext_admin_password: id=1
+[2026-09-05 10:16:49] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-05 10:22:33] login_attempt: login=teeraphat123@gmil.com
+[2026-09-05 10:22:33] login_failed: login=teeraphat123@gmil.com
+[2026-09-05 10:22:33] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-05 10:22:46] login_attempt: login=teeraphat123@gmail.com
+[2026-09-05 10:22:46] member_login_success: id=11 login=teeraphat123@gmail.com
+[2026-09-05 10:40:18] login_attempt: login=admin@test.com
+[2026-09-05 10:40:18] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-05 10:40:18] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-05 10:44:11] login_attempt: login=teeraphat@gmail.com
+[2026-09-05 10:44:11] member_login_success: id=1 login=teeraphat@gmail.com
+[2026-09-05 16:07:13] login_attempt: login=admin@test.com
+[2026-09-05 16:07:13] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-05 16:07:13] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-05 17:19:53] login_attempt: login=admin@test.com
+[2026-09-05 17:19:53] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-05 17:19:53] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-05 17:39:15] login_attempt: login=admin@test.com
+[2026-09-05 17:39:15] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-05 17:39:15] admin_login_success: admin_id=1 login=admin@test.com

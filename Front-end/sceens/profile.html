@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ - JP Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style/user.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-7">
+    <style>
+        .member-profile-page {
+            padding: 42px 0 64px;
+        }
+        .member-profile-shell {
+            width: min(1100px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+        .member-profile-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .member-profile-header h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            color: #111827;
+            letter-spacing: -0.04em;
+        }
+        .member-profile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(232, 93, 74, 0.1);
+            color: #bf3d2d;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .member-profile-grid {
+            display: grid;
+            grid-template-columns: 1.05fr 1.45fr;
+            gap: 24px;
+        }
+        .member-profile-card,
+        .member-profile-panel {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.1);
+            transition: all 0.3s ease;
+        }
+        .member-profile-card:hover,
+        .member-profile-panel:hover {
+            box-shadow: 0 20px 50px -15px rgba(15, 23, 42, 0.15);
+            border-color: #d1d5db;
+        }
+        .member-profile-card {
+            padding: 28px;
+        }
+        .member-profile-identity {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+        .member-profile-avatar {
+            display: grid;
+            place-items: center;
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #ffe7e2, #fff0ec);
+            color: #e85d4a;
+            font-size: 30px;
+        }
+        .member-profile-name {
+            margin: 0 0 6px;
+            color: #0f172a;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .member-profile-role {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .member-profile-list {
+            display: grid;
+            gap: 16px;
+        }
+        .member-profile-item {
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+        .member-profile-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .member-profile-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .member-profile-value {
+            color: #0f172a;
+            font-size: 1.02rem;
+            font-weight: 700;
+            word-break: break-word;
+        }
+        .member-profile-panel {
+            padding: 28px;
+        }
+        .member-profile-panel h2 {
+            margin: 0 0 24px;
+            color: #111827;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .member-profile-panel h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #e85d4a, #d94632);
+            border-radius: 2px;
+        }
+        .member-profile-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .member-stat-box {
+            padding: 24px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #fff9f7 0%, #fff 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .member-stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #e85d4a, #d94632);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .member-stat-box:hover {
+            border-color: #e85d4a;
+            box-shadow: 0 8px 24px -8px rgba(232, 93, 74, 0.2);
+        }
+        .member-stat-box:hover::before {
+            opacity: 1;
+        }
+        .member-stat-label {
+            display: block;
+            margin-bottom: 12px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .member-stat-value {
+            color: #e85d4a;
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+        .member-stat-icon {
+            margin-bottom: 8px;
+            font-size: 1.4rem;
+            opacity: 0.7;
+        }
+        .member-profile-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 22px;
+        }
+        .member-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .member-action-btn.primary {
+            background: linear-gradient(135deg, #e85d4a 0%, #d94632 100%);
+            color: #fff;
+        }
+        .member-action-btn.secondary {
+            background: #f8fafc;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+        }
+        .member-action-btn:hover {
+            transform: translateY(-1px);
+        }
+        @media (max-width: 1024px) {
+            .member-profile-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 820px) {
+            .member-profile-grid { grid-template-columns: 1fr; }
+            .member-profile-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .member-profile-stats { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="member-page">
+    <div data-member-navbar></div>
+    <main class="member-profile-page">
+        <div class="member-profile-shell">
+            <div class="member-profile-header">
+                <div>
+                    <span class="member-profile-badge"><i class="fa-solid fa-user-circle"></i> Profile</span>
+                    <h1>ข้อมูลส่วนตัว</h1>
+                </div>
+            </div>
+
+            <div class="member-profile-grid">
+                <section class="member-profile-card">
+                    <div class="member-profile-identity">
+                        <div class="member-profile-avatar"><i class="fa-solid fa-user"></i></div>
+                        <div>
+                            <h2 class="member-profile-name">{{memberName}}</h2>
+                            <p class="member-profile-role">สมาชิก JP Learning</p>
+                        </div>
+                    </div>
+
+                    <div class="member-profile-list">
+                        <div class="member-profile-item">
+                            <span class="member-profile-label">ชื่อผู้ใช้</span>
+                            <div class="member-profile-value" id="profile-username">{{memberUsername}}</div>
+                        </div>
+                        <div class="member-profile-item">
+                            <span class="member-profile-label">อีเมล</span>
+                            <div class="member-profile-value" id="profile-email">{{memberEmail}}</div>
+                        </div>
+                        <div class="member-profile-item">
+                            <span class="member-profile-label">วันที่สมัคร</span>
+                            <div class="member-profile-value" id="profile-joined">{{memberJoined}}</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="member-profile-panel">
+                    <h2>สรุปความก้าวหน้า</h2>
+
+                    <div class="member-profile-stats">
+                        <div class="member-stat-box">
+                            <div class="member-stat-icon"><i class="fa-solid fa-medal"></i></div>
+                            <span class="member-stat-label">แบบทดสอบทั้งหมด</span>
+                            <div class="member-stat-value" id="stat-total-tests">0</div>
+                        </div>
+                        <div class="member-stat-box">
+                            <div class="member-stat-icon"><i class="fa-solid fa-circle-play"></i></div>
+                            <span class="member-stat-label">ทำแล้ว</span>
+                            <div class="member-stat-value" id="stat-passed-tests">0</div>
+                        </div>
+                        <div class="member-stat-box">
+                            <div class="member-stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                            <span class="member-stat-label">คะแนนเฉลี่ย</span>
+                            <div class="member-stat-value"><span id="stat-avg-score">0</span>%</div>
+                        </div>
+                        <div class="member-stat-box">
+                            <div class="member-stat-icon"><i class="fa-solid fa-star"></i></div>
+                            <span class="member-stat-label">คะแนนสะสม</span>
+                            <div class="member-stat-value" id="stat-total-points">0</div>
+                        </div>
+                    </div>
+
+                    <div class="member-profile-actions">
+                        <a class="member-action-btn primary" href="../data/history.php"><i class="fa-solid fa-clock-rotate-left"></i> ดูประวัติ</a>
+                        <a class="member-action-btn secondary" href="../data/change_password.php"><i class="fa-solid fa-key"></i> เปลี่ยนรหัสผ่าน</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <script src="../sceens/member-navbar.js?v=member-nav-7"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchProfileData);
+
+        async function fetchProfileData() {
+            try {
+                const response = await fetch('../connectapi/dashboard_stats.php', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+                const result = await response.json().catch(() => null);
+                if (response.status === 401) {
+                    window.location.replace('../sceens/login.html');
+                    return;
+                }
+                if (!response.ok || !result || !result.success) {
+                    throw new Error(result && result.message ? result.message : 'ไม่สามารถโหลดข้อมูลได้');
+                }
+                updateProfileUI(result.data);
+            } catch (error) {
+                console.error('Profile data error:', error);
+            }
+        }
+
+        function updateProfileUI(data) {
+            const stats = data.stats || {};
+            const user = data.user || {};
+            
+            // Update profile info
+            document.querySelector('.member-profile-name').textContent = user.firstname || 'ผู้ใช้งาน';
+            document.getElementById('profile-username').textContent = user.username || '-';
+            document.getElementById('profile-email').textContent = user.email || '-';
+            document.getElementById('profile-joined').textContent = user.joinedDate || '-';
+            
+            // Update stats
+            document.getElementById('stat-total-tests').textContent = stats.totalTests ?? 0;
+            document.getElementById('stat-passed-tests').textContent = stats.completedTests ?? 0;
+            document.getElementById('stat-avg-score').textContent = stats.averageScore ?? 0;
+            document.getElementById('stat-total-points').textContent = stats.totalPoints ?? 0;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,654 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Noto Sans Thai', sans-serif;
+}
+
+body {
+    background: #f6f3ef;
+    color: #222;
+}
+
+
+.menu a:hover {
+    color: #d94a35; /* เปลี่ยนสีลิงก์เมนูตอน hover */
+}
+
+.auth {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-dark {
+    background: #1b120d;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    border-radius: 8px; /* ปรับให้ปุ่มมน */
+    font-weight: 500;
+    transition: all 0.3s ease; /* เพิ่มความนุ่มนวล */
+}
+
+.btn-dark:hover {
+    background: #d94a35; /* เปลี่ยนเป็นสีส้มแดงธีมหลัก */
+    transform: translateY(-2px); /* ลอยขึ้นเล็กน้อย */
+    box-shadow: 0 5px 15px rgba(217, 74, 53, 0.3); /* เงานุ่มสีส้ม */
+}
+
+.btn-outline {
+    border: 1px solid #ccc;
+    background: white;
+    color: #1b120d;
+    padding: 12px 25px;
+    cursor: pointer;
+    border-radius: 8px; /* ปรับให้ปุ่มมน */
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    border-color: #1b120d;
+    background: #1b120d;
+    color: white; /* สลับสีพื้นหลังกับตัวอักษรตอน hover */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(27, 18, 13, 0.15);
+}
+
+/* HERO */
+.hero {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: auto;
+    padding: 100px 30px;
+}
+
+.hero-left {
+    width: 600px;
+}
+
+.hero-small {
+    color: #d94a35;
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 54px;
+    margin-bottom: 20px;
+}
+
+.hero h2 {
+    color: #d94a35;
+    font-size: 48px;
+    margin-bottom: 30px;
+}
+
+.hero p {
+    color: #666;
+    font-size: 20px;
+    line-height: 1.8;
+}
+
+.hero-btns {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+}
+
+.primary-btn {
+    background: #1b120d;
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 12px; /* ปุ่ม Hero ใหญ่ขึ้น ก็ปรับให้มนขึ้น */
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.primary-btn:hover {
+    background: #d94a35;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(217, 74, 53, 0.35);
+}
+
+.secondary-btn {
+    border: 1px solid #ccc;
+    background: white;
+    color: #1b120d;
+    padding: 18px 40px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+    border-color: #1b120d;
+    background: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.stats {
+    margin-top: 60px;
+    display: flex;
+    gap: 70px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat h3 {
+    font-size: 28px;
+}
+
+/* SECTION TITLE */
+.section-title {
+    text-align: center;
+    margin: 100px 0 50px;
+}
+
+.section-title p {
+    color: #d94a35;
+}
+
+.section-title h2 {
+    font-size: 42px;
+}
+
+/* FEATURES */
+.features {
+    max-width: 1400px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 40px;
+    border-radius: 16px; /* เพิ่มความมนให้การ์ด Features ดูโมเดิร์นขึ้น */
+}
+
+.card-icon {
+    width: 55px;
+    height: 55px;
+    background: #f3f3f3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+}
+
+.card h3 {
+    margin-bottom: 20px;
+    font-size: 30px;
+}
+
+/* ALPHABET */
+.alphabet {
+    max-width: 1000px;
+    margin: 120px auto;
+    text-align: center;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+    gap: 10px; /* เพิ่มระยะห่างระหว่างแท็บ */
+}
+
+.tab {
+    padding: 15px 60px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    background: white;
+    font-size: 18px;
+    font-weight: 500;
+    border-radius: 8px; 
+    transition: all 0.3s ease;
+}
+
+/* เพิ่มเอฟเฟกต์ตอนชี้ Tab ที่ยังไม่ได้กดเลือก */
+.tab:hover:not(.active) {
+    border-color: #1b120d;
+    background: #faf8f5;
+    transform: translateY(-2px);
+}
+
+.tab.active {
+    background: #1b120d;
+    color: white;
+    border-color: #1b120d;
+}
+
+/* กล่องคลุมตาราง */
+.table-box {
+    background: white;
+    padding: 40px;
+    border: 1px solid #eaeaea;
+    border-radius: 16px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
+}
+
+/* สไตล์จัดการกลุ่มแถวตัวอักษรและหัวข้อเสียง */
+.row-group {
+    margin-bottom: 35px;
+    width: 100%;
+}
+
+.row-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eaeaea;
+    text-align: left;
+}
+
+/* จัดระยะห่างของ Grid ภายในแต่ละแถว */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+
+/* สไตล์ของการ์ดตัวอักษร (Flashcard) */
+.char-card {
+    background: #faf8f5; 
+    padding: 25px 15px;
+    cursor: pointer;
+    border-radius: 12px; 
+    border: 2px solid transparent; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* เพิ่มเพื่อให้รองรับไอคอนหรือปุ่มภายในระบุพิกัดได้แม่นยำ */
+    transition: all 0.3s ease;
+}
+
+/* เอฟเฟกต์ตอนเมาส์ชี้ Flashcard */
+.char-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    background: #fff;
+    border-color: #d94a35; 
+    box-shadow: 0 10px 20px rgba(217, 74, 53, 0.1); 
+}
+
+/* ตัวอักษรญี่ปุ่น */
+.jp {
+    font-size: 48px; 
+    font-weight: 600;
+    color: #1b120d;
+    line-height: 1.2;
+}
+
+/* คำอ่านโรมาจิ */
+.romaji {
+    color: #888;
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 5px;
+    letter-spacing: 1px; 
+}
+
+/* ปุ่มฟังเสียงขนาดเล็กบนตัวการ์ด */
+.card-audio-btn {
+    margin-top: 12px;
+    background: #eaeaea;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.card-audio-btn:hover {
+    background: #d94a35;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(217, 74, 53, 0.3);
+}
+
+/* CTA */
+.cta {
+    max-width: 1400px;
+    margin: 100px auto;
+    background: #120907;
+    color: white;
+    padding: 80px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px; /* เพิ่มความโค้งมนให้กล่อง CTA แฝงความพรีเมียม */
+}
+
+.cta h2 {
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+
+.cta p {
+    color: #ddd;
+    margin-bottom: 30px;
+}
+
+.big-jp {
+    position: absolute;
+    right: 60px;
+    top: 30px;
+    font-size: 220px;
+    color: rgba(255, 255, 255, .05);
+}
+
+/* FOOTER */
+footer {
+    background: #120907;
+    color: white;
+    padding: 60px 40px;
+}
+
+.footer-inner {
+    max-width: 1400px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.footer-links {
+    display: flex;
+    gap: 30px;
+}
+
+.footer-links a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #d94a35;
+}
+
+.copy {
+    text-align: center;
+    margin-top: 40px;
+    color: #888;
+}
+
+/* MODAL / POPUP */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #333;
+}
+
+.modal-large-char {
+    font-size: 100px;
+    margin: 20px 0;
+    color: #000;
+    line-height: 1;
+}
+
+.modal-info p {
+    margin: 5px 0;
+    color: #555;
+    font-size: 16px;
+}
+
+.modal-strokes {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #ffe6e6;
+    border-radius: 8px;
+    min-height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+    font-size: 14px;
+}
+
+.audio-btn {
+    background-color: #c4c4c4;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+}
+.audio-btn:hover {
+    background-color: #b0b0b0;
+}
+
+/* DROPDOWN MENU */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* สไตล์ปุ่มดรอปดาวน์ให้กลมกลืนกับลิงก์ปกติ */
+.dropbtn {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* กล่องรายการเมนูที่ซ่อนอยู่ */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 180px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1100;
+    border-radius: 8px;
+    overflow: hidden;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%); /* จัดให้อยู่ตรงกลางของปุ่มพอดี */
+    margin-top: 8px;
+    border: 1px solid #eee;
+}
+
+/* ลิงก์ย่อยภายใน Dropdown */
+.dropdown-content a {
+    color: #333 !important; /* บังคับสีข้อความเผื่อโดนสไตล์หลักทับ */
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    text-align: left;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* เอฟเฟกต์เมื่อ Hover เมนูลูก */
+.dropdown-content a:hover {
+    background-color: #fff0f0; /* ใช้โทนสีชมพูอ่อนๆ ให้เข้ากับธีมของเว็บ */
+    color: #ff4d4d !important;
+}
+
+/* แสดงดรอปดาวน์เมื่อเอาเมาส์มาวางที่ตัวแม่ */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* RESPONSIVE */
+@media screen and (max-width: 992px) {
+    .hero {
+        flex-direction: column;
+        gap: 50px;
+        padding: 60px 20px;
+    }
+
+    .hero-left {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero-btns {
+        justify-content: center;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .primary-btn, .secondary-btn {
+        width: 100%;
+    }
+
+    .stats {
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .menu {
+        display: none;
+    }
+
+    .hero h1 {
+        font-size: 40px;
+    }
+
+    .hero h2 {
+        font-size: 35px;
+    }
+
+    /* ตารางตัวอักษร 5 คอลัมน์สำหรับมือถือและแท็บเล็ต */
+    .grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px; /* ลดช่องว่างลงเพื่อให้พอดีจอ */
+    }
+
+    .table-box {
+        padding: 20px 10px; /* ลด Padding กล่องครอบเพื่อให้มีพื้นที่ */
+    }
+
+    .char-card {
+        padding: 15px 5px; /* ลดขนาดของการ์ด */
+    }
+
+    .jp {
+        font-size: 28px; /* ย่ออักษรให้เล็กลง */
+    }
+
+    .romaji {
+        font-size: 12px; /* ย่อคำอ่านให้เล็กลง */
+    }
+
+    /* ปรับให้ Features เป็น 1 หรือ 2 คอลัมน์บนมือถือ */
+    .features {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+        .char-card {
+        position: relative; /* เพื่อให้ปุ่มจัดตำแหน่งได้ง่ายขึ้น */
+    }
+    .card-audio-btn {
+        margin-top: 12px;
+        background: #eaeaea;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        color: #333;
+    }
+    .card-audio-btn:hover {
+        background: #d94a35;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 10px rgba(217, 74, 53, 0.3);
+    }
+    
+    /* สไตล์เพิ่มเติมสำหรับจัดการแถวตัวอักษร */
+    .row-group {
+        margin-bottom: 35px;
+        width: 100%;
+    }
+    .row-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #eaeaea;
+        text-align: left;
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .hero { min-height: auto; padding: 44px 16px; }
+    .hero h1 { font-size: clamp(2rem, 10vw, 2.5rem); }
+    .hero h2 { font-size: clamp(1.75rem, 8vw, 2.2rem); }
+    .hero p { font-size: 16px; }
+    .features { grid-template-columns: 1fr; gap: 16px; padding-inline: 16px; }
+    .card { padding: 24px; }
+    .alphabet { margin: 64px auto; padding-inline: 12px; }
+    .tabs { flex-wrap: wrap; }
+    .tab { flex: 1 1 140px; padding: 12px 16px; }
+    .table-box { padding: 18px 10px; }
+    .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .char-card { padding: 16px 8px; }
+    .jp { font-size: 36px; }
+}

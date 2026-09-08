@@ -1,0 +1,548 @@
+/* =========================================
+   สไตล์เฉพาะหน้าสร้างแบบทดสอบเขียน (Create Write Quiz Page)
+   ========================================= */
+
+/* การ์ดครอบเนื้อหาหลัก */
+.create-quiz-card {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+
+/* ส่วนหัวหน้า */
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* กล่องส่วนข้อมูลแบบทดสอบ (Fieldset / Section Box) */
+.section-box {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.section-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+/* ฟอร์มและอินพุต */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: #e5e7eb;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'Prompt', sans-serif;
+  color: #1f2937;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.form-control::placeholder {
+  color: #9ca3af;
+}
+
+/* Custom Select Dropdown Styling */
+select.form-control {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%236B7280' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* ส่วนหัวข้อข้อสอบ และ ปุ่มเพิ่มข้อ */
+.questions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.btn-add-question {
+  background-color: #262626;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add-question:hover {
+  background-color: #000000;
+}
+
+/* แถวคู่ในกล่องคำถาม (เลือกอักษร + เสียง) */
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* --------------------------------------
+   ส่วนตัวอักษรแม่แบบ (Template Layout)
+   -------------------------------------- */
+.template-layout {
+  display: flex;
+  gap: 30px;
+  margin-top: 24px;
+  align-items: flex-start;
+}
+
+.template-grid-box {
+  display: flex;
+  flex-direction: column;
+}
+
+/* กล่องตารางวาดเขียน (Grid Canvas) */
+.drawing-grid {
+  width: 220px;
+  height: 220px;
+  border: 1px solid #000;
+  position: relative;
+  background-color: #ffffff;
+}
+
+/* เส้นตัดตรงกลางกริด */
+.drawing-grid::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #d1d5db;
+}
+
+.drawing-grid::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background-color: #d1d5db;
+}
+
+/* กลุ่มพิกัด XY */
+.coordinates-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 220px; /* สูงเท่ากับ drawing-grid */
+  flex: 1;
+}
+
+.coord-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.coord-label {
+  font-size: 13px;
+  font-weight: 600;
+  width: 60px;
+  color: #000;
+}
+
+.coord-row .form-control {
+  flex: 1;
+}
+
+/* --------------------------------------
+   ส่วนปรับเกณฑ์การประเมิน
+   -------------------------------------- */
+.evaluation-section {
+  margin-top: 32px;
+}
+
+.eval-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 4px 0;
+}
+
+.eval-subtitle {
+  font-size: 11px;
+  font-weight: 400;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.eval-input-box {
+  margin-bottom: 12px;
+}
+
+.eval-input-box label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 6px;
+}
+
+/* กล่อง input สำหรับเกณฑ์มีขนาดสั้นกว่าปกติ */
+.eval-input-box .form-control {
+  width: 200px;
+  background-color: #ffffff;
+  border: 1px solid #9ca3af; /* มีขอบสีเทาตามภาพ */
+}
+
+/* --------------------------------------
+   ปุ่มสร้าง / ยกเลิก
+   -------------------------------------- */
+.form-actions-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-submit-quiz {
+  flex: 1;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.btn-submit-quiz:hover {
+  background-color: #262626;
+}
+
+.btn-cancel-quiz {
+  width: 140px;
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel-quiz:hover {
+  background-color: #f3f4f6;
+}
+
+/* ======================================================
+   Additional styles for create_write_quiz.html
+   ====================================================== */
+
+.question-card {
+  position: relative;
+}
+
+.remove-question {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  border: 0;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.remove-question:hover {
+  background: #fca5a5;
+}
+
+.form-message {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: none;
+  border: 1px solid transparent;
+}
+
+.form-message.error {
+  display: block;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.form-message.success {
+  display: block;
+  color: #166534;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.quiz-source-mode {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.mode-btn {
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+}
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.group-card {
+  border: 1px solid #dbeafe;
+  background: #f8fbff;
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.group-card:hover {
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+.group-card.active {
+  background: #eff6ff;
+  border-color: #2563eb;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+}
+
+.group-card-name {
+  display: block;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.group-card-sub {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 12px;
+}
+
+.mini-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #1f2937;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mini-btn.accent {
+  background: #ecfdf5;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.character-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.character-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+  color: #1f2937;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.character-chip.selected {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #166534;
+}
+
+.character-chip small {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.empty-state {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+}
+
+.selected-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 38px;
+  padding-top: 6px;
+}
+
+.selected-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.draft-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.draft-modal.hidden {
+  display: none;
+}
+
+.draft-modal-card {
+  width: min(560px, calc(100vw - 32px));
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22);
+}
+
+.draft-modal-card h3 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.draft-modal-card p {
+  margin: 0 0 20px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.draft-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.draft-modal-actions button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-primary {
+  background: #0f172a;
+  color: #fff;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+}

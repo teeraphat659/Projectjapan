@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Japanese Learning System</title>
+
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- อ้างอิง Path CSS -->
+  <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+</head>
+<body>
+
+  <!-- พื้นที่แสดง Sidebar / Navbar -->
+  <div id="navbar-container"></div>
+
+  <!-- เนื้อหาหลัก (Main Content) -->
+  <main class="main-content">
+
+    <!-- 1. Header ต้อนรับด้านบน -->
+    <header class="dashboard-header">
+      <div class="header-title">
+        <h1>แดชบอร์ดผู้ดูแลระบบ</h1>
+        <p>ยินดีต้อนรับกลับมา! นี่คือภาพรวมระบบเรียนภาษาญี่ปุ่นของคุณในวันนี้</p>
+      </div>
+      <div class="header-badge" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span class="status-indicator"></span>
+        <span>ระบบทำงานปกติ</span>
+        <a href="/projectjapan/Front-end/data/member.php" style="display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:10px; background:#2563eb; color:#fff; text-decoration:none; font-weight:600;">ไปหน้า สมาชิก</a>
+      </div>
+    </header>
+
+    <!-- 2. การ์ดสรุปตัวเลขสำคัญ (Stat Cards Grid) -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon-wrapper blue">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">สมาชิกทั้งหมด</span>
+          <div class="stat-number-group">
+            <span class="stat-value" id="totalUsers">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper orange">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">ตัวอักษรในระบบ</span>
+          <div class="stat-number-group">
+            <span class="stat-value" id="totalCharacters">0</span>
+            <span class="stat-subtext">ตัวอักษรทั้งหมด</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper green">
+          <i class="fa-solid fa-file-pen"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">ชุดแบบทดสอบ</span>
+          <div class="stat-number-group">
+            <span class="stat-value" id="totalQuizSets">0</span>
+            <span class="stat-subtext">เขียน & ตัวเลือก</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper purple">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">การทดสอบวันนี้</span>
+          <div class="stat-number-group">
+            <span class="stat-value" id="todayTests">0</span>
+            <span class="stat-subtext">ครั้ง</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ส่วนเนื้อหาแบบ 2 คอลัมน์ (Dashboard Body Grid) -->
+    <div class="dashboard-grid">
+
+      <!-- ฝั่งซ้าย: เมนูฟีเจอร์การจัดการ -->
+      <section class="feature-section">
+        <div class="section-title">
+          <h2><i class="fa-solid fa-sliders"></i> เมนูการจัดการระบบ</h2>
+          <p>เลือกรายการที่ต้องการจัดการข้อมูล</p>
+        </div>
+
+        <div class="feature-grid">
+          <!-- เมนู 1: จัดการตัวอักษร -->
+          <a href="/projectjapan/backend/php/srceen/manage_katakana.php" class="feature-card feature-pink">
+            <div class="feature-icon">
+              <i class="fa-solid fa-language"></i>
+            </div>
+            <div class="feature-details">
+              <h3>จัดการตัวอักษร</h3>
+              <p>เพิ่ม/ลบ/แก้ไข ตัวอักษรญี่ปุ่น ไฟล์เสียง และลำดับการขีดเส้น</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </a>
+
+          <!-- เมนู 2: จัดการแบบทดสอบเขียน -->
+          <a href="/projectjapan/backend/php/srceen/manage_write_quiz.php" class="feature-card feature-green">
+            <div class="feature-icon">
+              <i class="fa-solid fa-pen-line"></i>
+            </div>
+            <div class="feature-details">
+              <h3>จัดการแบบทดสอบเขียน</h3>
+              <p>สร้างและแก้ไขแบบทดสอบเขียน stroke กำหนดเกณฑ์ผ่าน</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </a>
+
+          <a href="/projectjapan/backend/php/srceen/manage_writing_svg_references.php" class="feature-card feature-pink">
+            <div class="feature-icon"><i class="fa-solid fa-pen-ruler"></i></div>
+            <div class="feature-details">
+              <h3>เพิ่มเฉลยเส้นตัวอักษร</h3>
+              <p>วาดและบันทึกลำดับเส้นสำหรับใช้ตรวจคำตอบและวิเคราะห์ AI</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </a>
+
+          <!-- เมนู 3: จัดการแบบทดสอบตัวเลือก -->
+          <a href="/projectjapan/backend/php/srceen/manage_choice_quiz.php" class="feature-card feature-cyan">
+            <div class="feature-icon">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div class="feature-details">
+              <h3>จัดการแบบทดสอบตัวเลือก</h3>
+              <p>สร้างและแก้ไขแบบทดสอบปรนัย ตัวเลือกคำตอบ และเฉลย</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </a>
+
+          <!-- เมนู 4: ดูผลสมาชิก -->
+          <a href="/projectjapan/backend/php/srceen/user_results.php" class="feature-card feature-blue">
+            <div class="feature-icon">
+              <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div class="feature-details">
+              <h3>ดูผลสมาชิก</h3>
+              <p>ดูคะแนน วันที่ทำ ประวัติการทำข้อสอบ และวิเคราะห์ตัวอักษรที่ทำผิด</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- ฝั่งขวา: สถิติล่าสุด / Widgets -->
+      <aside class="recent-stats-section">
+        <div class="widget-card">
+          <div class="widget-title">
+            <h3><i class="fa-solid fa-chart-pie"></i> สถิติล่าสุด</h3>
+          </div>
+          <div class="widget-content">
+            <ul class="stats-list">
+              <li class="stats-item">
+                <div class="stats-item-info">
+                  <span class="dot green"></span>
+                  <span>คะแนนเฉลี่ยระบบ</span>
+                </div>
+                <span class="stats-value green-text" id="averageScore">0%</span>
+              </li>
+
+              <li class="stats-item">
+                <div class="stats-item-info">
+                  <span class="dot blue"></span>
+                  <span>สมาชิกใหม่เดือนนี้</span>
+                </div>
+                <span class="stats-value blue-text" id="newUsers">0 คน</span>
+              </li>
+
+              <li class="stats-item">
+                <div class="stats-item-info">
+                  <span class="dot purple"></span>
+                  <span>แบบทดสอบที่ทำวันนี้</span>
+                </div>
+                <span class="stats-value purple-text" id="todayTestsDetail">0 ครั้ง</span>
+              </li>
+
+              <li class="stats-item">
+                <div class="stats-item-info">
+                  <span class="dot orange"></span>
+                  <span>ตัวอักษรที่ผิดบ่อยสุด</span>
+                </div>
+                <span class="stats-value dark-text">ดูจากผลสมาชิก</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- กล่องแจ้งเตือน/แนะนำ -->
+        <div class="widget-card info-box">
+          <div class="widget-title">
+            <h3><i class="fa-regular fa-lightbulb"></i> คำแนะนำ</h3>
+          </div>
+          <p>อย่าลืมตรวจสอบผลคะแนนเขียนอักษรญี่ปุ่นของสมาชิกเพื่อนำมาปรับปรุงเกณฑ์การให้คะแนน stroke ลำดับเส้น</p>
+        </div>
+      </aside>
+
+    </div>
+
+  </main>
+
+  <script src="/projectjapan/backend/script.js"></script>
+  <script>
+    fetch('/projectjapan/backend/php/action/admin_api.php?action=dashboard', { credentials: 'same-origin' })
+      .then((response) => response.json())
+      .then((result) => {
+        if (!result.success) throw new Error(result.message || 'โหลดข้อมูลไม่สำเร็จ');
+        const data = result.data;
+        document.getElementById('totalUsers').textContent = Number(data.users || 0).toLocaleString();
+        document.getElementById('totalCharacters').textContent = Number(data.characters || 0).toLocaleString();
+        document.getElementById('totalQuizSets').textContent = Number(data.quizSets || 0).toLocaleString();
+        document.getElementById('todayTests').textContent = Number(data.today || 0).toLocaleString();
+        document.getElementById('todayTestsDetail').textContent = `${Number(data.today || 0).toLocaleString()} ครั้ง`;
+        document.getElementById('averageScore').textContent = `${Number(data.average || 0).toFixed(1)}%`;
+        document.getElementById('newUsers').textContent = `${Number(data.newUsers || 0).toLocaleString()} คน`;
+      })
+      .catch(() => {
+        document.querySelector('.header-badge span:last-child').textContent = 'ไม่สามารถโหลดสถิติได้';
+      });
+  </script>
+</body>
+</html>

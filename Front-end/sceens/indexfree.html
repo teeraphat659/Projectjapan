@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางคาตากานะ — JP Notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../style/navbar2.css">
+    <link rel="stylesheet" href="../style/indexfree.css">
+</head>
+<body>
+    <div data-navbar></div>
+    <main class="alphabet-page">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a><i class="fa-solid fa-chevron-right"></i><span>ตารางตัวอักษร</span></div>
+        <header class="alphabet-header">
+            <div><p class="eyebrow"><span></span> JAPANESE CHARACTERS</p><h1>คาตากานะ <em>Katakana</em></h1><p>เลือกตัวอักษรเพื่อดูเสียงอ่าน และรายละเอียดการเขียน ข้อมูลวิธีเขียนหรือลำดับเส้นที่ยังไม่มีจะแสดงสถานะรอเพิ่มข้อมูล</p></div>
+            <div class="header-count"><span id="characterCount">—</span><small>ตัวอักษรในตาราง</small></div>
+        </header>
+        <section class="notice" aria-label="คำแนะนำ"><i class="fa-regular fa-hand-pointer"></i><p>เริ่มจากวรรค <strong>A</strong> แล้วกดการ์ดตัวอักษรที่สนใจเพื่อเปิดรายละเอียด</p></section>
+        <section class="table-section" aria-labelledby="tableTitle">
+            <div class="table-heading"><div><h2 id="tableTitle">ตารางตัวอักษร</h2><p id="statusText" role="status">กำลังเตรียมข้อมูลตัวอักษร…</p></div><span class="api-badge"><i class="fa-solid fa-book-open"></i> เนื้อหากำลังเพิ่ม</span></div>
+            <div class="group-list" id="groupList" aria-live="polite"></div>
+        </section>
+    </main>
+    <footer class="public-footer">JP Notes <span>·</span> เรียนรู้ตัวอักษรทีละตัว</footer>
+
+    <dialog class="character-dialog" id="characterDialog" aria-labelledby="dialogTitle">
+        <div class="dialog-head"><button class="dialog-close" type="button" data-close-dialog aria-label="ปิดรายละเอียด"><i class="fa-solid fa-xmark"></i></button><p class="eyebrow"><span></span> CHARACTER NOTE</p></div>
+        <div class="dialog-summary"><div class="dialog-character" id="dialogCharacter">ア</div><div><h2 id="dialogTitle">—</h2><p id="dialogRomaji">เสียงอ่าน: —</p><span class="group-pill" id="dialogGroup">วรรค —</span></div></div>
+        <div class="dialog-navigation" aria-label="เลือกตัวอักษรถัดไปหรือก่อนหน้า">
+            <button type="button" id="previousCharacter"><i class="fa-solid fa-arrow-left"></i> ก่อนหน้า</button>
+            <span id="characterPosition" aria-live="polite">— / —</span>
+            <button type="button" id="nextCharacter">ถัดไป <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="dialog-detail-grid">
+            <section class="detail-block"><div class="detail-icon"><i class="fa-solid fa-volume-high"></i></div><div><h3>เสียงอ่าน</h3><p>ฟังเสียงของตัวอักษรนี้เพื่อเทียบกับโรมาจิ</p><button class="sound-button" id="soundButton" type="button"><i class="fa-solid fa-play"></i> ฟังเสียง</button></div></section>
+            <section class="detail-block writing-block"><div class="detail-icon"><i class="fa-solid fa-pen-nib"></i></div><div><h3>วิธีเขียนและลำดับเส้น</h3><p id="writingText">ยังไม่มีข้อมูลวิธีเขียนสำหรับตัวอักษรนี้</p><div class="stroke-preview" id="strokePreview"><i class="fa-solid fa-image"></i><span>รอภาพลำดับเส้นจาก API</span></div></div></section>
+        </div>
+        <p class="api-note"><i class="fa-solid fa-circle-info"></i> เมื่อมีข้อมูลเพิ่ม หน้านี้จะแสดงคำแนะนำและลำดับเส้นให้ทันที</p>
+    </dialog>
+    <script src="public-navbar.js"></script>
+    <script>
+        const GROUP_ORDER = ['a','ka','sa','ta','na','ha','ma','ya','ra','wa','n','ga','za','da','ba','pa','kya','sha','cha','nya','hya','mya','rya','gya','ja','dya','bya','pya'];
+        const groupList = document.getElementById('groupList');
+        const statusText = document.getElementById('statusText');
+        const characterCount = document.getElementById('characterCount');
+        const dialog = document.getElementById('characterDialog');
+        let currentCharacter = null;
+        let characterSequence = [];
+        let currentIndex = 0;
+
+        const groupKey = name => String(name || '').toLowerCase().replace('วรรค', '').trim();
+        const groupLabel = name => `วรรค ${groupKey(name).toUpperCase() || '—'}`;
+        const sortGroups = groups => groups.sort((a, b) => { const ai = GROUP_ORDER.indexOf(groupKey(a.group_name)); const bi = GROUP_ORDER.indexOf(groupKey(b.group_name)); return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi); });
+
+        async function fetchJson(url) {
+            const response = await fetch(url, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('ไม่สามารถเชื่อมต่อ API ได้');
+            return response.json();
+        }
+
+        async function loadCharacters() {
+            try {
+                const groups = await fetchJson('../data/api.php?type=katakana&group=1');
+                if (!Array.isArray(groups) || groups.length === 0) throw new Error('ยังไม่มีข้อมูลตัวอักษร');
+                const loaded = await Promise.all(sortGroups(groups).map(async group => ({ group: group.group_name, characters: await fetchJson(`../data/api.php?type=katakana&group_name=${encodeURIComponent(group.group_name)}`) })));
+                let total = 0;
+                groupList.replaceChildren();
+                characterSequence = loaded.flatMap(({ group, characters }) => (Array.isArray(characters) ? characters : []).map(character => ({ character, group })));
+                loaded.forEach(({ group, characters }) => { total += Array.isArray(characters) ? characters.length : 0; renderGroup(group, characters || []); });
+                characterCount.textContent = total;
+                statusText.textContent = total ? `แสดง ${total} ตัวอักษรจาก ${loaded.length} วรรค` : 'ยังไม่มีตัวอักษรในตาราง';
+            } catch (error) {
+                console.error(error);
+                characterCount.textContent = '0';
+                statusText.textContent = 'ยังไม่สามารถโหลดข้อมูลได้';
+                groupList.innerHTML = '<div class="empty-state"><i class="fa-regular fa-folder-open"></i><h3>กำลังรอข้อมูลตัวอักษร</h3><p>เมื่อเชื่อม API หรือเพิ่มข้อมูลแล้ว ตารางจะปรากฏในบริเวณนี้โดยอัตโนมัติ</p></div>';
+            }
+        }
+
+        function renderGroup(name, characters) {
+            if (!characters.length) return;
+            const section = document.createElement('section'); section.className = 'alphabet-group';
+            const heading = document.createElement('div'); heading.className = 'group-heading'; heading.innerHTML = `<h3>${groupLabel(name)}</h3><span>${characters.length} ตัว</span>`;
+            const grid = document.createElement('div'); grid.className = 'character-grid';
+            characters.forEach(character => {
+                const card = document.createElement('button'); card.type = 'button'; card.className = 'character-card';
+                const symbol = document.createElement('span'); symbol.className = 'character-symbol'; symbol.textContent = character.character_jp || '—';
+                const meta = document.createElement('span'); meta.className = 'character-meta'; meta.textContent = character.romaji || '—';
+                const hint = document.createElement('span'); hint.className = 'character-hint'; hint.innerHTML = 'ดูรายละเอียด <i class="fa-solid fa-arrow-up-right-from-square"></i>';
+                card.append(symbol, meta, hint); card.addEventListener('click', () => openDialog(character, name)); grid.appendChild(card);
+            });
+            section.append(heading, grid); groupList.appendChild(section);
+        }
+
+        function resolveAudioUrl(value) {
+            if (!value || typeof value !== 'string') return '';
+            const trimmed = value.trim();
+            if (!trimmed) return '';
+            if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed;
+            if (/^\/projectjapan\//i.test(trimmed)) return trimmed;
+            if (trimmed.startsWith('/')) return trimmed;
+            return `/projectjapan/${trimmed.replace(/^\.\.\//, '').replace(/^\.\//, '')}`;
+        }
+
+        let activeAudio = null;
+        function playAdminAudio(soundFile) {
+            const url = resolveAudioUrl(soundFile);
+            if (!url) return;
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+            }
+            activeAudio = new Audio(url);
+            activeAudio.play().catch(error => {
+                console.warn('Audio playback error:', error);
+            });
+        }
+
+        function playCurrent() {
+            if (!currentCharacter) return;
+            const soundUrl = resolveAudioUrl(currentCharacter.sound_file);
+            if (soundUrl) {
+                playAdminAudio(soundUrl);
+            }
+        }
+
+        function strokeUrl(value) {
+            if (!value) return '';
+            const imagePath = String(value).trim();
+            if (/^\/projectjapan\//i.test(imagePath)) return `../../${imagePath.slice('/projectjapan/'.length)}`;
+            if (/^(https?:|data:|blob:|\/)/i.test(imagePath)) return imagePath;
+            return `../${imagePath.replace(/^\.\//, '')}`;
+        }
+        function openDialog(character, group) {
+            const foundIndex = characterSequence.findIndex(item => item.character === character && item.group === group);
+            currentIndex = foundIndex >= 0 ? foundIndex : 0;
+            showCharacterAt(currentIndex);
+            document.body.classList.add('modal-open');
+            if (!dialog.open) dialog.showModal();
+        }
+        function showCharacterAt(index) {
+            if (!characterSequence.length) return;
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+            }
+            currentIndex = (index + characterSequence.length) % characterSequence.length;
+            const selected = characterSequence[currentIndex];
+            const character = selected.character;
+            currentCharacter = character;
+            document.getElementById('dialogCharacter').textContent = character.character_jp || '—';
+            document.getElementById('dialogTitle').textContent = character.romaji || '—';
+            document.getElementById('dialogRomaji').textContent = `เสียงอ่าน: ${character.romaji || '—'}`;
+            document.getElementById('dialogGroup').textContent = groupLabel(selected.group);
+            document.getElementById('characterPosition').textContent = `${currentIndex + 1} / ${characterSequence.length}`;
+
+            const soundButton = document.getElementById('soundButton');
+            const soundUrl = resolveAudioUrl(character.sound_file);
+            if (soundButton) {
+                if (soundUrl) {
+                    soundButton.disabled = false;
+                    soundButton.classList.remove('disabled');
+                    soundButton.innerHTML = '<i class="fa-solid fa-play"></i> ฟังเสียง';
+                    soundButton.title = 'ฟังเสียงอ่าน';
+                } else {
+                    soundButton.disabled = true;
+                    soundButton.classList.add('disabled');
+                    soundButton.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> ยังไม่มีไฟล์เสียง';
+                    soundButton.title = 'ยังไม่มีไฟล์เสียงจากแอดมิน';
+                }
+            }
+
+            const writingText = document.getElementById('writingText');
+            writingText.textContent = character.writing_tip || character.description || 'ยังไม่มีข้อมูลวิธีเขียนสำหรับตัวอักษรนี้';
+            const preview = document.getElementById('strokePreview'); const image = strokeUrl(character.stroke_image || character.stroke_order_image);
+            preview.replaceChildren();
+            if (image) {
+                const img = new Image();
+                img.src = image;
+                img.alt = `ภาพลำดับเส้น ${character.character_jp || ''}`;
+                img.loading = 'lazy';
+                img.addEventListener('error', () => {
+                    preview.innerHTML = '<i class="fa-solid fa-image"></i><span>ยังโหลดภาพลำดับเส้นไม่ได้</span>';
+                }, { once: true });
+                preview.appendChild(img);
+            }
+            else { preview.innerHTML = '<i class="fa-solid fa-image"></i><span>รอภาพลำดับเส้นจาก API</span>'; }
+        }
+        document.querySelector('[data-close-dialog]').addEventListener('click', () => {
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+            }
+            dialog.close();
+        });
+        dialog.addEventListener('close', () => {
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+            }
+            document.body.classList.remove('modal-open');
+        });
+        document.getElementById('soundButton').addEventListener('click', playCurrent);
+        document.getElementById('previousCharacter').addEventListener('click', () => showCharacterAt(currentIndex - 1));
+        document.getElementById('nextCharacter').addEventListener('click', () => showCharacterAt(currentIndex + 1));
+        dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+        document.addEventListener('keydown', event => {
+            if (!dialog.open) return;
+            if (event.key === 'ArrowLeft') showCharacterAt(currentIndex - 1);
+            if (event.key === 'ArrowRight') showCharacterAt(currentIndex + 1);
+        });
+        loadCharacters();
+    </script>
+</body>
+</html>

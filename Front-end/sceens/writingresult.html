@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ผลการทดสอบการเขียน</title>
+    
+    <!-- CSS หลักของคุณ (รออัปเดตไฟล์เพิ่มเติม) -->
+    <link rel="stylesheet" href="../style/writing-result.css">
+    <!-- Fonts & Icons -->
+     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-writing-result">
+    
+    <script>
+        fetch('../data/writingresult.php?mode=check', { redirect: 'manual' })
+            .then(async response => {
+                if (response.type === 'opaqueredirect' || response.status === 302) {
+                    throw new Error('unauthorized');
+                }
+
+                const data = await response.json().catch(() => null);
+                if (!data || !data.authorized) {
+                    throw new Error('unauthorized');
+                }
+            })
+            .catch(() => {
+                window.location.replace('../sceens/login.html');
+            });
+    </script>
+
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+    <div class="main-container">
+        <section id="resultPanel">
+            <div class="result-header">
+                <div>
+                    <h1 class="result-title">สรุปผลการฝึกเขียน</h1>
+                    <div class="result-status" id="resultStatus">โหลดข้อมูลสำเร็จ</div>
+                </div>
+                <div class="result-actions">
+                    <button class="btn btn-evaluate" id="retryBtn" type="button">ทำอีกครั้ง</button>
+                    <button class="btn btn-clear" id="chooseGroupBtn" type="button">เลือกวรรคใหม่</button>
+                    <button class="btn btn-clear" id="homeBtn" type="button">กลับหน้าหลัก</button>
+                </div>
+            </div>
+
+            <div class="result-grid">
+                <div class="result-card">
+                    <h3>คะแนน</h3>
+                    <p id="resultScore">0 / 0</p>
+                </div>
+                <div class="result-card">
+                    <h3>เปอร์เซ็นต์</h3>
+                    <p id="resultPercent">0%</p>
+                </div>
+                <div class="result-card">
+                    <h3>เวลา</h3>
+                    <p id="resultTime">0s</p>
+                </div>
+            </div>
+
+            <section class="score-detail-box">
+                <div class="summary-header-box">
+                    <div>
+                        <h2>เกณฑ์การประเมิน</h2>
+                        <p>ภาพรวมการเขียนและตำแหน่งเส้น</p>
+                    </div>
+                    <span class="status-badge" id="summaryStatus">พร้อมแสดงผล</span>
+                </div>
+
+                <div class="score-row">
+                    <span class="score-row-label"><i class="fa-solid fa-pen-nib score-row-icon"></i> ความแม่นยำของรูปทรง</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="summaryAccuracyFill"></div>
+                        </div>
+                        <span class="progress-percent" id="summaryAccuracy">0%</span>
+                    </div>
+                </div>
+
+                <div class="score-row">
+                    <span class="score-row-label"><i class="fa-solid fa-ruler-horizontal score-row-icon"></i> ตำแหน่งอยู่ในเส้นแนวแบบ</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="summaryAlignmentFill"></div>
+                        </div>
+                        <span class="progress-percent" id="summaryAlignment">0%</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="result-detail">
+                <div class="result-detail-item">
+                    <p>ชุดตัวอักษร</p>
+                    <span id="resultType">-</span>
+                </div>
+                <div class="result-detail-item">
+                    <p>วรรค</p>
+                    <span id="resultGroup">-</span>
+                </div>
+            </div>
+
+            <div class="result-detail">
+                <div class="result-detail-item result-detail-item--full">
+                    <p>โหมด</p>
+                    <span id="resultMode">-</span>
+                </div>
+            </div>
+
+            <div class="result-row-list" id="resultRows"></div>
+        </section>
+    </div>
+
+    <!-- Modal -->
+    <div class="detail-modal-overlay" id="detailModalOverlay">
+        <div class="detail-modal" id="detailModalBox">
+            <div class="modal-close-btn" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></div>
+            
+            <div class="modal-header">
+                <span id="modalTitle">ข้อที่ - : -</span>
+                <i class="fa-solid fa-circle-check status-icon success" id="modalStatusIcon"></i>
+            </div>
+
+            <div class="comparison-container">
+                <div class="comparison-box">
+                    <span class="comparison-title">ตัวอักษรของคุณ</span>
+                    <div class="user-view-switch" role="group" aria-label="รูปแบบการแสดงผลการเขียน">
+                        <button type="button" class="active" data-user-view="image">รูปที่วาดเสร็จ</button>
+                        <button type="button" data-user-view="replay">วิดีโอการขีด</button>
+                    </div>
+                    <div class="canvas-grid" id="modalUserCanvas"></div>
+                </div>
+                <div class="comparison-box">
+                    <span class="comparison-title">ตัวอักษรที่ถูกต้อง</span>
+                    <div class="canvas-grid correct-box" id="modalCorrectCanvas"></div>
+                </div>
+            </div>
+            <div class="result-replay-controls">
+                <button type="button" id="modalReplayBtn"><i class="fa-solid fa-play"></i> เล่นการขีด</button>
+                <button type="button" id="modalReplayPauseBtn"><i class="fa-solid fa-pause"></i> หยุด</button>
+                <span id="modalReplayStatus">พร้อมเล่น</span>
+            </div>
+
+            <section class="attempt-action-summary" aria-labelledby="modalActionTitle">
+                <div class="attempt-action-summary__heading">
+                    <strong id="modalActionTitle">สิ่งที่คุณทำ</strong>
+                    <span id="modalActionResult">-</span>
+                </div>
+                <div class="attempt-action-summary__grid">
+                    <div><span>ตัวอักษรเป้าหมาย</span><b id="modalTargetCharacter">-</b></div>
+                    <div><span>จำนวนเส้นที่วาด</span><b id="modalStrokeCount">-</b></div>
+                    <div><span>เวลาที่ใช้</span><b id="modalAttemptTime">-</b></div>
+                    <div><span>ผลการตรวจ</span><b id="modalResultSummary">-</b></div>
+                </div>
+                <p class="attempt-action-summary__feedback" id="modalActionFeedback"></p>
+            </section>
+
+            <div class="score-detail-box modal-score-box" id="modalScoreBox">
+                <div class="score-detail-title">คะแนนรายละเอียด</div>
+                <div class="score-row">
+                    <span class="score-row-label">ความแม่นยำของรูปร่างลักษณะ</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" id="modalAccuracyFill"></div></div>
+                        <span class="progress-percent" id="modalAccuracyText">0%</span>
+                    </div>
+                </div>
+                <div class="score-row">
+                    <span class="score-row-label">ตำแหน่งอยู่ในเส้นแม่แบบ</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" id="modalAlignFill"></div></div>
+                        <span class="progress-percent" id="modalAlignText">0%</span>
+                    </div>
+                </div>
+                <div class="score-row" id="modalTotalScoreRow">
+                    <span class="score-row-label score-row-label--strong">คะแนนรวม (เฉลี่ย)</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg"><div class="progress-bar-fill modal-total-fill" id="modalTotalFill"></div></div>
+                        <span class="progress-percent modal-total-text" id="modalTotalText">0%</span>
+                    </div>
+                </div>
+                <div class="stroke-metrics-panel" id="modalStrokeMetrics" hidden>
+                    <div class="score-detail-title">วิเคราะห์แยกรายเส้น</div>
+                    <div class="stroke-metrics-grid"></div>
+                </div>
+                <div class="evaluation-explanation" id="modalExplanation" hidden>
+                    <strong>วิเคราะห์จุดที่ควรแก้</strong>
+                    <ul id="modalErrorReasons"></ul>
+                    <p id="modalAiExplanation"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script ประมวลผล -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // ดึงชื่อ User 
+            fetch('../connectapi/nav_state.php', { cache: 'no-store', credentials: 'same-origin' })
+                .then(r => r.json())
+                .then(data => {
+                    const navUser = document.getElementById('navUsername');
+                    if (navUser && data && data.loggedIn) {
+                        navUser.textContent = data.username || data.name || 'ผู้ใช้งาน';
+                    } else if (navUser) {
+                        navUser.textContent = 'ผู้ใช้งาน';
+                    }
+                }).catch(() => {});
+
+            // ตัวแปร DOM ทั่วไป
+            const elements = {
+                score: document.getElementById('resultScore'),
+                percent: document.getElementById('resultPercent'),
+                time: document.getElementById('resultTime'),
+                type: document.getElementById('resultType'),
+                group: document.getElementById('resultGroup'),
+                mode: document.getElementById('resultMode'),
+                rows: document.getElementById('resultRows'),
+                status: document.getElementById('resultStatus'),
+                sumAcc: document.getElementById('summaryAccuracy'),
+                sumAlign: document.getElementById('summaryAlignment'),
+                sumAccFill: document.getElementById('summaryAccuracyFill'),
+                sumAlignFill: document.getElementById('summaryAlignmentFill'),
+                sumStatus: document.getElementById('summaryStatus')
+            };
+
+            // ตัวแปร Modal
+            const modal = {
+                overlay: document.getElementById('detailModalOverlay'),
+                closeBtn: document.getElementById('closeModalBtn'),
+                title: document.getElementById('modalTitle'),
+                icon: document.getElementById('modalStatusIcon'),
+                userCanvas: document.getElementById('modalUserCanvas'),
+                correctCanvas: document.getElementById('modalCorrectCanvas'),
+                scoreBox: document.getElementById('modalScoreBox'),
+                accFill: document.getElementById('modalAccuracyFill'),
+                accText: document.getElementById('modalAccuracyText'),
+                alignFill: document.getElementById('modalAlignFill'),
+                alignText: document.getElementById('modalAlignText'),
+                totalFill: document.getElementById('modalTotalFill'),
+                totalText: document.getElementById('modalTotalText'),
+                targetCharacter: document.getElementById('modalTargetCharacter'),
+                strokeCount: document.getElementById('modalStrokeCount'),
+                attemptTime: document.getElementById('modalAttemptTime'),
+                resultSummary: document.getElementById('modalResultSummary'),
+                actionResult: document.getElementById('modalActionResult'),
+                actionFeedback: document.getElementById('modalActionFeedback'),
+                strokeMetrics: document.getElementById('modalStrokeMetrics'),
+                explanation: document.getElementById('modalExplanation'),
+                errorReasons: document.getElementById('modalErrorReasons'),
+                aiExplanation: document.getElementById('modalAiExplanation')
+            };
+            const modalReplayBtn = document.getElementById('modalReplayBtn');
+            const modalReplayPauseBtn = document.getElementById('modalReplayPauseBtn');
+            const modalReplayStatus = document.getElementById('modalReplayStatus');
+            const userViewButtons = document.querySelectorAll('[data-user-view]');
+            let modalReplayFrame = null;
+            let modalReplayRow = null;
+
+            function normalizeTrajectory(trajectory) {
+                if (typeof trajectory !== 'string') return trajectory || { strokes: [] };
+                try { return JSON.parse(trajectory) || { strokes: [] }; } catch (error) { return { strokes: [] }; }
+            }
+
+            function setUserView(view) {
+                const trajectory = normalizeTrajectory(modalReplayRow?.trajectory);
+                const hasTrajectory = Array.isArray(trajectory.strokes) && trajectory.strokes.length > 0;
+                if (view === 'replay' && !hasTrajectory) {
+                    modalReplayStatus.textContent = 'ไม่มีข้อมูลเส้นการขีดในรายการนี้';
+                    view = 'image';
+                }
+                userViewButtons.forEach(button => button.classList.toggle('active', button.dataset.userView === view));
+                const image = modal.userCanvas.querySelector('[data-user-view-content="image"]');
+                const replay = modal.userCanvas.querySelector('[data-user-view-content="replay"]');
+                if (image) image.hidden = view !== 'image';
+                if (replay) replay.hidden = view !== 'replay';
+                if (view === 'replay' && modalReplayRow) {
+                    drawTrajectory(replay, trajectory);
+                }
+            }
+
+            userViewButtons.forEach(button => button.addEventListener('click', () => setUserView(button.dataset.userView)));
+
+            function formatElapsedTime(milliseconds) {
+                const seconds = Math.max(0, Math.round(Number(milliseconds) / 1000));
+                return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+            }
+
+            async function loadStoredSummary(sessionId) {
+                const response = await fetch(
+                    `../connectapi/writing_progress.php?action=get_session_summary&writing_session_id=${encodeURIComponent(sessionId)}`,
+                    { credentials: 'same-origin', cache: 'no-store' }
+                );
+                const payload = await response.json().catch(() => null);
+                if (!response.ok || !payload || payload.status !== 'success' || !payload.session) {
+                    throw new Error(payload && payload.message ? payload.message : 'ไม่สามารถโหลดผลการฝึกจากฐานข้อมูลได้');
+                }
+
+                const session = payload.session;
+                const total = Number(session.total_characters) || 0;
+                const completed = Number(session.completed_characters) || 0;
+                const attempts = Array.isArray(payload.attempts) ? payload.attempts : [];
+                const scoredAttempts = attempts.filter(attempt => Number(attempt.is_completed) === 1);
+                const averageAccuracy = scoredAttempts.length
+                    ? Math.round(scoredAttempts.reduce((sum, attempt) => sum + Number(attempt.shape_accuracy || 0), 0) / scoredAttempts.length)
+                    : 0;
+                const averageAlignment = scoredAttempts.length
+                    ? Math.round(scoredAttempts.reduce((sum, attempt) => sum + Number(attempt.alignment_score || 0), 0) / scoredAttempts.length)
+                    : 0;
+                return {
+                    type: String(session.writing_type || '').toLowerCase() === 'katakana' ? 'Katakana' : 'Hiragana',
+                    group: session.group_name || '-',
+                    mode: session.practice_mode || 'guide',
+                    score: completed,
+                    total: total,
+                    percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+                    accuracy: averageAccuracy,
+                    alignment: averageAlignment,
+                    summaryStatus: scoredAttempts.length ? 'ประเมินผลสำเร็จ' : 'ยังไม่มีคะแนนประเมิน',
+                    time: formatElapsedTime(session.total_time_ms || 0),
+                    timeMs: Number(session.total_time_ms) || 0,
+                    rows: attempts.map((attempt) => ({
+                        question: attempt.romaji || attempt.target_character || 'ตัวอักษร',
+                        romaji: attempt.romaji || '',
+                        status: Number(attempt.is_passed) ? 'ผ่าน' : (Number(attempt.is_completed) ? 'ต้องปรับปรุง' : 'ยังไม่ได้วาด'),
+                        drawnImage: attempt.image_url || null,
+                        time: formatElapsedTime(attempt.time_spent_ms || 0),
+                        elapsedMs: Number(attempt.time_spent_ms) || 0,
+                        strokeCount: Number(attempt.stroke_count) || 0,
+                        rowAccuracy: Number(attempt.shape_accuracy) || 0,
+                        rowAlignment: Number(attempt.alignment_score) || 0,
+                        totalScore: Number(attempt.total_score) || 0,
+                        feedback: attempt.feedback || ''
+                        ,errorReasons: Array.isArray(attempt.error_reasons) ? attempt.error_reasons : [],
+                        aiExplanation: attempt.ai_explanation || '',
+                        strokeAnalysis: Array.isArray(attempt.stroke_analysis) ? attempt.stroke_analysis : [],
+                        strokeMetrics: Array.isArray(attempt.stroke_metrics) ? attempt.stroke_metrics : [],
+                        targetCharacter: attempt.target_character || '',
+                        trajectory: attempt.trajectory || { strokes: [] }
+                    }))
+                };
+            }
+
+            let resultData = null;
+            const requestedSessionId = new URLSearchParams(window.location.search).get('session_id');
+            if (requestedSessionId) {
+                try {
+                    resultData = await loadStoredSummary(requestedSessionId);
+                } catch (error) {
+                    console.warn('Unable to load writing summary from database:', error);
+                }
+            }
+
+            if (!resultData) {
+                const raw = sessionStorage.getItem('writingResultData');
+                if (raw) {
+                    try {
+                        resultData = JSON.parse(raw);
+                    } catch (e) {}
+                }
+            }
+
+            if (!resultData) {
+                showError('ไม่พบข้อมูลผลลัพธ์');
+                return;
+            }
+
+            const isTestMode = resultData.mode === 'test';
+            
+            // อัปเดตข้อมูลทั่วไป
+            elements.time.textContent = resultData.time || '0s';
+            elements.type.textContent = resultData.type || '-';
+            elements.group.textContent = resultData.group || '-';
+            elements.mode.textContent = isTestMode ? 'แบบทดสอบ' : 'โหมดฝึกเขียน';
+
+            const accVal = Number(resultData.accuracy) || 0;
+            const alignVal = Number(resultData.alignment) || 0;
+
+            elements.score.textContent = `${resultData.score || 0} / ${resultData.total || 0}`;
+            elements.percent.textContent = `${resultData.percentage || 0}%`;
+            
+            elements.sumAcc.textContent = `${accVal}%`;
+            elements.sumAlign.textContent = `${alignVal}%`;
+            
+            setTimeout(() => {
+                if (elements.sumAccFill) elements.sumAccFill.style.width = `${accVal}%`;
+                if (elements.sumAlignFill) elements.sumAlignFill.style.width = `${alignVal}%`;
+            }, 150);
+            
+            elements.sumStatus.textContent = resultData.summaryStatus || (isTestMode ? 'ประเมินผลสำเร็จ' : 'บันทึกภาพการวาดเรียบร้อย');
+
+            // สร้างลิสต์รายการข้อ
+            elements.rows.innerHTML = '';
+            if (Array.isArray(resultData.rows) && resultData.rows.length) {
+                const fragment = document.createDocumentFragment();
+
+                resultData.rows.forEach((row, index) => {
+                    const item = document.createElement('div');
+                    item.title = 'คลิกเพื่อดูรายละเอียดผลลัพธ์';
+
+                    const imageElement = row.drawnImage 
+                        ? `<img src="${row.drawnImage}" alt="สิ่งที่ผู้ใช้วาด" class="drawn-result-img" loading="lazy">`
+                        : `<div class="drawn-placeholder">ไม่มีรูป</div>`;
+
+                    const isCorrect = row.status && (row.status.includes('ถูกต้อง') || row.status.includes('ผ่าน') || row.status.includes('วาดเรียบร้อย'));
+                    item.className = `result-row ${isTestMode ? (isCorrect ? 'result-row--correct' : 'result-row--wrong') : ''}`;
+                    let rowStatusHtml = isTestMode 
+                        ? (isCorrect ? `<span style="color: #22c55e;"><i class="fa-solid fa-circle-check"></i> ${row.status}</span>`
+                                     : `<span style="color: #ef4444;"><i class="fa-solid fa-circle-xmark"></i> ${row.status}</span>`)
+                        : '<span style="color: #64748b;"><i class="fa-solid fa-pen"></i> วาดเรียบร้อย</span>';
+
+                    item.innerHTML = `
+                        <div class="result-row-left">
+                            <div class="row-info">
+                                <strong>ข้อที่ ${index + 1}</strong>
+                                <span>${row.question}${row.time ? ` · ${row.time}` : ''}</span>
+                            </div>
+                            ${imageElement}
+                        </div>
+                        <div class="result-row-right">${rowStatusHtml}</div>
+                    `;
+
+                    item.addEventListener('click', () => openDetailModal(row, index + 1, isTestMode, isCorrect));
+                    fragment.appendChild(item);
+                });
+                
+                elements.rows.appendChild(fragment);
+            } else {
+                elements.rows.innerHTML = '<div class="result-row"><div class="result-row-left"><span>ไม่มีรายละเอียดผลลัพธ์</span></div></div>';
+            }
+
+            // ฟังก์ชันจัดการ Modal
+            function drawTrajectory(canvasElement, trajectory, visibleStrokeCount = Infinity, activeProgress = 1) {
+                const parsedTrajectory = normalizeTrajectory(trajectory);
+                const strokes = Array.isArray(parsedTrajectory?.strokes) ? parsedTrajectory.strokes : [];
+                const context = canvasElement.getContext('2d');
+                const width = canvasElement.clientWidth || 300;
+                const height = canvasElement.clientHeight || 300;
+                const sourceWidth = Number(parsedTrajectory.canvas_width) || 620;
+                const sourceHeight = Number(parsedTrajectory.canvas_height) || 420;
+                const dpr = window.devicePixelRatio || 1;
+                canvasElement.width = width * dpr;
+                canvasElement.height = height * dpr;
+                context.setTransform(dpr, 0, 0, dpr, 0, 0);
+                context.clearRect(0, 0, width, height);
+                context.strokeStyle = '#172033';
+                context.lineWidth = 10;
+                context.lineCap = 'round';
+                context.lineJoin = 'round';
+                strokes.slice(0, visibleStrokeCount).forEach(stroke => {
+                    const points = Array.isArray(stroke.points) ? stroke.points : [];
+                    if (points.length < 2) return;
+                    const isActiveStroke = strokes.indexOf(stroke) === visibleStrokeCount - 1;
+                    const progress = isActiveStroke ? Math.max(0, Math.min(1, activeProgress)) : 1;
+                    const pointCount = Math.max(2, Math.ceil((points.length - 1) * progress) + 1);
+                    context.beginPath();
+                    context.moveTo((Number(points[0].x) || 0) * width / sourceWidth, (Number(points[0].y) || 0) * height / sourceHeight);
+                    points.slice(1, pointCount).forEach(point => context.lineTo((Number(point.x) || 0) * width / sourceWidth, (Number(point.y) || 0) * height / sourceHeight));
+                    const exactIndex = Math.min(points.length - 1, (points.length - 1) * progress);
+                    const lowerIndex = Math.floor(exactIndex);
+                    const upperIndex = Math.min(points.length - 1, lowerIndex + 1);
+                    if (upperIndex > lowerIndex && progress < 1) {
+                        const fraction = exactIndex - lowerIndex;
+                        const lower = points[lowerIndex];
+                        const upper = points[upperIndex];
+                        context.lineTo(
+                            ((Number(lower.x) || 0) + ((Number(upper.x) || 0) - (Number(lower.x) || 0)) * fraction) * width / sourceWidth,
+                            ((Number(lower.y) || 0) + ((Number(upper.y) || 0) - (Number(lower.y) || 0)) * fraction) * height / sourceHeight
+                        );
+                    }
+                    context.stroke();
+                });
+            }
+
+            function stopModalReplay() {
+                if (modalReplayFrame) window.cancelAnimationFrame(modalReplayFrame);
+                modalReplayFrame = null;
+            }
+
+            function playModalReplay() {
+                stopModalReplay();
+                if (!modalReplayRow || !modal.userCanvas.querySelector('canvas')) return;
+                setUserView('replay');
+                const strokes = Array.isArray(modalReplayRow.trajectory?.strokes) ? modalReplayRow.trajectory.strokes : [];
+                if (!strokes.length) return;
+                const durations = strokes.map(stroke => {
+                    const points = Array.isArray(stroke.points) ? stroke.points : [];
+                    const start = Number(points[0]?.t);
+                    const end = Number(points[points.length - 1]?.t);
+                    return Number.isFinite(start) && Number.isFinite(end) && end > start
+                        ? Math.max(180, end - start)
+                        : 700;
+                });
+                const totalDuration = durations.reduce((sum, duration) => sum + duration, 0);
+                const startedAt = performance.now();
+                function frame(now) {
+                    let elapsed = Math.min(totalDuration, now - startedAt);
+                    let strokeIndex = strokes.length - 1;
+                    let strokeElapsed = durations[strokeIndex];
+                    for (let index = 0; index < durations.length; index++) {
+                        if (elapsed <= durations[index]) {
+                            strokeIndex = index;
+                            strokeElapsed = elapsed;
+                            break;
+                        }
+                        elapsed -= durations[index];
+                    }
+                    const progress = Math.min(1, strokeElapsed / durations[strokeIndex]);
+                    drawTrajectory(modal.userCanvas.querySelector('canvas'), modalReplayRow.trajectory, strokeIndex + 1, progress);
+                    modalReplayStatus.textContent = now - startedAt >= totalDuration ? 'เล่นจบแล้ว' : `กำลังเล่นเส้นที่ ${strokeIndex + 1}`;
+                    if (now - startedAt < totalDuration) modalReplayFrame = window.requestAnimationFrame(frame);
+                    else modalReplayFrame = null;
+                }
+                modalReplayFrame = window.requestAnimationFrame(frame);
+            }
+
+            function openDetailModal(rowData, itemNumber, isTestMode, isCorrect) {
+                stopModalReplay();
+                modalReplayRow = rowData;
+                const targetCharacter = rowData.targetCharacter || rowData.question || '-';
+                const romajiLabel = rowData.romaji && rowData.romaji !== targetCharacter ? ` (${rowData.romaji})` : '';
+                modal.title.textContent = `ข้อที่ ${itemNumber}: ${targetCharacter}${romajiLabel}`;
+                const trajectory = normalizeTrajectory(rowData.trajectory);
+                const drawnStrokeCount = Array.isArray(trajectory.strokes) && trajectory.strokes.length
+                    ? trajectory.strokes.length
+                    : Number(rowData.strokeCount) || 0;
+                const total = clampScore(rowData.totalScore || ((Number(rowData.rowAccuracy) + Number(rowData.rowAlignment)) / 2));
+                const resultText = isTestMode
+                    ? (isCorrect ? 'ผ่านเกณฑ์' : 'ต้องปรับปรุง')
+                    : 'บันทึกการวาดแล้ว';
+                modal.targetCharacter.textContent = targetCharacter;
+                modal.strokeCount.textContent = `${drawnStrokeCount} เส้น`;
+                modal.attemptTime.textContent = rowData.time || '00:00';
+                modal.resultSummary.textContent = isTestMode ? `${resultText} · ${formatScore(total)}%` : resultText;
+                modal.actionResult.textContent = resultText;
+                modal.actionResult.className = isTestMode && !isCorrect ? 'is-failed' : 'is-passed';
+                modal.actionFeedback.textContent = rowData.feedback || (isTestMode
+                    ? (isCorrect ? 'รูปแบบการเขียนอยู่ในเกณฑ์ที่ระบบกำหนด' : 'ระบบพบจุดที่ควรปรับปรุงจากตัวอักษรต้นแบบ')
+                    : 'ระบบบันทึกภาพและลำดับเส้นที่คุณวาดไว้สำหรับทบทวน');
+                
+                if (isTestMode) {
+                    modal.icon.className = `fa-solid ${isCorrect ? 'fa-circle-check success' : 'fa-circle-xmark fail'} status-icon`;
+                    modal.icon.style.display = 'inline-block';
+                    modal.scoreBox.classList.remove('hide-score');
+                    
+                    const acc = Number(rowData.rowAccuracy) || 0;
+                    const align = Number(rowData.rowAlignment) || 0;
+                    const total = clampScore(rowData.totalScore || ((acc + align) / 2));
+
+                    modal.accText.textContent = `${acc}%`;
+                    modal.alignText.textContent = `${align}%`;
+                    modal.totalText.textContent = `${total}%`;
+                    const reasons = Array.isArray(rowData.errorReasons) ? rowData.errorReasons : [];
+                    modal.errorReasons.innerHTML = reasons.map(reason => `<li>${String(reason).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]))}</li>`).join('');
+                    modal.aiExplanation.textContent = rowData.aiExplanation || rowData.feedback || '';
+                    modal.explanation.hidden = reasons.length === 0 && !modal.aiExplanation.textContent;
+                    const metrics = Array.isArray(rowData.strokeMetrics) ? rowData.strokeMetrics : [];
+                    const analyses = Array.isArray(rowData.strokeAnalysis) ? rowData.strokeAnalysis : [];
+                    const metricLabels = [
+                        ['เริ่ม', 'start_position_score'], ['จบ', 'end_position_score'],
+                        ['ทิศทาง', 'direction_score'], ['รูปทรง', 'shape_score'],
+                        ['ความยาว', 'length_score'], ['ตำแหน่ง', 'position_score'],
+                        ['ลำดับ', 'order_score']
+                    ];
+                    modal.strokeMetrics.hidden = metrics.length === 0;
+                    modal.strokeMetrics.querySelector('.stroke-metrics-grid').innerHTML = metrics.map((metric, metricIndex) => {
+                        const strokeNumber = Number(metric.stroke_number) || metricIndex + 1;
+                        const analysis = analyses.find(item => Number(item?.stroke_number) === strokeNumber) || analyses[metricIndex] || {};
+                        return `
+                        <div class="stroke-metric-card">
+                            <strong>เส้นที่ ${strokeNumber}</strong>
+                            ${metricLabels.map(([label, key]) => `<span>${label}<b>${Math.round(Number(metric[key]) || 0)}%</b></span>`).join('')}
+                            ${analysis.reason ? `<p class="stroke-ai-reason">${String(analysis.reason).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]))}</p>` : ''}
+                            ${analysis.suggestion ? `<small class="stroke-ai-suggestion">วิธีแก้: ${String(analysis.suggestion).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]))}</small>` : ''}
+                        </div>`;
+                    }).join('');
+
+                    setTimeout(() => {
+                        modal.accFill.style.width = `${acc}%`;
+                        modal.alignFill.style.width = `${align}%`;
+                        modal.totalFill.style.width = `${total}%`;
+                    }, 150);
+
+                } else {
+                    modal.icon.style.display = 'none';
+                    modal.scoreBox.classList.add('hide-score');
+                }
+
+                const rowTrajectory = normalizeTrajectory(rowData.trajectory);
+                rowData.trajectory = rowTrajectory;
+                modal.userCanvas.innerHTML = rowTrajectory?.strokes?.length
+                    ? `<img data-user-view-content="image" src="${rowData.drawnImage || ''}" alt="ผู้ใช้วาด"${rowData.drawnImage ? '' : ' hidden'}><canvas data-user-view-content="replay" aria-label="เส้นที่ผู้ใช้วาด" hidden></canvas>`
+                    : (rowData.drawnImage ? `<img data-user-view-content="image" src="${rowData.drawnImage}" alt="ผู้ใช้วาด">` : `<span class="no-image-text">ไม่พบภาพที่วาด</span>`);
+                modal.correctCanvas.innerHTML = `<span class="answer-character">${String(rowData.targetCharacter || rowData.question || '?').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}</span>`;
+                setUserView('image');
+
+                modal.overlay.style.display = 'flex';
+                void modal.overlay.offsetWidth;
+                modal.overlay.classList.add('active');
+            }
+
+            function clampScore(value) {
+                return Math.max(0, Math.min(100, Number(value) || 0));
+            }
+
+            function formatScore(value) {
+                return Number(value).toFixed(1).replace(/\.0$/, '');
+            }
+
+            function closeModal() {
+                stopModalReplay();
+                modalReplayRow = null;
+                modal.overlay.classList.remove('active');
+                setTimeout(() => {
+                    modal.overlay.style.display = 'none';
+                    if (modal.accFill) modal.accFill.style.width = '0%';
+                    if (modal.alignFill) modal.alignFill.style.width = '0%';
+                    if (modal.totalFill) modal.totalFill.style.width = '0%';
+                }, 300);
+            }
+
+            modal.closeBtn.addEventListener('click', closeModal);
+            modal.overlay.addEventListener('click', (e) => { if (e.target === modal.overlay) closeModal(); });
+            modalReplayBtn.addEventListener('click', playModalReplay);
+            modalReplayPauseBtn.addEventListener('click', function () {
+                stopModalReplay();
+                modalReplayStatus.textContent = 'หยุดชั่วคราว';
+            });
+
+            // ปุ่ม นำทาง
+            document.getElementById('retryBtn').addEventListener('click', () => {
+                const mode = isTestMode ? 'test' : 'guide';
+                const typeParam = (resultData.type || 'katakana').toLowerCase() === 'katakana' ? 'katakana' : 'hiragana';
+                const rawGroup = resultData.groupId || resultData.group || '';
+                const normalizedGroup = String(rawGroup).replace(/^\s*วรรค\s*/u, '').trim();
+                const params = new URLSearchParams({ type: typeParam, mode });
+
+                if (normalizedGroup && /^\d+$/.test(normalizedGroup)) {
+                    params.set('group_id', normalizedGroup);
+                } else if (normalizedGroup) {
+                    params.set('group_name', normalizedGroup);
+                }
+
+                window.location.href = `../data/writing.php?${params.toString()}`;
+            });
+
+            document.getElementById('chooseGroupBtn').addEventListener('click', () => {
+                window.location.href = '../sceens/ex2.html';
+            });
+            
+            document.getElementById('homeBtn').addEventListener('click', () => { window.location.href = '../data/member.php'; });
+
+            // ฟังก์ชัน Error
+            function showError(msg) {
+                if (elements.status) {
+                    elements.status.textContent = msg;
+                    elements.status.style.cssText = 'background: rgba(239, 68, 68, 0.12); color: #ef4444;';
+                }
+                if (elements.score) elements.score.textContent = 'ไม่มีข้อมูล';
+                if (elements.percent) elements.percent.textContent = 'ไม่มีข้อมูล';
+                if (elements.time) elements.time.textContent = 'ไม่มีข้อมูล';
+            }
+        });
+    </script>
+</body>
+</html>

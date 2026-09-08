@@ -1,0 +1,404 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการตัวอักษร Katakana - Project Japan Backend</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/manage_katakana.css">
+  <style>
+    .btn-play-sound { border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 9px; color: #0369a1; background: #f0f9ff; cursor: pointer; font: inherit; font-size: 12px; }
+    .btn-play-sound:hover { background: #e0f2fe; }
+    .text-muted { color: #9ca3af; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <div id="navbar-container"></div>
+
+  <main class="main-content">
+    <div class="content-container">
+      <div id="pageMessage" style="display:none; margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; font-weight: 500;"></div>
+
+      <div class="manage-header">
+        <div class="title-group">
+          <ul class="breadcrumb">
+            <li><a href="/projectjapan/backend/">หน้าหลัก</a></li>
+            <li><i class="fa-solid fa-chevron-right"></i></li>
+            <li>จัดการ Katakana</li>
+          </ul>
+          <h2><i class="fa-solid fa-language"></i> จัดการตัวอักษร Katakana</h2>
+          <p>จัดการข้อมูลตัวอักษร คำอ่าน Romaji วรรค และจำนวนเส้น</p>
+        </div>
+        <div class="header-actions">
+          <a href="/projectjapan/backend/php/srceen/create_katagana.php" class="btn-add">
+            <i class="fa-solid fa-plus"></i> เพิ่มตัวอักษรใหม่
+          </a>
+          <!-- ลบปุ่ม ดูตารางหน้าเว็บ ออกตามที่ต้องการ -->
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon bg-primary"><i class="fa-solid fa-font"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">ตัวอักษรทั้งหมด</span>
+            <span class="stat-value" id="totalChars">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-success"><i class="fa-solid fa-layer-group"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">วรรคทั้งหมด</span>
+            <span class="stat-value" id="totalGroups">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-warning"><i class="fa-solid fa-image"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">มีรูปภาพ</span>
+            <span class="stat-value" id="withImage">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-info"><i class="fa-solid fa-volume-high"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">มีไฟล์เสียง</span>
+            <span class="stat-value" id="withSound">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="manage-card">
+        <div class="toolbar-container">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="ค้นหาตัวอักษร, โรมาจิ หรือวรรค...">
+          </div>
+
+          <div class="filter-group">
+            <div class="select-wrapper">
+              <i class="fa-solid fa-filter select-icon"></i>
+              <select id="filterGroup" class="filter-select">
+                <option value="">-- ทุกวรรค --</option>
+                <option value="a">วรรค a (ア)</option>
+                <option value="ka">วรรค ka (カ)</option>
+                <option value="sa">วรรค sa (サ)</option>
+                <option value="ta">วรรค ta (タ)</option>
+                <option value="na">วรรค na (ナ)</option>
+                <option value="ha">วรรค ha (ハ)</option>
+                <option value="ma">วรรค ma (マ)</option>
+                <option value="ya">วรรค ya (ヤ)</option>
+                <option value="ra">วรรค ra (ラ)</option>
+                <option value="wa">วรรค wa (ワ)</option>
+                <option value="n">วรรค n (ン)</option>
+              </select>
+            </div>
+
+            <div class="select-wrapper">
+              <select id="filterType" class="filter-select">
+                <option value="">-- ทุกประเภทเสียง --</option>
+                <option value="gojuon">เสียงหลัก (Gojūon)</option>
+                <option value="dakuon">เสียงขุ่น (Dakuon)</option>
+                <option value="handakuon">เสียงกึ่งขุ่น (Handakuon)</option>
+                <option value="yoon">เสียงควบ (Yōon)</option>
+              </select>
+            </div>
+
+            <div class="select-wrapper">
+              <select id="sortBy" class="filter-select">
+                <option value="order_asc">เรียงตาม ID</option>
+                <option value="romaji_asc">เรียงตาม Romaji (A-Z)</option>
+                <option value="stroke_asc">เรียงตามจำนวนเส้น (น้อย-มาก)</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-reset" id="resetFilters" title="รีเซ็ตการกรอง">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="character-table">
+            <thead>
+            <tr>
+              <th class="text-center" style="width: 7%;">ลำดับ</th>
+              <th class="text-center" style="width: 12%;">ตัวอักษร</th>
+              <th style="width: 15%;">คำอ่าน (Romaji)</th>
+              <th style="width: 15%;">วรรค (Group)</th>
+              <th style="width: 16%;">ประเภทเสียง</th>
+              <th class="text-center" style="width: 13%;">จำนวนเส้น</th>
+              <th class="text-center" style="width: 18%;">ไฟล์เสียง</th>
+              <th class="text-center" style="width: 22%;">จัดการ</th>
+            </tr>
+            </thead>
+            <tbody id="characterTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <div class="showing-info" id="showingInfo"></div>
+          <ul class="pagination" id="paginationList"></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/projectjapan/backend/script.js"></script>
+  <script>
+    const apiUrl = '/projectjapan/backend/php/action/katakana_api.php';
+    const pageSize = 12;
+    let currentPage = 1;
+    let dataItems = [];
+
+    const elements = {
+      searchInput: document.getElementById('searchInput'),
+      filterGroup: document.getElementById('filterGroup'),
+      filterType: document.getElementById('filterType'),
+      sortBy: document.getElementById('sortBy'),
+      resetFilters: document.getElementById('resetFilters'),
+      characterTableBody: document.getElementById('characterTableBody'),
+      showingInfo: document.getElementById('showingInfo'),
+      paginationList: document.getElementById('paginationList'),
+      totalChars: document.getElementById('totalChars'),
+      totalGroups: document.getElementById('totalGroups'),
+      withImage: document.getElementById('withImage'),
+      withSound: document.getElementById('withSound'),
+    };
+
+    function fetchJson(url) {
+      return fetch(url).then((response) => response.json());
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[char]));
+    }
+
+    function getSoundType(character) {
+      if (!character) return 'gojuon';
+      if (/[パピプペポ]/u.test(character)) return 'handakuon';
+      if (/[ガギグゲゴザジズゼゾダヂヅデドバビブベボ]/u.test(character)) return 'dakuon';
+      if (/[ャュョ]/u.test(character)) return 'yoon';
+      return 'gojuon';
+    }
+
+    function fetchStats() {
+      fetchJson(`${apiUrl}?action=stats`).then((stats) => {
+        if (stats?.error) return;
+        elements.totalChars.textContent = stats.total;
+        elements.totalGroups.textContent = stats.groups;
+        elements.withImage.textContent = stats.with_image;
+        elements.withSound.textContent = stats.with_sound;
+      });
+    }
+
+    function normalizeFilterValue(value) {
+      return String(value || '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+    }
+
+    function normalizeGroupValue(value) {
+      const normalized = normalizeFilterValue(value);
+      return normalized.replace(/^วรรค\s+/, '');
+    }
+
+    function applyTypeFilter(items) {
+      if (!elements.filterType.value) return items;
+      return items.filter((item) => getSoundType(item.japanese_char) === elements.filterType.value);
+    }
+
+    function applyGroupFilter(items) {
+      if (!elements.filterGroup.value) return items;
+      const groupValue = normalizeGroupValue(elements.filterGroup.value);
+      return items.filter((item) => normalizeGroupValue(item.char_group).includes(groupValue));
+    }
+
+    function showPageMessage(text, type = 'success') {
+      const messageEl = document.getElementById('pageMessage');
+      if (!messageEl) return;
+      messageEl.textContent = text;
+      messageEl.style.display = 'block';
+      messageEl.style.backgroundColor = type === 'error' ? '#fdecea' : '#ecf8ed';
+      messageEl.style.color = type === 'error' ? '#9a1f1f' : '#1f5335';
+      messageEl.style.border = type === 'error' ? '1px solid #f5c2c0' : '1px solid #b8d7b0';
+    }
+
+    function checkQueryMessage() {
+      const params = new URLSearchParams(window.location.search);
+      const success = params.get('success');
+      const error = params.get('error');
+      let messageShown = false; // ตัวแปรเช็คว่ามีการแสดงข้อความหรือไม่
+
+      if (success === 'created') {
+        showPageMessage('สร้างตัวอักษรเรียบร้อยแล้ว', 'success');
+        messageShown = true;
+      } else if (success === 'updated') {
+        showPageMessage('แก้ไขตัวอักษรเรียบร้อยแล้ว', 'success');
+        messageShown = true;
+      } else if (success === 'deleted') {
+        showPageMessage('ลบตัวอักษรเรียบร้อยแล้ว', 'success');
+        messageShown = true;
+      } else if (error) {
+        showPageMessage('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง', 'error');
+        messageShown = true;
+      }
+
+      // [ส่วนที่เพิ่มใหม่] เพื่อให้ข้อความ "หายไป" และล้าง URL
+      if (messageShown) {
+        // 1. ลบพารามิเตอร์ออกจาก URL (รีเฟรชแล้วข้อความจะไม่เด้งซ้ำ)
+        const newUrl = window.location.pathname; 
+        window.history.replaceState({}, document.title, newUrl);
+
+        // 2. ซ่อนข้อความอัตโนมัติหลังจาก 3 วินาที
+        setTimeout(() => {
+          const messageEl = document.getElementById('pageMessage');
+          if (messageEl) {
+            // ใช้ fade out อ่อนๆ หรือซ่อนไปเลย
+            messageEl.style.display = 'none'; 
+          }
+        }, 3000); // 3000 มิลลิวินาที = 3 วินาที
+      }
+    }
+
+    function loadData() {
+      const params = new URLSearchParams({ action: 'list' });
+      if (elements.searchInput.value.trim()) params.set('search', elements.searchInput.value.trim());
+      if (elements.filterGroup.value) params.set('group', normalizeGroupValue(elements.filterGroup.value));
+      if (elements.sortBy.value) params.set('sort', elements.sortBy.value);
+
+      fetchJson(`${apiUrl}?${params.toString()}`)
+        .then((result) => {
+          if (!result || result.error) {
+            elements.characterTableBody.innerHTML = `<tr><td colspan="8" class="text-center">${result?.error || 'ไม่สามารถโหลดข้อมูลได้'}</td></tr>`;
+            elements.showingInfo.textContent = '';
+            return;
+          }
+          dataItems = applyGroupFilter(applyTypeFilter(result.items || []));
+          currentPage = 1;
+          renderTable();
+          renderPagination();
+        })
+        .catch(() => {
+          elements.characterTableBody.innerHTML = '<tr><td colspan="8" class="text-center">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</td></tr>';
+          elements.showingInfo.textContent = '';
+        });
+    }
+
+    function renderTable() {
+      const start = (currentPage - 1) * pageSize;
+      const pageItems = dataItems.slice(start, start + pageSize);
+
+      if (!pageItems.length) {
+        elements.characterTableBody.innerHTML = '<tr><td colspan="8" class="text-center">ไม่มีข้อมูลตัวอักษร</td></tr>';
+        elements.showingInfo.textContent = `แสดง 0 จากทั้งหมด ${dataItems.length} รายการ`;
+        return;
+      }
+
+      elements.characterTableBody.innerHTML = pageItems.map((item, index) => {
+        const soundType = getSoundType(item.japanese_char);
+        const badgeType = soundType === 'dakuon' ? 'badge-dakuon' : soundType === 'handakuon' ? 'badge-handakuon' : soundType === 'yoon' ? 'badge-yoon' : 'badge-gojuon';
+        const soundLabel = soundType === 'dakuon' ? 'เสียงขุ่น' : soundType === 'handakuon' ? 'เสียงกึ่งขุ่น' : soundType === 'yoon' ? 'เสียงควบ' : 'เสียงหลัก';
+        return `
+          <tr>
+            <td class="text-center"><span class="order-number">${start + index + 1}</span></td>
+            <td class="text-center"><div class="char-badge">${item.japanese_char || '-'}</div></td>
+            <td><span class="char-romaji">${item.romaji || '-'}</span></td>
+            <td><span class="group-tag">${item.char_group || '-'}</span></td>
+            <td><span class="badge-tag ${badgeType}">${soundLabel}</span></td>
+            <td class="text-center"><span class="stroke-count"><i class="fa-solid fa-pen-nib"></i> ${item.stroke_count || 0} เส้น</span></td>
+            <td class="text-center">${item.sound_file ? `<button type="button" class="btn-play-sound" data-sound="${encodeURIComponent(item.sound_file)}" title="ทดลองเล่นเสียง"><i class="fa-solid fa-volume-high"></i> เล่น</button>` : '<span class="text-muted">ยังไม่มีไฟล์</span>'}</td>
+            <td class="text-center">
+              <div class="action-buttons">
+                <a href="/projectjapan/backend/php/srceen/edit_katakana.php?id=${item.id}" class="btn-edit"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</a>
+                <button type="button" class="btn-delete" onclick="confirmDelete(${item.id}, '${item.japanese_char || ''}')"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      elements.showingInfo.textContent = `แสดง ${start + 1} - ${start + pageItems.length} จากทั้งหมด ${dataItems.length} รายการ`;
+    }
+
+    elements.characterTableBody.addEventListener('click', (event) => {
+      const button = event.target.closest('.btn-play-sound');
+      if (!button) return;
+      const audio = new Audio(decodeURIComponent(button.dataset.sound || ''));
+      audio.play().catch(() => showPageMessage('เปิดไฟล์เสียงไม่สำเร็จ กรุณาตรวจสอบ URL ไฟล์เสียง', 'error'));
+    });
+
+    function renderPagination() {
+      const totalPages = Math.ceil(dataItems.length / pageSize);
+      elements.paginationList.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      const buildItem = (label, page, disabled, active) => `
+        <li class="page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}"><a href="#" data-page="${page}">${label}</a></li>`;
+
+      elements.paginationList.innerHTML += buildItem('<i class="fa-solid fa-chevron-left"></i>', currentPage - 1, currentPage === 1, false);
+      for (let i = 1; i <= totalPages; i += 1) {
+        elements.paginationList.innerHTML += buildItem(i, i, false, i === currentPage);
+      }
+      elements.paginationList.innerHTML += buildItem('<i class="fa-solid fa-chevron-right"></i>', currentPage + 1, currentPage === totalPages, false);
+    }
+
+    elements.paginationList.addEventListener('click', (event) => {
+      const link = event.target.closest('a');
+      if (!link) return;
+      event.preventDefault();
+      const page = Number(link.dataset.page);
+      const totalPages = Math.ceil(dataItems.length / pageSize);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+      renderPagination();
+    });
+
+    function initEvents() {
+      elements.searchInput.addEventListener('input', () => { currentPage = 1; loadData(); });
+      elements.filterGroup.addEventListener('change', () => { currentPage = 1; loadData(); });
+      elements.filterType.addEventListener('change', () => { currentPage = 1; loadData(); });
+      elements.sortBy.addEventListener('change', () => { currentPage = 1; loadData(); });
+      elements.resetFilters.addEventListener('click', () => {
+        elements.searchInput.value = '';
+        elements.filterGroup.value = '';
+        elements.filterType.value = '';
+        elements.sortBy.value = 'order_asc';
+        currentPage = 1;
+        loadData();
+      });
+    }
+
+    window.confirmDelete = function (id, symbol) {
+      if (confirm(`คุณต้องการลบตัวอักษร "${symbol}" (ID: ${id}) ใช่หรือไม่?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/projectjapan/backend/php/action/delete_katakana.php';
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'id';
+        input.value = id;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initEvents();
+      checkQueryMessage();
+      fetchStats();
+      loadData();
+    });
+  </script>
+</body>
+</html>

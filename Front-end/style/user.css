@@ -1,0 +1,315 @@
+/* =========================================
+   Global Variables (ย้ายมาไว้ที่ :root เพื่อให้ใช้ได้ทุกหน้า)
+   ========================================= */
+:root {
+    --bg-main: #f6f3ef;
+    --text-dark: #1b120d;
+    --text-main: #222222;
+    --text-light: #666666;
+    --accent-color: #d94a35;
+    --card-bg: #ffffff;
+    --border-color: #ddd;
+}
+
+.user-dashboard-page {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    font-family: 'Noto Sans Thai', sans-serif;
+}
+
+.user-dashboard-page * {
+    box-sizing: border-box;
+}
+
+.user-dashboard-page a {
+    text-decoration: none;
+}
+
+.user-dashboard-page a:hover,
+.user-dashboard-page a:focus,
+.user-dashboard-page a:active {
+    text-decoration: none;
+}
+
+/* Navbar-related rules removed for the public layout. */
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text-dark);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    outline: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.user-profile i {
+    color: var(--text-dark);
+    font-size: 18px;
+}
+
+.user-profile:hover {
+    background-color: #f5f5f5;
+    border-color: var(--text-dark);
+    color: var(--text-dark);
+}
+
+.user-profile:focus,
+.user-profile:active {
+    outline: none;
+    text-decoration: none;
+}
+/* ========================================= */
+
+
+/* =========================================
+   ส่วนเนื้อหาหลักของหน้า Dashboard (เฉพาะหน้านี้)
+   ========================================= */
+.user-dashboard-page .main-container {
+    max-width: 1400px;
+    margin: auto;
+    padding: 112px 30px 40px;
+}
+
+.user-dashboard-page .greeting {
+    margin-bottom: 40px;
+}
+
+.user-dashboard-page .greeting h1 {
+    font-size: 36px;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.user-dashboard-page .greeting p {
+    color: var(--accent-color);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.user-dashboard-page .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 25px;
+    margin-bottom: 60px;
+}
+
+.user-dashboard-page .stat-card {
+    background: var(--card-bg);
+    border: 1px solid #eaeaea;
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    transition: all 0.3s ease;
+}
+
+.user-dashboard-page .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+}
+
+.user-dashboard-page .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.user-dashboard-page .stat-icon {
+    font-size: 24px;
+    width: 45px;
+    height: 45px;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+}
+
+.user-dashboard-page .stat-icon.yellow {
+    color: #f1c40f;
+}
+
+.user-dashboard-page .stat-icon.purple {
+    color: #9b59b6;
+}
+
+.user-dashboard-page .stat-icon.green {
+    color: #2ecc71;
+}
+
+.user-dashboard-page .stat-value {
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-top: 15px;
+    line-height: 1;
+}
+
+.user-dashboard-page .stat-value .percent-suffix {
+    font-size: 24px;
+    color: #888;
+}
+
+.user-dashboard-page .recent-tests-section {
+    margin-top: 60px;
+}
+
+.user-dashboard-page .recent-list {
+    display: grid;
+    gap: 12px;
+}
+
+.user-dashboard-page .recent-item {
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-dark);
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    padding: 16px 20px;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.user-dashboard-page .recent-item:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.user-dashboard-page .test-title {
+    font-weight: 600;
+}
+
+.user-dashboard-page .test-score {
+    color: var(--accent-color);
+    font-weight: 700;
+}
+
+.user-dashboard-page .test-date,
+.user-dashboard-page .no-data {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .user-dashboard-page .recent-item {
+        align-items: flex-start;
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+}
+
+.user-dashboard-page .section-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: var(--text-dark);
+}
+
+.user-dashboard-page .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.user-dashboard-page .menu-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.user-dashboard-page .menu-card:hover,
+.user-dashboard-page .menu-card:focus,
+.user-dashboard-page .menu-card:active {
+    text-decoration: none;
+}
+
+.user-dashboard-page .menu-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 20px rgba(217, 74, 53, 0.1);
+}
+
+.user-dashboard-page .menu-icon-box {
+    width: 70px;
+    height: 70px;
+    background: #f3f3f3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
+
+.user-dashboard-page .menu-card:hover .menu-icon-box {
+    background: var(--accent-color);
+    color: white;
+}
+
+.user-dashboard-page .menu-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-dark);
+}
+
+.user-dashboard-page .menu-desc {
+    font-size: 15px;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* =========================================
+   Media Queries (รองรับมือถือ)
+   ========================================= */
+@media (max-width: 768px) {
+    /* Navbar Responsive */
+    .nav-container {
+        padding: 15px 20px;
+    }
+    
+    .user-profile span {
+        display: none;
+    }
+
+    /* Dashboard Responsive */
+    .user-dashboard-page .main-container {
+        padding: 30px 20px;
+    }
+
+    .user-dashboard-page .greeting h1 {
+        font-size: 28px;
+    }
+}

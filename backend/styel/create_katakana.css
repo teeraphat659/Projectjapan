@@ -1,0 +1,201 @@
+/* =========================================
+     1. Layout & Containers (การจัดวางโครงสร้าง)
+     ========================================= */
+  .header-container { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
+  }
+
+  .section-header-flex { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 15px; 
+  }
+
+  .form-actions-footer { 
+    display: flex; 
+    gap: 15px; 
+    margin-top: 24px; 
+  }
+
+  /* =========================================
+     2. Inputs & Form Elements (ช่องกรอกข้อมูล)
+     ========================================= */
+  .input-icon-wrapper { 
+    display: flex; 
+    align-items: center; 
+    background-color: #e0e0e0; 
+    padding: 12px 15px; 
+    border-radius: 6px; 
+    margin-bottom: 15px; /* เพิ่มระยะห่างด้านล่าง */
+    transition: background-color 0.2s ease; 
+  }
+  
+  .input-icon-wrapper:focus-within {
+    background-color: #d5d5d5; 
+  }
+
+  .input-icon-wrapper i { 
+    margin-right: 12px; 
+    font-size: 18px; 
+    color: #555; 
+  }
+
+  .input-icon-wrapper input { 
+    border: none; 
+    background: transparent; 
+    width: 100%; 
+    outline: none; 
+    font-size: 15px;
+    color: #333;
+    padding: 0; /* ลบ padding ที่อาจชนกับตัวใหม่ */
+    margin-bottom: 0; /* รีเซ็ต margin */
+  }
+
+  /* =========================================
+     3. Cards & Steps (การ์ดขั้นตอนการเขียน)
+     ========================================= */
+  .step-card { 
+    background: #fafafa;
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    padding: 20px; 
+    margin-bottom: 16px; 
+    transition: box-shadow 0.2s ease;
+  }
+
+  .step-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .step-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    font-weight: 600; 
+    margin-bottom: 16px; 
+    color: #333;
+  }
+
+  /* =========================================
+     4. Buttons (ปุ่มต่างๆ)
+     ========================================= */
+  .btn-dark-main { 
+    background-color: #212121; 
+    color: #ffffff; 
+    padding: 10px 24px; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  .btn-dark-main:hover { background-color: #3a3a3a; }
+
+  .btn-outline-add { 
+    background: #ffffff; 
+    border: 1px solid #d1d5db; 
+    color: #374151;
+    padding: 8px 16px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .btn-outline-add:hover { 
+    background: #f3f4f6; 
+    border-color: #9ca3af;
+  }
+
+  .btn-submit-black { 
+    background-color: #000000; 
+    color: #ffffff; 
+    padding: 14px 24px; 
+    border: none; 
+    flex-grow: 1; 
+    border-radius: 6px; 
+    text-align: center; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+  }
+  .btn-submit-black:hover { background-color: #1f1f1f; }
+
+  .btn-cancel-white { 
+    background-color: #ffffff; 
+    color: #333333; 
+    padding: 14px 32px; 
+    border: 1px solid #cccccc; 
+    border-radius: 6px; 
+    text-decoration: none; 
+    text-align: center; 
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-cancel-white:hover { 
+    background-color: #f9f9f9;
+    border-color: #999999;
+  }
+
+  /* =========================================
+     5. Utilities (คลาสเสริม)
+     ========================================= */
+  .text-danger { 
+    color: #dc3545; 
+    cursor: pointer; 
+    font-size: 16px;
+    transition: color 0.2s ease;
+  }
+  .text-danger:hover { color: #b02a37; }
+
+  /* =========================================
+     6. Standard Inputs & Labels (เพิ่มใหม่ เพื่อแก้ฟอร์มเพี้ยน)
+     ========================================= */
+  /* บังคับให้ข้อความ (Label) แยกบรรทัดกับช่องกรอกข้อมูล */
+  label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 6px;
+    margin-top: 12px; /* เพิ่มระยะห่างด้านบนไม่ให้ติดกับช่องก่อนหน้า */
+    color: #333;
+  }
+
+  /* ตั้งค่าช่องกรอกข้อมูลพื้นฐานที่ไม่ได้จัดคลาส */
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    max-width: 500px; /* จำกัดความกว้างไม่ให้ยาวทะลุจอ (สามารถลบออกได้ถ้าอยากให้กว้าง 100%) */
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box; /* สำคัญมาก ป้องกันกล่องทะลุขอบ */
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: #212121;
+  }
+
+  /* สำหรับ Textarea (เช่น ช่องคำอธิบายในขั้นตอนที่ 1) */
+  textarea {
+    max-width: 100%; /* ให้ Textarea กว้างเต็มพื้นที่เสมอ */
+    min-height: 100px; /* ความสูงเริ่มต้น */
+    resize: vertical; /* ให้ผู้ใช้ลากขยายได้เฉพาะแนวตั้ง */
+  }

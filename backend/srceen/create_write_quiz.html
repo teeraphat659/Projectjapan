@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{pageTitle}}</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+    <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+    <link rel="stylesheet" href="/projectjapan/backend/styel/create_write_quiz.css">
+    <style>
+        .reference-preview-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; color: #2563eb; font-size: 13px; font-weight: 600; text-decoration: none; }
+        .reference-preview-link:hover { text-decoration: underline; }
+        .reference-modal[hidden] { display: none; }
+        .reference-modal { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 20px; background: rgba(15, 23, 42, .5); }
+        .reference-modal-card { width: min(680px, 100%); background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 20px 45px rgba(15, 23, 42, .25); }
+        .reference-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .reference-modal-header h3 { margin: 0; color: #111827; }
+        .reference-modal-close { border: 0; border-radius: 8px; padding: 7px 11px; cursor: pointer; }
+        .reference-modal-variant { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: #374151; font-size: 13px; font-weight: 600; }
+        .reference-modal-variant select { flex: 1; min-width: 0; padding: 7px 9px; border: 1px solid #d1d5db; border-radius: 7px; font: inherit; }
+        .reference-modal-canvas { width: 100%; aspect-ratio: 620 / 420; border: 1px solid #d1d5db; border-radius: 10px; background-color: #fff; background-image: linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px); background-size: 10% 10%; }
+        .reference-modal-status { margin: 8px 0 0; color: #6b7280; font-size: 13px; }
+    </style>
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+
+    <div id="referenceModal" class="reference-modal" hidden role="dialog" aria-modal="true" aria-labelledby="referenceModalTitle">
+        <div class="reference-modal-card">
+            <div class="reference-modal-header"><h3 id="referenceModalTitle">เฉลยเส้นตัวอักษร</h3><button type="button" class="reference-modal-close" id="referenceModalClose">ปิด</button></div>
+            <label class="reference-modal-variant" for="referenceModalVariant">เลือกกรณีเฉลย <select id="referenceModalVariant" disabled><option value="">กำลังโหลด...</option></select></label>
+            <canvas id="referenceModalCanvas" width="620" height="420" class="reference-modal-canvas"></canvas>
+            <p id="referenceModalStatus" class="reference-modal-status">กำลังโหลดเฉลย...</p>
+        </div>
+    </div>
+
+    <div id="leaveDraftModal" class="draft-modal hidden" role="dialog" aria-modal="true" aria-labelledby="leaveDraftTitle">
+        <div class="draft-modal-card">
+            <h3 id="leaveDraftTitle">คุณยังไม่เสร็จสิ้นการเพิ่มข้อมูล</h3>
+            <p>ข้อมูลแบบทดสอบของคุณยังอยู่ในแบบร่าง คุณต้องการทำอะไรต่อ?</p>
+            <div class="draft-modal-actions">
+                <button type="button" class="btn-secondary" id="continueEditingBtn">กลับไปแก้ไขต่อ</button>
+                <button type="button" class="btn-primary" id="saveDraftBtn">บันทึกแบบร่างไว้ก่อน</button>
+                <button type="button" class="btn-danger" id="leaveWithoutSavingBtn">ออกจากหน้านี้</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="create-quiz-card">
+            <!-- Header Section -->
+            <div class="page-header">
+                <h2 class="page-title" id="pageTitle">{{heading}}</h2>
+                <p class="page-subtitle">สร้างแบบทดสอบการเขียน (พิมพ์ตอบ) ข้อมูลอ้างอิงจากฐานข้อมูลใหม่</p>
+            </div>
+
+            <div id="formMessage" class="form-message" role="alert" aria-live="assertive"></div>
+
+            <!-- Quiz Form -->
+            <form id="quizForm">
+                <!-- Basic Quiz Information -->
+                <div class="section-box">
+                    <div class="section-box-title">ข้อมูลแบบทดสอบ</div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="title">ชื่อแบบทดสอบ *</label>
+                        <input id="title" class="form-control" required maxlength="180" placeholder="เช่น แบบทดสอบเขียนฮิรางานะ วรรค A">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">คำอธิบาย</label>
+                        <input id="description" class="form-control" maxlength="5000" placeholder="คำอธิบายเพิ่มเติมเกี่ยวกับแบบทดสอบนี้">
+                    </div>
+
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label" for="alphabetType">หมวดหมู่ตัวอักษร (เพื่อดึงตัวเลือก) *</label>
+                            <select id="alphabetType" class="form-control" required>
+                                <option value="katakana">คาตากานะ (Katakana)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="groupId">เลือกวรรค (Group)</label>
+                            <select id="groupId" class="form-control">
+                                <option value="">กำลังโหลด...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label" for="writingMode">โหมดการเขียน *</label>
+                            <select id="writingMode" class="form-control" required>
+                                <option value="assisted">เขียนแบบมีตัวช่วย</option>
+                                <option value="unassisted">เขียนแบบไม่มีตัวช่วย</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label" for="quizRole">บทบาทที่ใช้ทำแบบทดสอบ</label>
+                            <select id="quizRole" class="form-control">
+                                <option value="all">ทุกบทบาท</option>
+                                <option value="member">สมาชิก</option>
+                                <option value="admin">ผู้ดูแลระบบ</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="orderType">รูปแบบการเรียงข้อสอบ *</label>
+                            <select id="orderType" class="form-control" required>
+                                <option value="sequential">เรียงตามลำดับ (Sequential)</option>
+                                <option value="random">สุ่ม (Random)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label" for="timeLimit">เวลาจำกัด (นาที)</label>
+                            <input id="timeLimit" class="form-control" type="number" min="0" max="600" value="0" placeholder="0 = ไม่จำกัดเวลา">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="passScore">เกณฑ์ผ่าน (%)</label>
+                            <input id="passScore" class="form-control" type="number" min="0" max="100" value="70">
+                        </div>
+                    </div>
+
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label" for="isActive">สถานะเปิดใช้งาน</label>
+                            <select id="isActive" class="form-control">
+                                <option value="1">เปิดใช้งาน (Active)</option>
+                                <option value="0">ปิดซ่อน (Inactive)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+                </div>
+
+                <div class="section-box">
+                    <div class="section-box-title">เลือกวรรคและตัวอักษร</div>
+
+                    <div class="quiz-source-mode" aria-label="เลือกโหมดสร้างแบบทดสอบ">
+                        <button type="button" class="mode-btn active" data-mode="group">สร้างตามวรรค</button>
+                        <button type="button" class="mode-btn" data-mode="random">สุ่มตัวอักษร</button>
+                    </div>
+
+                    <div id="groupGrid" class="group-grid"></div>
+
+                    <div class="toolbar-row">
+                        <button type="button" class="mini-btn" id="selectAllCharacters">เลือกทั้งหมด</button>
+                        <button type="button" class="mini-btn" id="clearCharacters">ยกเลิกทั้งหมด</button>
+                        <button type="button" class="mini-btn accent" id="generateFromSelection">เพิ่มข้อมูล</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ตัวอักษรที่เปิดใช้งานในวรรคนี้</label>
+                        <div id="characterGrid" class="character-grid"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ตัวอักษรที่เลือกแล้ว</label>
+                        <div id="selectedCharacterSummary" class="selected-summary"></div>
+                    </div>
+                </div>
+
+                <!-- Questions Dynamic Section -->
+                <div class="questions-section">
+                    <div class="questions-header">
+                        <div>
+                            <div class="page-title" style="font-size: 16px;">คำถาม (แบบพิมพ์ตอบ)</div>
+                            <div class="page-subtitle">เลือกตัวอักษร และกำหนดคะแนนเต็มในแต่ละข้อ</div>
+                        </div>
+                        <button type="button" id="addQuestion" class="btn-add-question">
+                            <i class="fa-solid fa-plus"></i> เพิ่มข้อ
+                        </button>
+                    </div>
+
+                    <div id="questions"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions-footer">
+                    <button class="btn-submit-quiz" type="submit" id="saveButton">บันทึกแบบทดสอบ</button>
+                    <a class="btn-cancel-quiz" href="{{manageUrl}}">ยกเลิก</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="/projectjapan/backend/script.js"></script>
+    <script>
+        // Config & State
+        const endpoint = '/projectjapan/backend/php/action/admin_api.php';
+        const manageUrl = '{{manageUrl}}';
+        const draftKey = 'writing_quiz_draft_v1';
+        let pendingLeaveUrl = '';
+
+        const state = {
+            characters: [],
+            groupItems: [],
+            selectedGroupId: '',
+            selectedGroupCode: '',
+            selectedGroupIds: new Set(),
+            selectedCharacterIds: new Set(),
+            mode: 'group',
+            editingId: null
+        };
+
+        // DOM Elements
+        const questionsContainer = document.getElementById('questions');
+        const messageContainer = document.getElementById('formMessage');
+        const groupGrid = document.getElementById('groupGrid');
+
+        function showFormMessage(message, type = 'error') {
+            messageContainer.textContent = message || '';
+            messageContainer.className = `form-message ${type}`;
+            messageContainer.hidden = !message;
+            if (message) {
+                messageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function showGroupDuplicateWarning(groupName = '') {
+            const label = groupName ? `วรรค ${groupName}` : 'วรรคที่เลือก';
+            const details = `${label} มีแบบทดสอบการเขียนอยู่แล้ว ไม่สามารถสร้างซ้ำได้\nกรุณาเลือกวรรคอื่น หรือแก้ไขชุดที่มีอยู่เดิม`;
+            showFormMessage(details, 'error');
+            window.alert(details);
+        }
+        const characterGrid = document.getElementById('characterGrid');
+        const selectedCharacterSummary = document.getElementById('selectedCharacterSummary');
+        const referenceModal = document.getElementById('referenceModal');
+        const referenceModalCanvas = document.getElementById('referenceModalCanvas');
+        const referenceModalContext = referenceModalCanvas.getContext('2d');
+        const referenceModalStatus = document.getElementById('referenceModalStatus');
+        const referenceModalVariant = document.getElementById('referenceModalVariant');
+        let referencePreviewVariants = [];
+
+        function drawReferencePreview(strokes) {
+            referenceModalContext.clearRect(0, 0, referenceModalCanvas.width, referenceModalCanvas.height);
+            referenceModalContext.lineCap = 'round';
+            referenceModalContext.lineJoin = 'round';
+            referenceModalContext.lineWidth = 14;
+            referenceModalContext.strokeStyle = '#111827';
+            strokes.forEach((stroke, index) => {
+                const points = Array.isArray(stroke.points) ? stroke.points : [];
+                if (points.length < 2) return;
+                referenceModalContext.beginPath();
+                points.forEach((point, pointIndex) => pointIndex ? referenceModalContext.lineTo(point.x, point.y) : referenceModalContext.moveTo(point.x, point.y));
+                referenceModalContext.stroke();
+                referenceModalContext.fillStyle = '#ef4444';
+                referenceModalContext.font = 'bold 16px sans-serif';
+                referenceModalContext.fillText(String(index + 1), points[0].x + 5, points[0].y - 5);
+            });
+        }
+
+        function fitReferenceToModal(strokes) {
+            const points = strokes.flatMap((stroke) => Array.isArray(stroke.points) ? stroke.points : []);
+            if (!points.length) return strokes;
+            const minX = Math.min(...points.map((point) => Number(point.x) || 0));
+            const maxX = Math.max(...points.map((point) => Number(point.x) || 0));
+            const minY = Math.min(...points.map((point) => Number(point.y) || 0));
+            const maxY = Math.max(...points.map((point) => Number(point.y) || 0));
+            const width = Math.max(1, maxX - minX);
+            const height = Math.max(1, maxY - minY);
+            const scale = Math.min(2.5, 480 / width, 330 / height);
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
+            return strokes.map((stroke) => ({
+                points: (stroke.points || []).map((point) => ({
+                    x: ((Number(point.x) - centerX) * scale) + referenceModalCanvas.width / 2,
+                    y: ((Number(point.y) - centerY) * scale) + referenceModalCanvas.height / 2
+                }))
+            }));
+        }
+
+        function referenceEscapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+        }
+
+        function showSelectedReferenceVariant(versionName) {
+            const item = referencePreviewVariants.find((variant) => String(variant.version_name) === String(versionName));
+            const strokes = item?.trajectory?.strokes || [];
+            drawReferencePreview(fitReferenceToModal(strokes));
+            referenceModalStatus.textContent = strokes.length
+                ? `กำลังแสดงกรณี “${item.version_name}” • ${strokes.length} เส้น • มีเฉลยทั้งหมด ${referencePreviewVariants.length} กรณี`
+                : 'กรณีเฉลยนี้ไม่มีข้อมูลเส้น';
+        }
+
+        async function showReferencePreview(characterId) {
+            if (!characterId) return;
+            referenceModal.hidden = false;
+            referenceModalStatus.textContent = 'กำลังโหลดเฉลย...';
+            referenceModalVariant.disabled = true;
+            referenceModalVariant.innerHTML = '<option value="">กำลังโหลด...</option>';
+            try {
+                const response = await fetch(`/projectjapan/backend/php/action/writing_svg_reference_api.php?action=all_variants&character_id=${Number(characterId)}`, { credentials: 'same-origin' });
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message || 'โหลดข้อมูลเฉลยไม่สำเร็จ');
+                referencePreviewVariants = Array.isArray(result.items) ? result.items : [];
+                if (!referencePreviewVariants.length) {
+                    drawReferencePreview([]);
+                    referenceModalVariant.innerHTML = '<option value="">ยังไม่มีกรณีเฉลย</option>';
+                    referenceModalStatus.textContent = 'ยังไม่มีข้อมูลเฉลยของตัวอักษรนี้';
+                    return;
+                }
+                referenceModalVariant.innerHTML = referencePreviewVariants.map((item) => `<option value="${referenceEscapeHtml(item.version_name)}">${referenceEscapeHtml(item.version_name)} (${Number(item.stroke_count || 0)} เส้น)</option>`).join('');
+                referenceModalVariant.disabled = false;
+                const defaultVariant = referencePreviewVariants.find((item) => item.version_name === 'default') || referencePreviewVariants[0];
+                referenceModalVariant.value = defaultVariant.version_name;
+                showSelectedReferenceVariant(defaultVariant.version_name);
+            } catch (error) {
+                referencePreviewVariants = [];
+                drawReferencePreview([]);
+                referenceModalVariant.innerHTML = '<option value="">โหลดไม่สำเร็จ</option>';
+                referenceModalStatus.textContent = 'โหลดข้อมูลเฉลยไม่สำเร็จ';
+            }
+        }
+
+        questionsContainer.addEventListener('click', (event) => {
+            const button = event.target.closest('.reference-preview-link');
+            if (button) showReferencePreview(button.dataset.characterId);
+        });
+        document.getElementById('referenceModalClose').addEventListener('click', () => { referenceModal.hidden = true; });
+        referenceModal.addEventListener('click', (event) => { if (event.target === referenceModal) referenceModal.hidden = true; });
+        referenceModalVariant.addEventListener('change', () => showSelectedReferenceVariant(referenceModalVariant.value));
+
+        // Helper Functions
+        const esc = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[char]));
+
+        function normalizeWritingText(value) {
+            return String(value ?? '').replace(/\s+/g, ' ').trim();
+        }
+
+        function shuffleArray(items) {
+            const copy = [...items];
+            for (let i = copy.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function getCurrentDraftPayload() {
+            const questions = [...questionsContainer.children].map((card) => ({
+                character_id: Number(card.querySelector('.character-id')?.value || 0),
+                max_score: Number(card.querySelector('.max-score')?.value || 0),
+                question_text: card.querySelector('.question-text')?.value || '',
+                feedback_style: card.querySelector('.feedback-style')?.value || 'teaching',
+                expected_stroke_count: Number(card.querySelector('.expected-stroke-count')?.value || 0),
+                difficulty_level: card.querySelector('.difficulty-level')?.value || 'normal',
+                position_tolerance: Number(card.querySelector('.position-tolerance')?.value || 20),
+                stroke_order_required: card.querySelector('.stroke-order-required')?.checked ? 1 : 0,
+                live_feedback_enabled: card.querySelector('.live-feedback-enabled')?.checked ? 1 : 0,
+                memory_check_enabled: card.querySelector('.memory-check-enabled')?.checked ? 1 : 0,
+                feedback_beginner: card.querySelector('.feedback-beginner')?.value || '',
+                feedback_intermediate: card.querySelector('.feedback-intermediate')?.value || '',
+                feedback_advanced: card.querySelector('.feedback-advanced')?.value || '',
+                confidence_threshold: Number(card.querySelector('.confidence-threshold')?.value || 75),
+                ai_threshold: Number(card.querySelector('.ai-threshold')?.value || 60),
+                dtw_enabled: card.querySelector('.dtw-enabled')?.checked ? 1 : 0,
+                weight_order: Number(card.querySelector('.weight-order')?.value || 15),
+                weight_shape: Number(card.querySelector('.weight-shape')?.value || 45),
+                weight_alignment: Number(card.querySelector('.weight-alignment')?.value || 20),
+                weight_start: Number(card.querySelector('.weight-start')?.value || 10),
+                weight_completeness: Number(card.querySelector('.weight-completeness')?.value || 10)
+            }));
+
+            return {
+                title: normalizeWritingText(document.getElementById('title').value),
+                description: normalizeWritingText(document.getElementById('description').value),
+                alphabetType: document.getElementById('alphabetType').value,
+                groupId: document.getElementById('groupId').value,
+                quizRole: document.getElementById('quizRole').value,
+                orderType: document.getElementById('orderType').value,
+                timeLimit: document.getElementById('timeLimit').value,
+                passScore: document.getElementById('passScore').value,
+                isActive: document.getElementById('isActive').value,
+                writingMode: document.getElementById('writingMode').value,
+                questions,
+                selectedCharacterIds: [...state.selectedCharacterIds],
+                selectedGroupIds: [...state.selectedGroupIds],
+                mode: state.mode,
+                savedAt: Date.now()
+            };
+        }
+
+        function hasDraftContent() {
+            const payload = getCurrentDraftPayload();
+            if (payload.title || payload.description || payload.questions.length) {
+                return true;
+            }
+            return false;
+        }
+
+        function persistDraft() {
+            if (!hasDraftContent()) {
+                localStorage.removeItem(draftKey);
+                return;
+            }
+            localStorage.setItem(draftKey, JSON.stringify(getCurrentDraftPayload()));
+        }
+
+        function restoreDraft() {
+            const raw = localStorage.getItem(draftKey);
+            if (!raw) return false;
+
+            try {
+                const payload = JSON.parse(raw);
+                if (!payload) return false;
+
+                document.getElementById('title').value = payload.title || '';
+                document.getElementById('description').value = payload.description || '';
+                document.getElementById('alphabetType').value = payload.alphabetType || 'katakana';
+                document.getElementById('writingMode').value = payload.writingMode || 'assisted';
+                document.getElementById('quizRole').value = payload.quizRole || 'all';
+                document.getElementById('orderType').value = payload.orderType || 'sequential';
+                document.getElementById('timeLimit').value = payload.timeLimit || '0';
+                document.getElementById('passScore').value = payload.passScore || '70';
+                document.getElementById('isActive').value = payload.isActive || '1';
+                state.mode = payload.mode || 'group';
+                document.querySelectorAll('.mode-btn').forEach((button) => {
+                    button.classList.toggle('active', button.dataset.mode === state.mode);
+                });
+
+                if (payload.selectedGroupIds && payload.selectedGroupIds.length) {
+                    state.selectedGroupIds = new Set(payload.selectedGroupIds.map(String));
+                }
+                if (payload.groupId) {
+                    state.selectedGroupId = String(payload.groupId);
+                    state.selectedGroupCode = payload.groupId;
+                }
+
+                if (payload.questions && payload.questions.length) {
+                    questionsContainer.innerHTML = '';
+                    payload.questions.forEach((item) => addQuestion(item));
+                }
+
+                return true;
+            } catch (error) {
+                localStorage.removeItem(draftKey);
+                return false;
+            }
+        }
+
+        function showLeaveModal(targetUrl = '') {
+            pendingLeaveUrl = targetUrl;
+            const modal = document.getElementById('leaveDraftModal');
+            modal.classList.remove('hidden');
+        }
+
+        function hideLeaveModal() {
+            pendingLeaveUrl = '';
+            document.getElementById('leaveDraftModal').classList.add('hidden');
+        }
+
+        function handleLeaveDecision(shouldSaveDraft) {
+            if (shouldSaveDraft) {
+                persistDraft();
+            } else {
+                localStorage.removeItem(draftKey);
+            }
+            hideLeaveModal();
+            if (pendingLeaveUrl) {
+                window.location.href = pendingLeaveUrl;
+            }
+        }
+
+        function characterOptions(selected = '') {
+            return `<option value="">เลือกตัวอักษรโจทย์</option>` +
+                state.characters.map((item) =>
+                    `<option value="${Number(item.id)}" data-stroke-count="${Number(item.stroke_count || 0)}" ${Number(item.id) === Number(selected) ? 'selected' : ''}>` +
+                    `${esc(item.japanese_char)} (${esc(item.romaji)})` +
+                    `</option>`
+                ).join('');
+        }
+
+        function renumberQuestions() {
+            [...questionsContainer.children].forEach((card, index) => {
+                card.querySelector('.section-box-title').textContent = `ข้อที่ ${index + 1}`;
+            });
+        }
+
+        function addQuestion(values = {}) {
+            const analysisProfile = typeof values.analysis_profile === 'string'
+                ? (() => { try { return JSON.parse(values.analysis_profile) || {}; } catch (error) { return {}; } })()
+                : (values.analysis_profile || {});
+            values = { ...analysisProfile, ...values, analysis_profile: analysisProfile };
+            const index = questionsContainer.children.length + 1;
+            const card = document.createElement('section');
+            card.className = 'section-box question-card';
+
+            const fallbackCharacterId = values.character_id || (() => {
+                const selected = state.characters.find((item) => state.selectedCharacterIds.has(Number(item.id)));
+                return selected ? Number(selected.id) : (state.characters[0] ? Number(state.characters[0].id) : '');
+            })();
+
+            card.innerHTML = `
+                <button type="button" class="remove-question"><i class="fa-solid fa-trash"></i> ลบ</button>
+                <div class="section-box-title">ข้อที่ ${index}</div>
+                <div class="form-row-2col">
+                    <div class="form-group">
+                        <label class="form-label">โจทย์ตัวอักษร *</label>
+                        <select class="form-control character-id" required>
+                            ${characterOptions(fallbackCharacterId)}
+                        </select>
+                        <button type="button" class="reference-preview-link" data-character-id="${Number(fallbackCharacterId) || ''}">
+                            <i class="fa-solid fa-eye"></i> ดูรายละเอียดเฉลยเส้น
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">คะแนนเต็มข้อนี้ *</label>
+                        <input type="number" class="form-control max-score" required min="1" value="${values.max_score || 5}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">คำถามที่จะแสดงให้ผู้ใช้เห็น (ไม่บังคับ)</label>
+                    <input class="form-control question-text" value="${esc(values.question_text)}" placeholder="เช่น จงพิมพ์คำอ่านโรมาจิของตัวอักษรนี้ (เว้นว่างเพื่อใช้คำถามมาตรฐาน)">
+                </div>
+                <div class="form-row-2col">
+                    <div class="form-group"><label class="form-label">จำนวนเส้นมาตรฐาน</label><input type="number" class="form-control expected-stroke-count" value="${values.expected_stroke_count || ''}" readonly aria-readonly="true"><small>ดึงอัตโนมัติจากตัวอักษรที่เลือก</small></div>
+                    <div class="form-group"><label class="form-label">ระดับความยาก</label><select class="form-control difficulty-level"><option value="easy" ${values.difficulty_level === 'easy' ? 'selected' : ''}>ง่าย</option><option value="normal" ${!values.difficulty_level || values.difficulty_level === 'normal' ? 'selected' : ''}>ปกติ</option><option value="hard" ${values.difficulty_level === 'hard' ? 'selected' : ''}>ยาก</option></select></div>
+                </div>
+                <div class="form-row-2col">
+                    <div class="form-group"><label class="form-label">ค่าคลาดเคลื่อนตำแหน่ง (%)</label><input type="number" min="0" max="100" class="form-control position-tolerance" value="${values.position_tolerance ?? 20}"></div>
+                    <div class="form-group"><label class="form-label">ตัวเลือกการตรวจ</label><label><input type="checkbox" class="stroke-order-required" ${values.stroke_order_required !== 0 ? 'checked' : ''}> ตรวจลำดับเส้น</label><label><input type="checkbox" class="live-feedback-enabled" ${values.live_feedback_enabled !== 0 ? 'checked' : ''}> AI วิเคราะห์</label><label><input type="checkbox" class="memory-check-enabled" ${values.memory_check_enabled !== 0 ? 'checked' : ''}> ตรวจการจำ</label></div>
+                </div>
+                <div class="form-row-2col">
+                    <div class="form-group"><label class="form-label">ความมั่นใจขั้นต่ำก่อนตัดสิน (%)</label><input type="number" min="0" max="100" class="form-control confidence-threshold" value="${values.confidence_threshold ?? values.analysis_profile?.confidence_threshold ?? 75}"></div>
+                    <div class="form-group"><label class="form-label">คะแนนขั้นต่ำก่อนส่งให้ AI (%)</label><input type="number" min="0" max="100" class="form-control ai-threshold" value="${values.ai_threshold ?? values.analysis_profile?.ai_threshold ?? 60}"></div>
+                </div>
+                <div class="form-row-2col">
+                    <div class="form-group"><label class="form-label">วิธีวิเคราะห์</label><label><input type="checkbox" class="dtw-enabled" ${values.dtw_enabled !== 0 && values.analysis_profile?.dtw_enabled !== 0 ? 'checked' : ''}> ใช้ DTW เปรียบเทียบเส้น</label></div>
+                    <div class="form-group"><label class="form-label">น้ำหนักคะแนน (%)</label><div class="form-row-2col"><input type="number" min="0" max="100" class="weight-order" aria-label="น้ำหนักลำดับเส้น" placeholder="ลำดับเส้น" value="${values.weight_order ?? values.analysis_profile?.weight_order ?? 15}"><input type="number" min="0" max="100" class="weight-shape" aria-label="น้ำหนักรูปทรง" placeholder="รูปทรง" value="${values.weight_shape ?? values.analysis_profile?.weight_shape ?? 45}"><input type="number" min="0" max="100" class="weight-alignment" aria-label="น้ำหนักตำแหน่ง" placeholder="ตำแหน่ง" value="${values.weight_alignment ?? values.analysis_profile?.weight_alignment ?? 20}"><input type="number" min="0" max="100" class="weight-start" aria-label="น้ำหนักจุดเริ่มต้น" placeholder="จุดเริ่มต้น" value="${values.weight_start ?? values.analysis_profile?.weight_start ?? 10}"><input type="number" min="0" max="100" class="weight-completeness" aria-label="น้ำหนักความครบถ้วน" placeholder="ความครบถ้วน" value="${values.weight_completeness ?? values.analysis_profile?.weight_completeness ?? 10}"></div><small>ลำดับเส้น, รูปทรง, ตำแหน่ง, จุดเริ่มต้น, ความครบถ้วน</small></div>
+                </div>
+                <div class="form-group"><label class="form-label">แนวทางให้ AI อธิบายเมื่อผิด</label><select class="form-control feedback-style"><option value="short" ${values.feedback_style === 'short' ? 'selected' : ''}>สั้นตรงประเด็น: บอกจุดที่ผิดและวิธีแก้สั้น ๆ</option><option value="teaching" ${!values.feedback_style || values.feedback_style === 'teaching' ? 'selected' : ''}>สอนทีละจุด: อธิบายเส้นและขั้นตอนที่ควรแก้</option><option value="detailed" ${values.feedback_style === 'detailed' ? 'selected' : ''}>ละเอียด: วิเคราะห์รูปทรง ตำแหน่ง ลำดับเส้น และวิธีฝึก</option></select></div>
+            `;
+
+            card.querySelector('.remove-question').addEventListener('click', () => {
+                if (questionsContainer.children.length > 1) {
+                    card.remove();
+                    renumberQuestions();
+                } else {
+                    alert('ต้องมีคำถามอย่างน้อย 1 ข้อ');
+                }
+            });
+
+            const characterSelect = card.querySelector('.character-id');
+            const referencePreviewLink = card.querySelector('.reference-preview-link');
+            const strokeCountInput = card.querySelector('.expected-stroke-count');
+            const syncStrokeCount = () => {
+                const option = characterSelect.options[characterSelect.selectedIndex];
+                strokeCountInput.value = option?.dataset.strokeCount || '';
+            };
+            characterSelect.addEventListener('change', syncStrokeCount);
+            characterSelect.addEventListener('change', () => {
+                referencePreviewLink.dataset.characterId = String(Number(characterSelect.value) || '');
+            });
+            syncStrokeCount();
+
+            questionsContainer.appendChild(card);
+        }
+
+        function updateSelectedSummary() {
+            const ids = [...state.selectedCharacterIds];
+            const selectedCharacters = state.characters.filter((item) => ids.includes(Number(item.id)));
+
+            if (!selectedCharacters.length) {
+                selectedCharacterSummary.innerHTML = '<span class="empty-state">ยังไม่ได้เลือกตัวอักษร</span>';
+                return;
+            }
+
+            selectedCharacterSummary.innerHTML = selectedCharacters
+                .map((item) => `<span class="selected-tag">${esc(item.japanese_char)} ${esc(item.romaji || '')}</span>`)
+                .join('');
+        }
+
+        function refreshQuestionSelects() {
+            [...questionsContainer.querySelectorAll('.character-id')].forEach((select) => {
+                const currentValue = select.value;
+                const nextOptions = characterOptions(currentValue);
+                select.innerHTML = nextOptions;
+                if (currentValue && [...select.options].some((option) => option.value === currentValue)) {
+                    select.value = currentValue;
+                } else if (select.options.length > 1) {
+                    select.value = select.options[1].value;
+                }
+            });
+        }
+
+        function ensureQuestionCard() {
+            if (questionsContainer.children.length) {
+                refreshQuestionSelects();
+                return;
+            }
+
+            const selectedCharacterId = state.characters.find((item) => state.selectedCharacterIds.has(Number(item.id)));
+            addQuestion({
+                character_id: selectedCharacterId ? Number(selectedCharacterId.id) : (state.characters[0] ? Number(state.characters[0].id) : ''),
+                max_score: 5,
+                question_text: ''
+            });
+        }
+
+        function renderCharacterChips() {
+            if (!state.characters.length) {
+                characterGrid.innerHTML = '<div class="empty-state">ไม่พบตัวอักษรในวรรคนี้</div>';
+                updateSelectedSummary();
+                ensureQuestionCard();
+                return;
+            }
+
+            characterGrid.innerHTML = state.characters.map((item) => {
+                const id = Number(item.id);
+                const selected = state.selectedCharacterIds.has(id);
+                return `
+                    <button type="button" class="character-chip ${selected ? 'selected' : ''}" data-character-id="${id}">
+                        <span>${esc(item.japanese_char)}</span>
+                        <small>${esc(item.romaji || '')}</small>
+                    </button>
+                `;
+            }).join('');
+
+            updateSelectedSummary();
+            ensureQuestionCard();
+        }
+
+        function renderGroupCards(groups) {
+            state.groupItems = groups;
+            const selectedGroupSet = state.mode === 'group'
+                ? new Set(state.selectedGroupId ? [String(state.selectedGroupId)] : [])
+                : new Set([...state.selectedGroupIds].map((item) => String(item)));
+
+            groupGrid.innerHTML = groups.map((group) => {
+                const id = Number(group.group_id || 0);
+                const groupName = group.group_name || group.group_name_th || group.group_name_en || group.name || 'วรรค';
+                const groupCode = String(group.group_code || group.char_group || 'group');
+                const isActive = selectedGroupSet.has(String(id)) || selectedGroupSet.has(groupCode);
+                return `
+                    <button type="button" class="group-card ${isActive ? 'active' : ''}" data-group-id="${id || groupCode}" data-group-code="${esc(groupCode)}">
+                        <span class="group-card-name">${esc(groupName)}</span>
+                        <span class="group-card-sub">${esc(groupCode)} • ${Number(group.character_count || 0)} ตัวอักษร</span>
+                    </button>
+                `;
+            }).join('');
+
+            if (!groups.length) {
+                groupGrid.innerHTML = '<div class="empty-state">ยังไม่มีกลุ่มตัวอักษร</div>';
+            }
+        }
+
+        function loadSelectedGroupsCharacters() {
+            const type = document.getElementById('alphabetType').value;
+            const selectedGroupCodes = [...state.selectedGroupIds]
+                .map((id) => {
+                    const item = state.groupItems.find((group) => String(group.group_id) === String(id) || String(group.group_code) === String(id));
+                    return item ? String(item.group_code || '').trim() : '';
+                })
+                .filter(Boolean);
+
+            if (!selectedGroupCodes.length) {
+                state.characters = [];
+                state.selectedCharacterIds = new Set();
+                renderCharacterChips();
+                return;
+            }
+
+            fetch(`${endpoint}?action=characters&type=${encodeURIComponent(type)}`, { credentials: 'same-origin' })
+                .then((r) => r.json())
+                .then((result) => {
+                    if (!result.success) throw new Error(result.message);
+                    const items = (result.items || []).filter((item) => selectedGroupCodes.includes(String(item.char_group || '').trim()));
+                    state.characters = items;
+                    state.selectedCharacterIds = new Set(items.map((item) => Number(item.id)));
+                    renderCharacterChips();
+                })
+                .catch((error) => {
+                    showFormMessage(error.message || 'เกิดข้อผิดพลาดในการโหลดตัวอักษร', 'error');
+                });
+        }
+
+        function selectGroup(groupId) {
+            const matchedGroup = state.groupItems.find((group) => String(group.group_id) === String(groupId) || String(group.group_code) === String(groupId));
+            const resolvedId = matchedGroup ? String(matchedGroup.group_id || '') : (groupId ? String(groupId) : '');
+            const resolvedCode = matchedGroup ? String(matchedGroup.group_code || '') : (groupId ? String(groupId) : '');
+
+            if (state.mode === 'group') {
+                if (state.selectedGroupId === resolvedId) return;
+                state.selectedGroupIds = new Set(resolvedId ? [resolvedId] : []);
+                state.selectedGroupId = resolvedId;
+                state.selectedGroupCode = resolvedCode;
+                document.getElementById('groupId').value = resolvedId;
+                renderGroupCards(state.groupItems);
+                loadCharacters({ groupId: state.selectedGroupId, groupCode: state.selectedGroupCode, preserveSelection: false });
+                return;
+            }
+
+            if (!resolvedId && !resolvedCode) return;
+            const key = resolvedId || resolvedCode;
+            if (state.selectedGroupIds.has(key)) {
+                state.selectedGroupIds.delete(key);
+            } else {
+                state.selectedGroupIds.add(key);
+            }
+
+            state.selectedGroupId = state.selectedGroupIds.size ? [...state.selectedGroupIds][0] : '';
+            state.selectedGroupCode = state.selectedGroupIds.size
+                ? (state.groupItems.find((group) => String(group.group_id) === String(state.selectedGroupId) || String(group.group_code) === String(state.selectedGroupId))?.group_code || '')
+                : '';
+
+            renderGroupCards(state.groupItems);
+            loadSelectedGroupsCharacters();
+        }
+
+        function loadGroups() {
+            const type = encodeURIComponent(document.getElementById('alphabetType').value);
+            return fetch(`${endpoint}?action=character_groups&type=${type}`, { credentials: 'same-origin' })
+                .then((r) => r.json())
+                .then((result) => {
+                    const groupSelect = document.getElementById('groupId');
+                    if (!result.success) throw new Error(result.message);
+
+                    const groups = result.items || [];
+                    groupSelect.innerHTML = '<option value="">-- ไม่ระบุ / เลือกทั้งหมด --</option>' +
+                        groups.map((g) => `<option value="${g.group_id ?? ''}">${esc(g.group_name || g.group_name_th || g.group_code || 'วรรค')}</option>`).join('');
+
+                    renderGroupCards(groups);
+
+                    if (!state.selectedGroupId && groups.length) {
+                        state.selectedGroupId = String(groups[0].group_id ?? '');
+                        groupSelect.value = state.selectedGroupId;
+                        renderGroupCards(groups);
+                    }
+                }).catch(() => {
+                    document.getElementById('groupId').innerHTML = '<option value="">โหลดข้อมูลล้มเหลว</option>';
+                });
+        }
+
+        function loadCharacters(options = {}) {
+            const type = encodeURIComponent(document.getElementById('alphabetType').value);
+            const params = new URLSearchParams({ action: 'characters', type });
+
+            const matchedGroupCode = options.groupCode || state.selectedGroupCode || '';
+            const matchedGroupId = options.groupId || state.selectedGroupId || '';
+
+            if (matchedGroupCode) {
+                params.set('group_code', matchedGroupCode);
+            }
+            if (matchedGroupId) {
+                params.set('group_id', String(matchedGroupId));
+            }
+
+            return fetch(`${endpoint}?${params.toString()}`, { credentials: 'same-origin' })
+                .then((r) => r.json())
+                .then((result) => {
+                    if (!result.success) throw new Error(result.message);
+
+                    const nextCharacters = result.items || [];
+                    const previousSelection = options.preserveSelection ? new Set([...state.selectedCharacterIds].filter((id) => nextCharacters.some((item) => Number(item.id) === Number(id)))) : new Set();
+
+                    state.characters = nextCharacters;
+                    state.selectedCharacterIds = previousSelection.size ? previousSelection : new Set(nextCharacters.map((item) => Number(item.id)));
+                    renderCharacterChips();
+                    ensureQuestionCard();
+                });
+        }
+
+        function loadEdit(id) {
+            return fetch(`${endpoint}?action=quiz_get&id=${id}`, { credentials: 'same-origin' })
+                .then((r) => r.json())
+                .then((result) => {
+                    if (!result.success) throw new Error(result.message);
+
+                    const item = result.item;
+                    state.editingId = Number(item.quiz_set_id);
+
+                    document.getElementById('title').value = item.title;
+                    document.getElementById('description').value = item.description || '';
+                    document.getElementById('groupId').value = item.group_id || '';
+                    state.selectedGroupId = String(item.group_id || '');
+                    renderGroupCards(state.groupItems);
+                    document.getElementById('writingMode').value = item.writing_mode || 'assisted';
+                    document.getElementById('quizRole').value = item.role || 'all';
+                    document.getElementById('orderType').value = item.order_type || 'sequential';
+                    document.getElementById('timeLimit').value = Math.floor((item.time_limit_seconds || 0) / 60);
+                    document.getElementById('passScore').value = item.pass_score;
+                    document.getElementById('isActive').value = item.is_active;
+
+                    questionsContainer.innerHTML = '';
+                    item.questions.forEach((question) => addQuestion({
+                        ...question,
+                        feedback_style: question.analysis_profile?.feedback_style || 'teaching'
+                    }));
+                    document.getElementById('pageTitle').textContent = 'แก้ไขแบบทดสอบเขียน';
+                    document.getElementById('saveButton').textContent = 'บันทึกการแก้ไข';
+                });
+        }
+
+        function fillQuestionsFromSelection() {
+            const selectedIds = [...state.selectedCharacterIds];
+            if (!selectedIds.length) {
+                showFormMessage('กรุณาเลือกตัวอักษรอย่างน้อย 1 ตัวก่อนสร้างคำถาม', 'error');
+                return;
+            }
+
+            const orderedIds = state.mode === 'random' ? shuffleArray(selectedIds) : selectedIds;
+            questionsContainer.innerHTML = '';
+            orderedIds.forEach((id) => {
+                const character = state.characters.find((item) => Number(item.id) === Number(id));
+                if (character) {
+                    addQuestion({
+                        character_id: Number(character.id),
+                        max_score: 5,
+                        question_text: '',
+                        feedback_style: 'teaching'
+                    });
+                }
+            });
+
+            if (!questionsContainer.children.length) {
+                addQuestion();
+            }
+            showFormMessage('', 'error');
+        }
+
+        document.querySelectorAll('.mode-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                state.mode = button.dataset.mode;
+                document.querySelectorAll('.mode-btn').forEach((item) => item.classList.toggle('active', item === button));
+
+                if (state.mode === 'group') {
+                    if (state.selectedGroupIds.size) {
+                        const firstSelected = [...state.selectedGroupIds][0];
+                        state.selectedGroupId = firstSelected;
+                        const found = state.groupItems.find((group) => String(group.group_id) === String(firstSelected) || String(group.group_code) === String(firstSelected));
+                        state.selectedGroupCode = found ? String(found.group_code || '') : '';
+                        document.getElementById('groupId').value = state.selectedGroupId;
+                        renderGroupCards(state.groupItems);
+                        loadCharacters({ groupId: state.selectedGroupId, groupCode: state.selectedGroupCode, preserveSelection: false });
+                    } else if (state.groupItems.length) {
+                        selectGroup(String(state.groupItems[0].group_id));
+                    }
+                } else {
+                    state.selectedGroupId = '';
+                    state.selectedGroupCode = '';
+                    document.getElementById('groupId').value = '';
+                    if (!state.selectedGroupIds.size && state.groupItems.length) {
+                        state.selectedGroupIds = new Set(state.groupItems.map((group) => String(group.group_id)));
+                    }
+                    renderGroupCards(state.groupItems);
+                    loadSelectedGroupsCharacters();
+                }
+            });
+        });
+
+        document.getElementById('selectAllCharacters').addEventListener('click', () => {
+            state.selectedCharacterIds = new Set(state.characters.map((item) => Number(item.id)));
+            renderCharacterChips();
+            persistDraft();
+        });
+
+        document.getElementById('clearCharacters').addEventListener('click', () => {
+            state.selectedCharacterIds = new Set();
+            renderCharacterChips();
+            persistDraft();
+        });
+
+        document.getElementById('generateFromSelection').addEventListener('click', () => {
+            fillQuestionsFromSelection();
+            persistDraft();
+        });
+
+        document.getElementById('continueEditingBtn').addEventListener('click', hideLeaveModal);
+        document.getElementById('saveDraftBtn').addEventListener('click', () => handleLeaveDecision(true));
+        document.getElementById('leaveWithoutSavingBtn').addEventListener('click', () => handleLeaveDecision(false));
+
+        document.querySelectorAll('a[href]').forEach((link) => {
+            link.addEventListener('click', (event) => {
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+                if (!hasDraftContent()) return;
+                event.preventDefault();
+                showLeaveModal(href);
+            });
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !document.getElementById('leaveDraftModal').classList.contains('hidden')) {
+                hideLeaveModal();
+            }
+        });
+
+        groupGrid.addEventListener('click', (event) => {
+            const button = event.target.closest('.group-card');
+            if (!button) return;
+            selectGroup(button.dataset.groupId || button.dataset.groupCode || '');
+        });
+
+        characterGrid.addEventListener('click', (event) => {
+            const button = event.target.closest('.character-chip');
+            if (!button) return;
+            const charId = Number(button.dataset.characterId);
+            if (state.selectedCharacterIds.has(charId)) {
+                state.selectedCharacterIds.delete(charId);
+            } else {
+                state.selectedCharacterIds.add(charId);
+            }
+            renderCharacterChips();
+        });
+
+        document.getElementById('groupId').addEventListener('change', (event) => {
+            const value = event.target.value;
+            questionsContainer.innerHTML = '';
+            selectGroup(value || '');
+        });
+
+        document.getElementById('alphabetType').addEventListener('change', () => {
+            if (confirm('การเปลี่ยนหมวดตัวอักษรจะล้างตัวอักษรที่เลือกในคำถาม ต้องการดำเนินการหรือไม่?')) {
+                questionsContainer.innerHTML = '';
+                loadCharacters({ groupId: state.selectedGroupId, preserveSelection: false });
+            }
+        });
+
+        document.getElementById('addQuestion').addEventListener('click', () => {
+            const selectedCharacterId = state.characters.find((item) => state.selectedCharacterIds.has(Number(item.id)));
+            addQuestion({
+                character_id: selectedCharacterId ? Number(selectedCharacterId.id) : '',
+                max_score: 5,
+                question_text: ''
+            });
+        });
+
+        ['title', 'description', 'groupId', 'writingMode', 'quizRole', 'orderType', 'timeLimit', 'passScore', 'isActive'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', persistDraft);
+                el.addEventListener('change', persistDraft);
+            }
+        });
+
+        document.getElementById('quizForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            showFormMessage('', 'error');
+            localStorage.removeItem(draftKey);
+
+            const payload = {
+                action: state.editingId ? 'quiz_update' : 'quiz_create',
+                id: state.editingId,
+                title: normalizeWritingText(document.getElementById('title').value),
+                description: normalizeWritingText(document.getElementById('description').value),
+                group_id: state.mode === 'group' && document.getElementById('groupId').value
+                    ? Number(document.getElementById('groupId').value)
+                    : null,
+                writing_mode: document.getElementById('writingMode').value || 'assisted',
+                role: document.getElementById('quizRole').value || 'all',
+                order_type: document.getElementById('orderType').value,
+                time_limit_seconds: Number(document.getElementById('timeLimit').value || 0) * 60,
+                pass_score: Number(document.getElementById('passScore').value || 70),
+                is_active: Number(document.getElementById('isActive').value),
+                questions: [...questionsContainer.children].map((card, index) => ({
+                    character_id: Number(card.querySelector('.character-id').value),
+                    sequence_no: index + 1,
+                    max_score: Number(card.querySelector('.max-score').value),
+                    question_text: normalizeWritingText(card.querySelector('.question-text').value),
+                        feedback_style: card.querySelector('.feedback-style').value,
+                    expected_stroke_count: Number(card.querySelector('.character-id').selectedOptions[0]?.dataset.strokeCount || 0) || null,
+                    target_character: card.querySelector('.character-id').selectedOptions[0]?.textContent.split(' (')[0].trim() || null,
+                    target_romaji: card.querySelector('.character-id').selectedOptions[0]?.textContent.match(/\(([^)]+)\)/)?.[1] || null,
+                    difficulty_level: card.querySelector('.difficulty-level').value,
+                    position_tolerance: Number(card.querySelector('.position-tolerance').value || 20),
+                    stroke_order_required: card.querySelector('.stroke-order-required').checked ? 1 : 0,
+                    live_feedback_enabled: card.querySelector('.live-feedback-enabled').checked ? 1 : 0,
+                    memory_check_enabled: card.querySelector('.memory-check-enabled').checked ? 1 : 0,
+                    feedback_beginner: '',
+                    feedback_intermediate: '',
+                    feedback_advanced: '',
+                    analysis_profile: {
+                        feedback_style: card.querySelector('.feedback-style').value,
+                        confidence_threshold: Number(card.querySelector('.confidence-threshold').value || 75),
+                        ai_threshold: Number(card.querySelector('.ai-threshold').value || 60),
+                        dtw_enabled: card.querySelector('.dtw-enabled').checked ? 1 : 0,
+                        weight_order: Number(card.querySelector('.weight-order').value || 15),
+                        weight_shape: Number(card.querySelector('.weight-shape').value || 45),
+                        weight_alignment: Number(card.querySelector('.weight-alignment').value || 20),
+                        weight_start: Number(card.querySelector('.weight-start').value || 10),
+                        weight_completeness: Number(card.querySelector('.weight-completeness').value || 10)
+                    }
+                }))
+            };
+
+            const saveBtn = document.getElementById('saveButton');
+            const originalBtnText = saveBtn.textContent;
+            saveBtn.textContent = 'กำลังบันทึก...';
+            saveBtn.disabled = true;
+
+            fetch(endpoint, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then((r) => r.json())
+                .then((result) => {
+                    if (!result.success) throw new Error(result.message);
+                    window.location.assign(`${manageUrl}?success=1`);
+                })
+                .catch((error) => {
+                    const detail = error.message || 'บันทึกข้อมูลไม่สำเร็จ';
+                    showFormMessage(detail, 'error');
+                    if (String(detail).includes('วรรคนี้มีแบบทดสอบการเขียนอยู่แล้ว') || String(detail).includes('ไม่สามารถสร้างซ้ำได้')) {
+                        const selectedGroupName = document.getElementById('groupId')?.selectedOptions?.[0]?.textContent || '';
+                        showGroupDuplicateWarning(selectedGroupName.replace(/^เลือกวรรค\s*\(Group\)\s*$/i, '').trim());
+                    }
+                    saveBtn.textContent = originalBtnText;
+                    saveBtn.disabled = false;
+                });
+        });
+
+        // Initialize Page
+        const editId = Number(new URLSearchParams(location.search).get('id'));
+
+        window.addEventListener('beforeunload', (event) => {
+            if (hasDraftContent()) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        });
+
+        Promise.all([loadGroups(), loadCharacters({ groupId: '', preserveSelection: false })])
+            .then(() => {
+                const restored = restoreDraft();
+                if (!restored && questionsContainer.children.length === 0) {
+                    ensureQuestionCard();
+                }
+                if (editId) return loadEdit(editId);
+            })
+            .catch((error) => {
+                messageContainer.textContent = error.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลตั้งต้น';
+            });
+    </script>
+</body>
+
+</html>

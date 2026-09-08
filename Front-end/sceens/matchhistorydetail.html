@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดผลแบบจับคู่ | JP Notes</title>
+    <link rel="stylesheet" href="../style/test-history-detail.css">
+    <link rel="stylesheet" href="../style/match-history-detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-history-detail member-matching-detail">
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+    <main class="history-detail-main">
+        <section class="history-detail-panel" aria-labelledby="detailTitle">
+            <header class="history-detail-header">
+                <div>
+                    <p class="history-detail-eyebrow"><i class="fa-solid fa-puzzle-piece"></i> MATCHING REVIEW</p>
+                    <h1 id="detailTitle">รายละเอียดแบบจับคู่</h1>
+                    <p class="history-detail-description" id="detailDescription">กำลังโหลดข้อมูลคำตอบ...</p>
+                </div>
+                <div class="history-detail-actions">
+                    <a class="detail-button detail-button--secondary" href="../data/history.php"><i class="fa-solid fa-arrow-left"></i> กลับประวัติ</a>
+                    <button class="detail-button detail-button--primary" id="retryButton" type="button" hidden><i class="fa-solid fa-rotate-right"></i> ทำอีกครั้ง</button>
+                </div>
+            </header>
+
+            <div class="history-detail-status" id="detailStatus"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดผลย้อนหลัง</div>
+
+            <div class="history-summary-grid" id="summaryGrid" hidden>
+                <article class="history-summary-card"><span class="summary-card-label">คะแนน</span><strong id="scoreValue">-</strong></article>
+                <article class="history-summary-card"><span class="summary-card-label">เปอร์เซ็นต์</span><strong id="percentageValue">-</strong></article>
+                <article class="history-summary-card"><span class="summary-card-label">ตอบถูก</span><strong id="correctValue">-</strong></article>
+                <article class="history-summary-card"><span class="summary-card-label">จำนวนข้อ</span><strong id="totalValue">-</strong></article>
+                <article class="history-summary-card"><span class="summary-card-label">เวลาที่ใช้</span><strong id="timeValue">-</strong></article>
+                <article class="history-summary-card"><span class="summary-card-label">วันที่ทำ</span><strong class="summary-date" id="dateValue">-</strong></article>
+            </div>
+
+            <div class="history-meta-grid" id="metaGrid" hidden>
+                <div class="history-meta-item"><span>ชุดตัวอักษร</span><strong id="typeValue">-</strong></div>
+                <div class="history-meta-item"><span>ชุดคำถาม</span><strong id="setValue">-</strong></div>
+                <div class="history-meta-item"><span>โหมด</span><strong id="modeValue">-</strong></div>
+                <div class="history-meta-item"><span>สถานะ</span><strong id="statusValue">-</strong></div>
+            </div>
+
+            <section class="matching-answer-section" id="answerSection" hidden aria-labelledby="answerTitle">
+                <div class="matching-section-heading">
+                    <div><h2 id="answerTitle">รายละเอียดคำตอบ</h2><p>คำตอบที่เลือกและคำตอบที่ถูกต้องของแต่ละข้อ</p></div>
+                    <span class="attempt-count" id="answerCount">0 รายการ</span>
+                </div>
+                <div class="matching-answer-list" id="answerList"></div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const $ = id => document.getElementById(id);
+            const quizId = new URLSearchParams(location.search).get('quiz_id');
+            const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+            const isCorrect = answer => answer.correct === true || answer.correct === 1 || answer.correct === '1' || answer.correct === 'true';
+            const duration = seconds => `${String(Math.floor(Number(seconds || 0) / 60)).padStart(2, '0')}:${String(Number(seconds || 0) % 60).padStart(2, '0')}`;
+            const formatDate = value => value ? new Intl.DateTimeFormat('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(String(value).replace(' ', 'T'))) : '-';
+
+            if (!/^\d+$/.test(quizId || '')) {
+                showError('ไม่พบรหัสผลแบบจับคู่ที่ต้องการ');
+                return;
+            }
+
+            try {
+                const response = await fetch(`../connectapi/writing_progress.php?action=get_matching_history_detail&quiz_id=${encodeURIComponent(quizId)}`, { credentials: 'same-origin', cache: 'no-store' });
+                const payload = await response.json().catch(() => null);
+                if (response.status === 401) { location.href = '../sceens/login.html'; return; }
+                if (!response.ok || !payload || payload.status !== 'success' || !payload.quiz) throw new Error(payload?.message || 'ไม่สามารถโหลดรายละเอียดได้');
+                render(payload.quiz);
+            } catch (error) {
+                showError(error.message || 'ไม่สามารถโหลดรายละเอียดได้');
+            }
+
+            function render(quiz) {
+                const answers = Array.isArray(quiz.answers) ? quiz.answers : [];
+                const correct = answers.filter(isCorrect).length;
+                const type = String(quiz.writing_type || '').toLowerCase() === 'hiragana' ? 'Hiragana' : 'Katakana';
+                const passed = Number(quiz.percentage) >= 70;
+                $('detailTitle').textContent = `รายละเอียดผลจับคู่ ${type}`;
+                $('detailDescription').textContent = `โหมดจับคู่ · ${quiz.group_name ? `วรรค ${quiz.group_name}` : 'ชุดคำถามที่บันทึกไว้'}`;
+                $('detailStatus').className = `history-detail-status ${passed ? 'history-detail-status--ready' : 'history-detail-status--error'}`;
+                $('detailStatus').innerHTML = `<i class="fa-solid ${passed ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i> ${passed ? 'ผ่านเกณฑ์' : 'ควรฝึกเพิ่ม'}`;
+                $('scoreValue').textContent = `${quiz.score} / ${quiz.total_questions}`;
+                $('percentageValue').textContent = `${Number(quiz.percentage).toFixed(0)}%`;
+                $('correctValue').textContent = `${correct} ข้อ`;
+                $('totalValue').textContent = `${quiz.total_questions} ข้อ`;
+                $('timeValue').textContent = duration(quiz.time_taken);
+                $('dateValue').textContent = formatDate(quiz.completed_at);
+                $('typeValue').textContent = type;
+                $('setValue').textContent = quiz.quiz_set_id ? `ชุดที่ ${quiz.quiz_set_id}` : 'ชุดสุ่ม';
+                $('modeValue').textContent = 'จับคู่คำอ่าน';
+                $('statusValue').textContent = passed ? 'ผ่าน' : 'ควรฝึกเพิ่ม';
+                $('summaryGrid').hidden = false;
+                $('metaGrid').hidden = false;
+                $('answerSection').hidden = false;
+                $('answerCount').textContent = `${answers.length} รายการ`;
+                $('answerList').innerHTML = answers.length ? answers.map((answer, index) => {
+                    const answerCorrect = isCorrect(answer);
+                    return `<article class="matching-answer-card ${answerCorrect ? 'is-correct' : 'is-wrong'}">
+                        <span class="matching-answer-card__number">${String(index + 1).padStart(2, '0')}</span>
+                        <div class="matching-answer-card__content"><strong>${escapeHtml(answer.question || `ข้อที่ ${index + 1}`)}</strong><span><small>คำตอบของคุณ</small>${escapeHtml(answer.selectedAnswer || '-')}</span>${answerCorrect ? '' : `<span><small>คำตอบที่ถูกต้อง</small>${escapeHtml(answer.correctAnswer || '-')}</span>`}</div>
+                        <b><i class="fa-solid ${answerCorrect ? 'fa-check' : 'fa-xmark'}"></i>${answerCorrect ? 'ถูกต้อง' : 'ไม่ถูกต้อง'}</b>
+                    </article>`;
+                }).join('') : '<p class="matching-answer-empty">รอบนี้ไม่มีรายละเอียดคำตอบที่บันทึกไว้</p>';
+                $('retryButton').hidden = false;
+                $('retryButton').addEventListener('click', () => { location.href = `../data/jpmatch.php?type=${encodeURIComponent(type.toLowerCase())}&quiz_set_id=${encodeURIComponent(quiz.quiz_set_id || '')}`; });
+            }
+
+            function showError(message) {
+                $('detailStatus').className = 'history-detail-status history-detail-status--error';
+                $('detailStatus').innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(message)}`;
+                $('detailDescription').textContent = 'กรุณากลับไปเลือกผลแบบจับคู่จากหน้าประวัติอีกครั้ง';
+            }
+        });
+    </script>
+</body>
+</html>

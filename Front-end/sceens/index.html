@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JP Notes — เรียนตัวอักษรญี่ปุ่น</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../style/navbar2.css">
+    <link rel="stylesheet" href="../style/home.css">
+</head>
+<body>
+    <div data-navbar></div>
+    <main>
+        <section class="home-hero">
+            <div class="hero-copy">
+                <p class="eyebrow"><span></span> CHARACTER NOTES</p>
+                <h1>เริ่มจากหนึ่งตัวอักษร<br>แล้วค่อยอ่านได้ทั้งแถว</h1>
+                <p class="hero-description">เลือกตัวอักษรเพื่อดูเสียงอ่าน รูปแบบการเขียน และลำดับเส้นในที่เดียว เนื้อหาจะค่อย ๆ เพิ่มเข้ามาเมื่อพร้อม</p>
+                <a class="primary-action" href="indexfree.html">เปิดตารางคาตากานะ <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="hero-note" aria-label="ตัวอย่างเนื้อหาตัวอักษร">
+                <div class="note-top"><span>Katakana</span><span>01 / 46</span></div>
+                <div class="note-character">ア</div>
+                <div class="note-bottom"><strong>a</strong><span>เสียงสระ a</span></div>
+                <i class="fa-solid fa-arrow-down-long note-arrow" aria-hidden="true"></i>
+            </div>
+        </section>
+        <section class="learning-section" aria-labelledby="setsHeading">
+            <div class="section-heading">
+                <div><p class="eyebrow"><span></span> START HERE</p><h2 id="setsHeading">เลือกตารางที่ต้องการเรียน</h2></div>
+                <p>แต่ละตารางจะพาไปดูตัวอักษรทีละวรรค กดที่การ์ดเพื่อเปิดรายละเอียดการเขียน</p>
+            </div>
+            <div class="set-grid">
+                <a class="set-card set-card--active" href="indexfree.html">
+                    <div class="set-icon">カ</div>
+                    <div><p class="set-state">พร้อมเรียน</p><h3>คาตากานะ</h3><p>Katakana · ตัวอักษรพื้นฐาน</p></div>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <article class="set-card set-card--soon" aria-label="ฮิรางานะ กำลังเตรียมเนื้อหา">
+                    <div class="set-icon">あ</div>
+                    <div><p class="set-state">กำลังเตรียม</p><h3>ฮิรางานะ</h3><p>Hiragana · เพิ่มภายหลัง</p></div>
+                    <span class="soon-tag">เร็ว ๆ นี้</span>
+                </article>
+            </div>
+        </section>
+        <section class="how-section" aria-labelledby="insideHeading">
+            <div class="section-heading compact"><div><p class="eyebrow"><span></span> INSIDE A CHARACTER</p><h2 id="insideHeading">เมื่อเลือกตัวอักษร จะเจออะไรบ้าง</h2></div></div>
+            <div class="detail-preview">
+                <div class="preview-character"><span>タ</span><small>ta</small></div>
+                <div class="preview-content">
+                    <div class="preview-row"><i class="fa-solid fa-volume-high"></i><div><strong>เสียงอ่าน</strong><span>ฟังเสียงและเทียบกับโรมาจิ</span></div></div>
+                    <div class="preview-row"><i class="fa-solid fa-pen-nib"></i><div><strong>วิธีเขียน</strong><span>แสดงภาพและคำแนะนำเมื่อมีข้อมูล</span></div></div>
+                    <div class="preview-row"><i class="fa-solid fa-list-ol"></i><div><strong>ลำดับเส้น</strong><span>พื้นที่รองรับข้อมูลลำดับเส้นจาก API</span></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="public-footer">JP Notes <span>·</span> เรียนรู้ตัวอักษรทีละตัว</footer>
+    <script src="public-navbar.js"></script>
+</body>
+</html>

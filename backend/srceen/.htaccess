@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /projectjapan/backend/srceen/
+
+    # ส่งคำขอ .html ทั้งหมดไปยัง PHP wrapper ที่ป้องกันด้วย session
+    RewriteRule ^(.+)\.html$ /projectjapan/backend/php/srceen/$1.php [L,QSA]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # หาก Rewrite ไม่สามารถทำงานได้ ให้ปิดการแสดงไดเรกทอรีและป้องกัน direct HTML
+    Options -Indexes
+</IfModule>

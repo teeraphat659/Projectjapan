@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>เล่นจับคู่ - JP Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../style/style.css">
+    <link rel="stylesheet" href="../style/jpmatchplay.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-match-play">
+
+<div data-member-navbar></div>
+<script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+<main class="play-page">
+    <!-- ส่วนหัวของเกม: ประกอบด้วย ลำดับคำถาม, ชื่อโหมดเกม, และ เวลา -->
+    <header class="game-header">
+        <div class="progress-box">
+            <span id="questionCounter">คำถามที่ 0/0</span>
+        </div>
+        
+        <div class="title-box">
+            <h1 id="gameTitle">จับคู่ตัวอักษร...</h1>
+            <!-- playInfo คงไว้สำหรับ Debug หรือแสดงข้อมูลรอง -->
+            <p id="playInfo" style="font-size: 0.8em; color: #888;">เตรียมข้อมูล...</p>
+        </div>
+        
+        <div class="timer-box">
+            <span id="gameTimer">00:00</span>
+        </div>
+        <button type="button" class="exit-game-button" id="exitGameButton">
+            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> ออก
+        </button>
+    </header>
+
+    <!-- ส่วนแสดงโจทย์ตรงกลาง -->
+    <section class="question-container">
+        <div id="mainQuestion" class="question-text">รอโหลดคำถาม...</div>
+        <button type="button" class="question-audio-button" id="questionAudioButton" hidden><i class="fa-solid fa-volume-high" aria-hidden="true"></i> ฟังเสียงคำถาม</button>
+        <p class="instruction-text">เลือกตัวอักษรที่ถูกต้อง</p>
+        <p id="answerFeedback" class="answer-feedback" aria-live="polite"></p>
+    </section>
+
+    <!-- ส่วนตัวเลือก 4 ข้อด้านล่าง (ข้อมูลจาก API) -->
+    <section id="board" class="choices-container" aria-label="ตัวเลือกคำตอบ">
+        <p id="loadingMessage">กำลังโหลดคำถาม...</p>
+    </section>
+
+</main>
+
+<div class="game-exit-overlay" id="gameExitOverlay" hidden>
+    <section class="game-exit-modal" role="dialog" aria-modal="true" aria-labelledby="gameExitTitle">
+        <button type="button" class="game-exit-close" id="gameExitClose" aria-label="ปิดหน้าต่าง"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <span class="game-exit-eyebrow" id="gameExitEyebrow">กำลังทำแบบทดสอบ</span>
+        <h2 id="gameExitTitle">ต้องการออกจากหน้านี้หรือไม่?</h2>
+        <p id="gameExitMessage">ระบบจะบันทึกความคืบหน้าไว้ คุณสามารถกลับมาทำต่อได้ภายหลัง</p>
+        <div class="game-exit-actions">
+            <button type="button" class="game-stay-button" id="gameExitContinue">อยู่ต่อ</button>
+            <button type="button" class="game-abandon-button" id="gameExitAbandon">ละทิ้งรอบนี้</button>
+            <button type="button" class="game-save-exit-button" id="gameExitConfirm">บันทึกแล้วออก</button>
+        </div>
+    </section>
+</div>
+
+<script>
+// 1. ดึงพารามิเตอร์จาก URL
+const params = new URLSearchParams(window.location.search);
+const mode = params.get('mode') || 'pair';
+const type = params.get('type') || 'katakana';
+const group_name = params.get('group_name') || '';
+const quiz_set_id = params.get('quiz_set_id') || '';
+const progressKey = `jpmatch-progress:${mode}:${type}:${group_name}:${quiz_set_id}`;
+
+// 2. เซ็ตข้อมูลเบื้องต้นบน UI
+document.getElementById('playInfo').textContent = `โหมด: ${mode} · ประเภท: ${type} · ชุด: ${quiz_set_id || 'สุ่ม'} · วรรค: ${group_name || 'ทั้งหมด'}`;
+
+// อัปเดตหัวข้อเกมตาม type
+let typeTitle = 'โรมันจิ';
+if (type === 'hiragana') typeTitle = 'ฮิรางานะ';
+if (type === 'katakana') typeTitle = 'คาตาคานะ';
+document.getElementById('gameTitle').textContent = `จับคู่ตัวอักษร${typeTitle}`;
+
+function renderQuestion(questionString, choicesArray, currentQIndex, totalQ, soundFile = '') {
+    // 3.1 อัปเดตลำดับข้อ
+    document.getElementById('questionCounter').textContent = `คำถามที่ ${currentQIndex}/${totalQ}`;
+    
+    // 3.2 อัปเดตโจทย์
+    document.getElementById('mainQuestion').textContent = questionString;
+    const audioButton = document.getElementById('questionAudioButton');
+    audioButton.hidden = !soundFile;
+    audioButton.dataset.audio = soundFile || '';
+    
+    const board = document.getElementById('board');
+    board.replaceChildren();
+    choicesArray.forEach((choice, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice-btn';
+        button.id = `choice-${index}`;
+        button.innerHTML = `<span class="choice-mark">${String(index + 1).padStart(2, '0')}</span><span class="choice-label"></span><i class="choice-icon" aria-hidden="true"></i>`;
+        button.querySelector('.choice-label').textContent = choice.text;
+        button.dataset.isCorrect = String(choice.isCorrect);
+        button.addEventListener('click', () => handleAnswerSelect(button));
+        board.appendChild(button);
+    });
+    document.getElementById('answerFeedback').textContent = '';
+    document.getElementById('answerFeedback').className = 'answer-feedback';
+}
+
+let questions = [];
+let currentIndex = 0;
+let score = 0;
+let startedAt = Date.now();
+let answered = false;
+let timerId = null;
+let resultSaved = false;
+let questionAudio = null;
+const answerHistory = [];
+let exitAction = 'save';
+
+function openExitModal() {
+    exitAction = 'save';
+    document.getElementById('gameExitEyebrow').textContent = 'กำลังทำแบบทดสอบ';
+    document.getElementById('gameExitTitle').textContent = 'ต้องการออกจากหน้านี้หรือไม่?';
+    document.getElementById('gameExitMessage').textContent = 'ระบบจะบันทึกความคืบหน้าไว้ คุณสามารถกลับมาทำต่อได้ภายหลัง';
+    document.getElementById('gameExitContinue').textContent = 'อยู่ต่อ';
+    document.getElementById('gameExitConfirm').textContent = 'บันทึกแล้วออก';
+    document.getElementById('gameExitOverlay').hidden = false;
+}
+
+function closeExitModal() {
+    document.getElementById('gameExitOverlay').hidden = true;
+}
+
+function abandonProgress() {
+    localStorage.removeItem(progressKey);
+    closeExitModal();
+    window.location.href = '../data/jpmatch.php';
+}
+
+function saveProgress() {
+    const elapsed = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+    localStorage.setItem(progressKey, JSON.stringify({
+        questions,
+        currentIndex,
+        score,
+        elapsed,
+        answerHistory,
+        savedAt: Date.now()
+    }));
+}
+
+function restoreProgress() {
+    let saved;
+    try {
+        saved = JSON.parse(localStorage.getItem(progressKey) || 'null');
+    } catch (error) {
+        localStorage.removeItem(progressKey);
+        return;
+    }
+    if (!saved || !Array.isArray(saved.questions) || !saved.questions.length || saved.currentIndex >= saved.questions.length) return;
+    exitAction = 'resume';
+    document.getElementById('gameExitEyebrow').textContent = 'พบความคืบหน้าที่บันทึกไว้';
+    document.getElementById('gameExitTitle').textContent = 'ต้องการทำแบบทดสอบต่อหรือไม่?';
+    document.getElementById('gameExitMessage').textContent = `คุณทำไปแล้ว ${saved.currentIndex} จาก ${saved.questions.length} ข้อ`;
+    document.getElementById('gameExitContinue').textContent = 'เริ่มใหม่';
+    document.getElementById('gameExitConfirm').textContent = 'ทำต่อ';
+    document.getElementById('gameExitOverlay').hidden = false;
+    document.getElementById('gameExitConfirm').dataset.action = 'resume';
+    /* The shared confirm handler below performs the actual resume. */
+    document.getElementById('gameExitContinue').onclick = () => {
+        localStorage.removeItem(progressKey);
+        window.location.reload();
+    };
+    /* Keep the saved progress untouched until the player chooses to continue. */
+    document.getElementById('gameExitConfirm').onclick = () => {
+        questions = saved.questions;
+        currentIndex = Number(saved.currentIndex) || 0;
+        score = Number(saved.score) || 0;
+        answerHistory.splice(0, answerHistory.length, ...(saved.answerHistory || []));
+        startedAt = Date.now() - (Number(saved.elapsed) || 0) * 1000;
+        exitAction = 'save';
+        document.getElementById('gameExitConfirm').onclick = null;
+        closeExitModal();
+        showCurrentQuestion();
+    };
+}
+
+document.getElementById('exitGameButton').addEventListener('click', openExitModal);
+document.getElementById('gameExitClose').addEventListener('click', closeExitModal);
+document.getElementById('gameExitContinue').addEventListener('click', closeExitModal);
+document.getElementById('gameExitConfirm').addEventListener('click', () => {
+    if (exitAction === 'resume') return;
+    saveProgress();
+    closeExitModal();
+    window.location.href = '../data/jpmatch.php';
+});
+document.getElementById('gameExitAbandon').addEventListener('click', abandonProgress);
+document.getElementById('gameExitOverlay').addEventListener('click', event => {
+    if (event.target.id === 'gameExitOverlay') closeExitModal();
+});
+
+function updateTimer(seconds) {
+    const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const remainder = Math.floor(seconds % 60).toString().padStart(2, '0');
+    document.getElementById('gameTimer').textContent = `${minutes}:${remainder}`;
+}
+
+function showCurrentQuestion() {
+    const question = questions[currentIndex];
+    if (!question) return finishGame();
+    answered = false;
+    renderQuestion(question.question, question.choices, currentIndex + 1, questions.length, question.sound_file);
+    if (mode === 'listen' && question.sound_file) new Audio(question.sound_file).play().catch(() => {});
+}
+
+document.getElementById('questionAudioButton').addEventListener('click', () => {
+    const source = document.getElementById('questionAudioButton').dataset.audio;
+    if (!source) return;
+    if (questionAudio) questionAudio.pause();
+    questionAudio = new Audio(source);
+    questionAudio.play().catch(() => {});
+});
+
+function handleAnswerSelect(selectedButton) {
+    if (answered) return;
+    answered = true;
+    const question = questions[currentIndex];
+    const correct = selectedButton.dataset.isCorrect === 'true';
+    if (correct) score += 1;
+    answerHistory.push({
+        question: question.question,
+        selectedAnswer: selectedButton.textContent,
+        correctAnswer: question.choices.find(choice => String(choice.isCorrect) === 'true')?.text || '-',
+        correct
+    });
+    const choiceButtons = document.querySelectorAll('.choice-btn');
+    choiceButtons.forEach((button) => {
+        button.disabled = true;
+        button.classList.add('is-muted');
+    });
+    selectedButton.classList.remove('is-muted');
+    selectedButton.classList.add(correct ? 'is-correct' : 'is-wrong');
+    selectedButton.querySelector('.choice-icon').className = `choice-icon fa-solid ${correct ? 'fa-check' : 'fa-xmark'}`;
+    if (!correct) {
+        const correctButton = document.querySelector('.choice-btn[data-is-correct="true"]');
+        correctButton.classList.remove('is-muted');
+        correctButton.classList.add('is-correct-answer');
+        correctButton.querySelector('.choice-icon').className = 'choice-icon fa-solid fa-check';
+    }
+    const feedback = document.getElementById('answerFeedback');
+    feedback.textContent = correct ? 'ตอบถูกต้อง · กำลังไปข้อถัดไป' : 'ยังไม่ถูก · คำตอบที่ถูกแสดงไว้ให้แล้ว';
+    feedback.classList.add(correct ? 'is-success' : 'is-error');
+    setTimeout(() => { currentIndex += 1; showCurrentQuestion(); }, 650);
+}
+
+function renderAnswerReview() {
+    const review = document.createElement('section');
+    review.className = 'answer-review';
+    review.innerHTML = '<div class="answer-review-heading"><div><span class="result-eyebrow">ตรวจคำตอบย้อนหลัง</span><h2>รายละเอียดคำตอบ</h2></div><span class="answer-review-count">' + answerHistory.length + ' ข้อ</span></div>';
+
+    const list = document.createElement('div');
+    list.className = 'answer-review-list';
+    answerHistory.forEach((answer, index) => {
+        const item = document.createElement('article');
+        item.className = `answer-review-item ${answer.correct ? 'is-correct' : 'is-wrong'}`;
+        item.innerHTML = `
+            <div class="answer-review-number">${index + 1}</div>
+            <div class="answer-review-content">
+                <div class="answer-review-question"></div>
+                <div class="answer-review-values">
+                    <span><small>คำตอบของคุณ</small><strong class="answer-selected"></strong></span>
+                    <span><small>คำตอบที่ถูก</small><strong class="answer-correct"></strong></span>
+                </div>
+            </div>
+            <span class="answer-review-status">${answer.correct ? 'ถูกต้อง' : 'ไม่ถูกต้อง'}</span>`;
+        item.querySelector('.answer-review-question').textContent = answer.question;
+        item.querySelector('.answer-selected').textContent = answer.selectedAnswer;
+        item.querySelector('.answer-correct').textContent = answer.correctAnswer;
+        list.appendChild(item);
+    });
+    review.appendChild(list);
+    document.querySelector('.play-page').appendChild(review);
+}
+
+function finishGame() {
+    if (resultSaved) return;
+    resultSaved = true;
+    document.getElementById('questionAudioButton').hidden = true;
+    localStorage.removeItem(progressKey);
+    clearInterval(timerId);
+    const elapsed = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+    const percentage = questions.length ? Math.round((score / questions.length) * 100) : 0;
+    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    const seconds = (elapsed % 60).toString().padStart(2, '0');
+    let resultMessage = 'ลองทบทวนอีกนิด แล้วกลับมาใหม่';
+    if (percentage >= 80) resultMessage = 'ยอดเยี่ยม! คุณจำตัวอักษรได้แม่นมาก';
+    else if (percentage >= 60) resultMessage = 'ทำได้ดี! ฝึกต่ออีกนิดจะคล่องขึ้น';
+
+    document.querySelector('.play-page').classList.add('is-finished');
+    document.getElementById('questionCounter').textContent = `ทำครบ ${questions.length} ข้อ`;
+    document.getElementById('gameTimer').textContent = `${minutes}:${seconds}`;
+    document.querySelector('.title-box').innerHTML = '<span class="result-eyebrow">สรุปผลการฝึก</span><h1>จับคู่ตัวอักษร</h1>';
+    document.getElementById('mainQuestion').innerHTML = `
+        <span class="result-kicker">คะแนนของคุณ</span>
+        <strong>${score}<small> / ${questions.length}</small></strong>
+        <span class="result-message">${resultMessage}</span>`;
+    document.querySelector('.instruction-text').textContent = 'ผลลัพธ์ของรอบนี้';
+    document.getElementById('board').innerHTML = `
+        <div class="result-stat"><span>ความแม่นยำ</span><strong>${percentage}%</strong></div>
+        <div class="result-stat"><span>เวลาที่ใช้</span><strong>${minutes}:${seconds}</strong></div>
+        <button type="button" class="play-again-btn" id="playAgainButton"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> เล่นอีกครั้ง</button>
+        <a class="result-home-btn" href="../data/jpmatch.php"><i class="fa-solid fa-list" aria-hidden="true"></i> เปลี่ยนชุดคำถาม</a>`;
+    renderAnswerReview();
+    document.getElementById('playAgainButton').addEventListener('click', () => {
+        window.location.href = `../data/jpmatch.php?type=${encodeURIComponent(type)}`;
+    });
+    fetch('../connectapi/save_quiz_result.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            quiz_type: `จับคู่ ${typeTitle}`,
+            score,
+            total_questions: questions.length,
+            time_taken: elapsed,
+            answer_details: {
+                mode,
+                type,
+                group_name,
+                quiz_set_id,
+                questions: answerHistory
+            }
+        })
+    }).catch(() => {});
+}
+
+fetch(`../connectapi/match_quiz.php?${new URLSearchParams({ mode, type, group_name, quiz_set_id }).toString()}`, { credentials: 'same-origin' })
+    .then((response) => {
+        if (response.status === 401 || response.redirected) {
+            window.location.replace('../sceens/login.html');
+            throw new Error('กรุณาเข้าสู่ระบบก่อน');
+        }
+        if (!response.ok) throw new Error(`ไม่สามารถโหลดคำถามได้ (${response.status})`);
+        return response.json();
+    })
+    .then((data) => {
+        if (!data.success) throw new Error(data.message || 'ไม่สามารถโหลดคำถามได้');
+        questions = data.questions || [];
+        if (!questions.length) throw new Error('ไม่พบคำถามจากข้อมูลในระบบ');
+        startedAt = Date.now();
+        timerId = setInterval(() => updateTimer((Date.now() - startedAt) / 1000), 1000);
+        showCurrentQuestion();
+            restoreProgress();
+    })
+    .catch((error) => {
+        document.getElementById('mainQuestion').textContent = error.message || 'ไม่สามารถโหลดคำถามได้';
+        document.getElementById('questionCounter').textContent = 'โหลดไม่สำเร็จ';
+        document.getElementById('board').innerHTML = '<button type="button" class="choice-btn" id="retryButton">ลองใหม่</button>';
+        document.getElementById('retryButton').addEventListener('click', () => window.location.reload());
+    });
+</script>
+</body>
+</html>

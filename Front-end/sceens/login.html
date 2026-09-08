@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เข้าสู่ระบบ — JP Notes</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../style/navbar2.css">
+<link rel="stylesheet" href="../style/login.css">
+<link rel="stylesheet" href="../style/public-auth.css">
+
+</head>
+<body class="auth-page">
+
+<div data-navbar></div>
+
+<section class="login-section">
+    <div class="login-card">
+        
+        <div class="login-promo">
+            <h2>สมัครสมาชิกวันนี้รับสิทธิพิเศษ!</h2>
+            <p>ปลดล็อกฟีเจอร์การเรียนรู้ภาษาญี่ปุ่นอย่างเต็มรูปแบบ</p>
+            <ul class="promo-list">
+                <li>
+                    <div class="icon">✏️</div>
+                    <div class="text">
+                        <h4>ฝึกเขียนตัวอักษร</h4>
+                        <p>ตรวจลำดับเส้น พร้อมคำแนะนำทีละขั้นตอน</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="icon">📖</div>
+                    <div class="text">
+                        <h4>เรียนรู้คำศัพท์</h4>
+                        <p>ตัวอย่างคำศัพท์ภาษาญี่ปุ่นในชีวิตจริง</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="icon">🧪</div>
+                    <div class="text">
+                        <h4>ทำแบบทดสอบ</h4>
+                        <p>ปรับระดับอัตโนมัติและวัดผลได้จริง</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="icon">📊</div>
+                    <div class="text">
+                        <h4>ดูผลการฝึก</h4>
+                        <p>ติดตามความก้าวหน้าผ่านกราฟสถิติทุกวัน</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="login-form-container">
+            <div class="header-text">
+                <div class="icon-top">⛩️</div>
+                <h1>เข้าสู่ระบบ</h1>
+                <p class="subtitle">ยินดีต้อนรับกลับมา เรียนทีละตัวอักษรไปด้วยกัน</p>
+            </div>
+
+            <div class="alert" id="loginAlert"></div>
+
+            <form id="loginForm" action="../connectapi/login.php" method="POST" autocomplete="off">
+                <div class="form-group">
+                    <label for="login">อีเมลหรือชื่อผู้ใช้</label>
+                    <input type="text" id="login" name="login" class="form-control" placeholder="example@email.com" required autocomplete="username" autocorrect="off" autocapitalize="off" spellcheck="false">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="password">รหัสผ่าน</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                </div>
+                
+                <a href="forgot_password.html" class="forgot-password">ลืมรหัสผ่านใช่หรือไม่?</a>
+
+                <button type="submit" class="btn-login">เข้าสู่ระบบ</button>
+            </form>
+
+            <div class="register-link">
+                ยังไม่มีบัญชีใช่ไหม? <a href="register.html">สมัครสมาชิกที่นี่</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<footer class="public-footer auth-footer">JP Notes <span>·</span> เรียนรู้ตัวอักษรทีละตัว</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var f = document.getElementById('loginForm') || document.querySelector('form');
+    if(f){ try{ f.reset(); }catch(e){} }
+    var p = document.getElementById('password');
+    if(p){ p.value = ''; p.autocomplete = 'new-password'; }
+    var u = document.getElementById('login');
+    if(u){ u.value = ''; }
+    // extra safeguard for browsers that may restore values
+    setTimeout(function(){ if(p) p.value=''; if(u) u.value=''; }, 50);
+});
+window.addEventListener('pageshow', function(event){
+    if (event.persisted) {
+        var f = document.getElementById('loginForm') || document.querySelector('form');
+        if(f) try{ f.reset(); }catch(e){}
+        var p = document.getElementById('password'); if(p) p.value='';
+    }
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertEl = document.getElementById('loginAlert');
+        if (!alertEl) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const error = params.get('error');
+        const success = params.get('success');
+
+        if (error) {
+            alertEl.textContent = error;
+            alertEl.className = 'alert error';
+            alertEl.style.display = 'block';
+            return;
+        }
+
+        if (success === 'registered') {
+            alertEl.textContent = 'สมัครสมาชิกสำเร็จแล้ว โปรดเข้าสู่ระบบ';
+            alertEl.className = 'alert success';
+            alertEl.style.display = 'block';
+        }
+    });
+</script>
+
+<script src="public-navbar.js"></script>
+
+</body>
+</html>

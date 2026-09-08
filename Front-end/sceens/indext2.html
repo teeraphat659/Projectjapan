@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ห้องเรียน Katakana - JP Learning</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../style/member-ui.css">
+
+<style>
+    /* ========================================= */
+    /* 1. สไตล์พื้นฐานทั่วไประบบ (RESET & GLOBALS) */
+    /* ========================================= */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Noto Sans Thai', sans-serif;
+    }
+    body {
+        background: #f6f3ef;
+        color: #222;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* ========================================= */
+    /* 2. สไตล์พื้นฐานของหน้า                   */
+    /* ========================================= */
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .logo-box {
+        width: 45px;
+        height: 45px;
+        background: #1b120d;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 22px;
+    }
+    .logo h2 { font-size: 28px; }
+    
+    .btn-dark {
+        background: #1b120d;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-dark:hover {
+        background: #d94a35;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(217, 74, 53, 0.3);
+    }
+    .btn-outline {
+        border: 1px solid #ccc;
+        background: white;
+        color: #1b120d;
+        padding: 12px 25px;
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-outline:hover {
+        border-color: #1b120d;
+        background: #1b120d;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(27, 18, 13, 0.15);
+    }
+
+    /* Dropdown Navbar */
+    .dropdown { position: relative; display: inline-block; }
+    .dropbtn { cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #ffffff;
+        min-width: 180px;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
+        z-index: 1100;
+        border-radius: 8px;
+        overflow: hidden;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 8px;
+        border: 1px solid #eee;
+    }
+    .dropdown-content a {
+        color: #333 !important;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        font-size: 14px;
+        text-align: left;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    .dropdown-content a:hover { background-color: #fff0f0; color: #ff4d4d !important; }
+    .dropdown:hover .dropdown-content { display: block; }
+
+    /* ========================================= */
+    /* 3. ส่วนพื้นที่การเรียนรู้ (STUDY DASHBOARD) */
+    /* ========================================= */
+    .study-container {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 30px;
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 30px;
+        flex: 1; /* ดัน Footer ลงไปด้านล่างเสมอ */
+    }
+
+    /* Sidebar เมนูด้านซ้าย */
+    .lesson-sidebar {
+        background: white;
+        border: 1px solid #eaeaea;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.02);
+        align-self: start;
+    }
+    .sidebar-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1b120d;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f6f3ef;
+    }
+    .lesson-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        list-style: none;
+    }
+    .lesson-item {
+        padding: 14px 18px;
+        border-radius: 10px;
+        cursor: pointer;
+        background: #faf8f5;
+        color: #444;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .lesson-item:hover { background: #fff0f0; color: #d94a35; }
+    .lesson-item.active { background: #1b120d; color: white; }
+    
+    .status-badge {
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        background: #ddd;
+        color: #666;
+    }
+    .lesson-item.active .status-badge { background: #d94a35; color: white; }
+
+    /* Workspace พื้นที่ทำงานด้านขวา */
+    .workspace {
+        background: white;
+        border: 1px solid #eaeaea;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.02);
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+    .workspace-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 20px;
+    }
+    .workspace-title h2 { font-size: 24px; color: #1b120d; }
+    .workspace-title p { color: #666; margin-top: 5px; }
+
+    /* โซนเรียนรู้และจำลองกระดาน */
+    .learning-zone {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: center;
+    }
+    .char-focus-box {
+        background: #faf8f5;
+        border: 2px dashed #ddd;
+        border-radius: 16px;
+        height: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+    .big-char {
+        font-size: 140px;
+        font-weight: 700;
+        color: #1b120d;
+        line-height: 1;
+    }
+    .romaji-hint {
+        font-size: 20px;
+        color: #888;
+        margin-top: 10px;
+        font-weight: 500;
+    }
+    .practice-box {
+        border: 2px solid #1b120d;
+        border-radius: 16px;
+        height: 320px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .canvas-placeholder {
+        color: #aaa;
+        font-size: 16px;
+        text-align: center;
+        pointer-events: none;
+    }
+    .canvas-hint {
+        position: absolute;
+        top: 15px;
+        left: 20px;
+        background: #1b120d;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    /* ปุ่มควบคุม */
+    .control-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+    .action-btn {
+        background: #1b120d;
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+    .action-btn:hover { background: #d94a35; transform: translateY(-2px); }
+    .action-btn.secondary { background: #eaeaea; color: #333; }
+    .action-btn.secondary:hover { background: #ddd; }
+    
+    .audio-trigger-btn {
+        background: #d94a35;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: opacity 0.2s;
+    }
+    .audio-trigger-btn:hover { opacity: 0.9; }
+
+    /* ========================================= */
+    /* 4. ส่วนท้ายกระดาษ (FOOTER)                  */
+    /* ========================================= */
+    footer {
+        background: #120907;
+        color: white;
+        padding: 60px 40px;
+        margin-top: auto; /* ดันให้อยู่ล่างสุดเสมอ */
+    }
+    .footer-inner {
+        max-width: 1400px;
+        margin: auto;
+        display: flex;
+        justify-content: space-between;
+    }
+    .footer-links { display: flex; gap: 30px; }
+    .footer-links a { color: #ccc; text-decoration: none; transition: color 0.3s ease; }
+    .footer-links a:hover { color: #d94a35; }
+    .copy { text-align: center; margin-top: 40px; color: #888; }
+
+    /* ========================================= */
+    /* 5. RESPONSIVE (สำหรับมือถือและแท็บเล็ต)        */
+    /* ========================================= */
+    @media screen and (max-width: 992px) {
+        .menu { display: none; }
+        .study-container {
+            grid-template-columns: 1fr;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        .learning-zone {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .char-focus-box, .practice-box { height: 250px; }
+        .big-char { font-size: 100px; }
+        .workspace-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .control-bar {
+            flex-direction: column;
+            gap: 15px;
+        }
+        .control-bar > div {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .action-btn {
+            width: 100%;
+            text-align: center;
+        }
+        .footer-inner {
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+    }
+</style>
+</head>
+<body class="member-page member-lesson-demo">
+
+<div data-member-navbar></div>
+
+<main class="study-container">
+    
+    <aside class="lesson-sidebar">
+        <div class="sidebar-title">หมวดหมู่เสียง Katakana</div>
+        <ul class="lesson-list">
+            <li class="lesson-item active" onclick="changeRow('A', 'ア', 'a')">
+                <span>แถว A (ア イ ウ エ オ)</span>
+                <span class="status-badge">กำลังเรียน</span>
+            </li>
+            <li class="lesson-item" onclick="changeRow('Ka', 'カ', 'ka')">
+                <span>แถว Ka (カ キ ク ケ コ)</span>
+                <span class="status-badge">ยังไม่เริ่ม</span>
+            </li>
+            <li class="lesson-item" onclick="changeRow('Sa', 'サ', 'sa')">
+                <span>แถว Sa (サ シ ス セ ソ)</span>
+                <span class="status-badge">ยังไม่เริ่ม</span>
+            </li>
+            <li class="lesson-item" onclick="changeRow('Ta', 'タ', 'ta')">
+                <span>แถว Ta (タ チ ツ テ ト)</span>
+                <span class="status-badge">ยังไม่เริ่ม</span>
+            </li>
+            <li class="lesson-item" onclick="changeRow('Na', 'ナ', 'na')">
+                <span>แถว Na (ナ ニ ヌ ネ ノ)</span>
+                <span class="status-badge">ยังไม่เริ่ม</span>
+            </li>
+        </ul>
+    </aside>
+
+    <section class="workspace">
+        <div class="workspace-header">
+            <div class="workspace-title">
+                <h2 id="currentRowTitle">บทเรียน: แถว A (ア)</h2>
+                <p>เรียนรู้การออกเสียง ดูลำดับเส้น และฝึกฝนเขียนตัวอักษรลงบนกระดานขวา</p>
+            </div>
+            <button class="audio-trigger-btn" onclick="playLessonAudio()">
+                🔊 ฟังเสียงพยัญชนะ
+            </button>
+        </div>
+
+        <div class="learning-zone">
+            <div class="char-focus-box">
+                <div class="canvas-hint" style="background:#d94a35;">ตัวอักษรเป้าหมาย</div>
+                <div class="big-char" id="mainCharDisplay">ア</div>
+                <div class="romaji-hint" id="romajiDisplay">เสียงอ่าน: a</div>
+            </div>
+
+            <div class="practice-box">
+                <div class="canvas-hint">กระดานฝึกเขียนจำลอง</div>
+                <div class="canvas-placeholder">
+                    ✏️ [พื้นที่ระบบแคนวาส ตรวจสอบลำดับเส้น]<br>
+                    <small style="color:#999; margin-top:5px; display:block;">(ลากเมาส์หรือใช้นิ้ววาดเพื่อฝึกเขียน)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-bar">
+            <button class="action-btn secondary" onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+            <div style="display:flex; gap:10px;">
+                <button class="action-btn secondary">เคลียร์กระดาน</button>
+                <button class="action-btn" onclick="alert('ยอดเยี่ยม! กำลังบันทึกความคืบหน้าและเปลี่ยนตัวอักษรถัดไป')">ตรวจสอบ & ถัดไป ➔</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+<div class="footer-inner">
+<div class="logo">
+<div class="logo-box">JP</div>
+<div class="logo-text">
+<h2>JP Learning</h2>
+</div>
+</div>
+<div class="footer-links">
+<a href="#">เกี่ยวกับเรา</a>
+<a href="#">นโยบาย</a>
+<a href="#">ติดต่อ</a>
+</div>
+</div>
+<div class="copy">
+© 2026 JP Learning. All rights reserved.
+</div>
+</footer>
+
+<script>
+    // ฟังก์ชันแบบง่ายสำหรับเปลี่ยนข้อมูลตัวอักษรเมื่อคลิกแถวข้างซ้าย
+    function changeRow(rowName, char, romaji) {
+        // เปลี่ยนสีแท็บเมนูฝั่งซ้ายที่ถูกกด
+        const items = document.querySelectorAll('.lesson-item');
+        items.forEach(item => item.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        // เปลี่ยนข้อมูลอักษรบนหน้าจอ
+        document.getElementById('currentRowTitle').innerText = `บทเรียน: แถว ${rowName} (${char})`;
+        document.getElementById('mainCharDisplay').innerText = char;
+        document.getElementById('romajiDisplay').innerText = `เสียงอ่าน: ${romaji}`;
+    }
+
+    // ระบบอ่านออกเสียง Web Speech API สำหรับปุ่ม "ฟังเสียงพยัญชนะ"
+    function playLessonAudio() {
+        const char = document.getElementById('mainCharDisplay').innerText;
+        if ('speechSynthesis' in window) {
+            const msg = new SpeechSynthesisUtterance();
+            msg.text = char;
+            msg.lang = 'ja-JP';
+            msg.rate = 0.8;
+            window.speechSynthesis.speak(msg);
+        } else {
+            alert("เบราว์เซอร์ของคุณไม่รองรับระบบเสียง");
+        }
+    }
+</script>
+
+<script src="../sceens/member-navbar.js"></script>
+
+</body>
+</html>

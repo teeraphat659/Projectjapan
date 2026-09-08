@@ -1,0 +1,32 @@
+name: PHP checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.2', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, pdo_mysql, fileinfo
+      - name: PHP syntax check
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do php -l "$file"; done < <(find . -type f -name '*.php' -not -path './vendor/*')
+      - name: Run smoke tests
+        run: php tests/smoke.php
+      - name: Detect case-colliding paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          duplicates=$(find . -not -path './.git/*' -printf '%P\n' | tr '[:upper:]' '[:lower:]' | sort | uniq -d)
+          test -z "$duplicates" || { echo "Case-colliding files:"; echo "$duplicates"; exit 1; }

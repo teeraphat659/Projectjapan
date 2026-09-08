@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{pageTitle}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/manage_write_quiz.css">
+  <style>
+    .quiz-list { display:grid; gap:14px; }
+    .quiz-row { border:1px solid #e5e7eb; border-radius:10px; padding:18px; display:flex; gap:18px; justify-content:space-between; align-items:center; }
+    .quiz-row h3 { margin:0 0 5px; font-size:17px; } .quiz-row p { margin:0; color:#6b7280; font-size:13px; }
+    .quiz-meta { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; font-size:12px; color:#4b5563; }
+    .quiz-meta span { background:#f3f4f6; padding:4px 8px; border-radius:99px; }
+    .row-actions { display:flex; gap:8px; flex-shrink:0; } .row-actions button,.row-actions a { border:0; border-radius:7px; padding:8px 12px; text-decoration:none; font:inherit; cursor:pointer; }
+    .edit-btn { color:#fff; background:#111827; } .delete-btn { color:#b91c1c; background:#fee2e2; }
+    .quiz-message { margin-bottom:14px; color:#b91c1c; } @media (max-width:640px) { .quiz-row { align-items:flex-start; flex-direction:column; } }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <main class="main-content"><div class="quiz-container-card">
+    <div class="quiz-header"><div class="quiz-title-group"><h2 class="quiz-title">{{heading}}</h2><p class="quiz-subtitle">ข้อมูลทั้งหมดดึงจากฐานข้อมูล สามารถเพิ่ม แก้ไข หรือลบได้</p></div><a href="{{createUrl}}" class="btn-add-top">เพิ่มแบบทดสอบใหม่</a></div>
+    <div class="quiz-search-box"><i class="fa-solid fa-magnifying-glass"></i><input id="searchInput" type="search" placeholder="ค้นหาชื่อหรือคำอธิบายแบบทดสอบ"></div>
+    <div class="quiz-count-label" id="quizCount">กำลังโหลดข้อมูล...</div>
+    <div id="quizMessage" class="quiz-message" role="alert"></div>
+    <div id="quizList" class="quiz-list"></div>
+    <div id="emptyState" class="quiz-empty-state" hidden><a href="{{createUrl}}" class="btn-add-center">เพิ่มแบบทดสอบ</a></div>
+  </div></main>
+  <script src="/projectjapan/backend/script.js"></script>
+  <script>
+    const quizKind = '{{quizKind}}';
+    const createUrl = '{{createUrl}}';
+    const endpoint = '/projectjapan/backend/php/action/admin_api.php';
+    const list = document.getElementById('quizList');
+    const count = document.getElementById('quizCount');
+    const message = document.getElementById('quizMessage');
+    const emptyState = document.getElementById('emptyState');
+    let timer;
+    const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;' }[char]));
+    function render(items) {
+      count.textContent = `แบบทดสอบทั้งหมด (${items.length})`;
+      list.innerHTML = items.map((item) => `<article class="quiz-row"><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description || 'ไม่มีคำอธิบาย')}</p><div class="quiz-meta"><span>${item.alphabet_type === 'hiragana' ? 'Hiragana' : 'Katakana'}</span><span>${Number(item.question_count)} ข้อ</span><span>ผ่าน ${Number(item.pass_score)}%</span>${Number(item.time_limit_minutes) ? `<span>${Number(item.time_limit_minutes)} นาที</span>` : ''}</div></div><div class="row-actions"><a class="edit-btn" href="${createUrl}?id=${Number(item.id)}">แก้ไข</a><button class="delete-btn" data-id="${Number(item.id)}">ลบ</button></div></article>`).join('');
+      emptyState.hidden = items.length !== 0;
+    }
+    function load() {
+      const search = document.getElementById('searchInput').value.trim();
+      fetch(`${endpoint}?action=quiz_list&kind=${encodeURIComponent(quizKind)}&search=${encodeURIComponent(search)}`, { credentials:'same-origin' })
+        .then((response) => response.json()).then((result) => { if (!result.success) throw new Error(result.message); render(result.items || []); })
+        .catch((error) => { count.textContent = 'ไม่สามารถโหลดรายการได้'; message.textContent = error.message || 'เกิดข้อผิดพลาด'; });
+    }
+    document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(load, 250); });
+    list.addEventListener('click', (event) => { const button = event.target.closest('.delete-btn'); if (!button || !confirm('ต้องการลบชุดแบบทดสอบนี้ใช่หรือไม่?')) return; fetch(endpoint, { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'quiz_delete', id:Number(button.dataset.id)}) }).then((response) => response.json()).then((result) => { if (!result.success) throw new Error(result.message); load(); }).catch((error) => message.textContent = error.message || 'ลบข้อมูลไม่สำเร็จ'); });
+    load();
+  </script>
+</body>
+</html>

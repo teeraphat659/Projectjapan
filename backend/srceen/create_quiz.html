@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{pageTitle}}</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+    <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+    <link rel="stylesheet" href="/projectjapan/backend/styel/create_choice_quiz.css">
+
+    <style>
+        .question-card {
+            position: relative;
+        }
+
+        .remove-question {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            border: 0;
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .form-row-2col {
+            margin-bottom: 16px;
+        }
+
+        .form-message {
+            margin: 12px 0;
+            color: #b91c1c;
+        }
+
+        .choice-only[hidden] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="main-content">
+        <div class="create-quiz-card">
+            <!-- Header Section -->
+            <div class="page-header">
+                <h2 class="page-title" id="pageTitle">{{heading}}</h2>
+                <p class="page-subtitle">ข้อมูลและตัวอักษรทั้งหมดมาจากฐานข้อมูลจริง</p>
+            </div>
+
+            <div id="formMessage" class="form-message" role="alert"></div>
+
+            <!-- Quiz Form -->
+            <form id="quizForm">
+                <!-- Basic Quiz Information -->
+                <div class="section-box">
+                    <div class="section-box-title">ข้อมูลแบบทดสอบ</div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="title">ชื่อแบบทดสอบ *</label>
+                        <input id="title" class="form-control" required maxlength="180">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">คำอธิบาย</label>
+                        <input id="description" class="form-control" maxlength="5000">
+                    </div>
+
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label" for="alphabetType">หมวดหมู่ *</label>
+                            <select id="alphabetType" class="form-control" required>
+                                <option value="katakana">คาตากานะ (Katakana)</option>
+                                <option value="hiragana">ฮิรางานะ (Hiragana)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="timeLimit">เวลาจำกัด (นาที)</label>
+                            <input id="timeLimit" class="form-control" type="number" min="0" max="600" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="passScore">เกณฑ์ผ่าน (%)</label>
+                        <input id="passScore" class="form-control" type="number" min="0" max="100" value="70">
+                    </div>
+                </div>
+
+                <!-- Questions Dynamic Section -->
+                <div class="questions-section">
+                    <div class="questions-header">
+                        <div>
+                            <div class="page-title" style="font-size: 16px;">คำถาม</div>
+                            <div class="page-subtitle">เลือกตัวอักษรที่มีอยู่จริงในระบบ</div>
+                        </div>
+                        <button type="button" id="addQuestion" class="btn-add-question">เพิ่มข้อ</button>
+                    </div>
+
+                    <div id="questions"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions-footer">
+                    <button class="btn-submit-quiz" type="submit" id="saveButton">บันทึกแบบทดสอบ</button>
+                    <a class="btn-cancel-quiz" href="{{manageUrl}}">ยกเลิก</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="/projectjapan/backend/script.js"></script>
+    <script>
+        // Config & State
+        const quizKind = '{{quizKind}}';
+        const endpoint = '/projectjapan/backend/php/action/admin_api.php';
+        const manageUrl = '{{manageUrl}}';
+
+        const state = {
+            characters: [],
+            editingId: null
+        };
+
+        // DOM Elements
+        const questionsContainer = document.getElementById('questions');
+        const messageContainer = document.getElementById('formMessage');
+
+        // Helper Functions
+        const esc = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char]));
+
+        function characterOptions(selected = '') {
+            return `<option value="">เลือกตัวอักษร</option>` +
+                state.characters.map((item) =>
+                    `<option value="${Number(item.id)}" ${Number(item.id) === Number(selected) ? 'selected' : ''}>` +
+                    `${esc(item.japanese_char)} (${esc(item.romaji)})` +
+                    `</option>`
+                ).join('');
+        }
+
+        function renumberQuestions() {
+            [...questionsContainer.children].forEach((card, index) => {
+                card.querySelector('.section-box-title').textContent = `ข้อที่ ${index + 1}`;
+            });
+        }
+
+        function updateCharacterAudioHint(card) {
+            const characterId = Number(card.querySelector('.character-id')?.value || 0);
+            const character = state.characters.find((item) => Number(item.id) === characterId);
+            const hint = card.querySelector('.audio-current');
+            if (!hint) return;
+            if (card.dataset.audioFile) {
+                hint.textContent = 'ใช้ไฟล์เสียงเฉพาะข้อสอบ (เลือกไฟล์ใหม่เพื่อแทนที่)';
+            } else if (character?.sound_file) {
+                hint.textContent = 'ใช้เสียงที่แอดมินอัปโหลดไว้สำหรับตัวอักษรนี้อัตโนมัติ';
+            } else {
+                hint.textContent = 'ตัวอักษรนี้ยังไม่มีเสียงจากแอดมิน สามารถอัปโหลดเสียงเฉพาะข้อนี้ได้';
+            }
+        }
+
+        function addQuestion(values = {}) {
+            const index = questionsContainer.children.length + 1;
+            const card = document.createElement('section');
+            card.className = 'section-box question-card';
+
+            // ตรวจสอบและดึง ID ตัวอักษรใหม่หาก ID เดิมถูกลบไปแล้ว
+            let validCharacterId = Number(values.character_id) || 0;
+            const existsInList = state.characters.some((item) => Number(item.id) === validCharacterId);
+
+            if (!existsInList) {
+                const matchedChar = state.characters.find((item) => 
+                    (values.target_character && item.japanese_char === values.target_character) ||
+                    (values.target_romaji && item.romaji === values.target_romaji) ||
+                    (values.correct_answer && item.romaji === values.correct_answer)
+                );
+                if (matchedChar) {
+                    validCharacterId = Number(matchedChar.id);
+                } else {
+                    const selected = state.characters.find((item) => state.selectedCharacterIds && state.selectedCharacterIds.has(Number(item.id)));
+                    validCharacterId = selected ? Number(selected.id) : (state.characters[0] ? Number(state.characters[0].id) : '');
+                }
+            }
+
+            const fallbackCharacterId = validCharacterId;
+
+            const choiceOptionsValue = Array.isArray(values.choice_options) 
+                ? values.choice_options.join(', ') 
+                : (values.choice_options || '');
+
+            card.innerHTML = `
+                <button type="button" class="remove-question">ลบ</button>
+                <div class="section-box-title">ข้อที่ ${index}</div>
+                <div class="form-row-2col">
+                    <div class="form-group">
+                        <label class="form-label">ตัวอักษร *</label>
+                        <select class="form-control character-id" required>
+                            ${characterOptions(fallbackCharacterId)}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">คำตอบที่ถูกต้อง *</label>
+                        <input class="form-control correct-answer" required value="${esc(values.correct_answer)}" placeholder="เช่น a">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">คำถาม</label>
+                    <input class="form-control question-text" value="${esc(values.question_text)}" placeholder="เว้นว่างเพื่อใช้คำถามมาตรฐาน">
+                </div>
+                <div class="form-group choice-only" ${quizKind === 'choice' ? '' : 'hidden'}>
+                    <label class="form-label">ตัวเลือก (คั่นด้วยจุลภาค) *</label>
+                    <input class="form-control choice-options" value="${esc(choiceOptionsValue)}" placeholder="เช่น a, i, u, e">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">เสียงประกอบคำถาม <small>(MP3, WAV, OGG, WEBM, M4A ไม่เกิน 8 MB)</small></label>
+                    <input class="form-control audio-file" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/webm,audio/mp4,audio/x-m4a">
+                    <small class="audio-current">${values.audio_file ? 'มีเสียงเดิมอยู่แล้ว เลือกไฟล์ใหม่เพื่อแทนที่' : 'ยังไม่มีไฟล์เสียง'}</small>
+                </div>
+            `;
+
+            // Delete Event
+            card.querySelector('.remove-question').addEventListener('click', () => {
+                if (questionsContainer.children.length > 1) {
+                    card.remove();
+                    renumberQuestions();
+                }
+            });
+
+            // Character Change Event
+            card.querySelector('.character-id').addEventListener('change', (event) => {
+                const character = state.characters.find((item) => Number(item.id) === Number(event.target.value));
+                const answerInput = card.querySelector('.correct-answer');
+                if (character && !answerInput.value) {
+                    answerInput.value = character.romaji || '';
+                }
+                if (card.dataset.audioFile) card.dataset.audioFile = '';
+                const audioInput = card.querySelector('.audio-file');
+                if (audioInput) audioInput.value = '';
+                updateCharacterAudioHint(card);
+            });
+
+            questionsContainer.appendChild(card);
+            card.dataset.audioFile = values.audio_file || '';
+            updateCharacterAudioHint(card);
+        }
+
+        // Data Fetching
+        function loadCharacters() {
+            const type = encodeURIComponent(document.getElementById('alphabetType').value);
+            return fetch(`${endpoint}?action=characters&type=${type}`, { credentials: 'same-origin' })
+                .then((r) => r.json())
+                .then((result) => {
+                    if (!result.success) throw new Error(result.message);
+                    
+                    state.characters = result.items || [];
+                    const currentValues = [...questionsContainer.children].map((card) => ({
+                        character_id: card.querySelector('.character-id').value,
+                        correct_answer: card.querySelector('.correct-answer').value,
+                        question_text: card.querySelector('.question-text').value,
+                        choice_options: card.querySelector('.choice-options')?.value || '',
+                        audio_file: card.dataset.audioFile || ''
+                    }));
+
+                    questionsContainer.innerHTML = '';
+                    if (currentValues.length) {
+                        currentValues.forEach(addQuestion);
+                    } else {
+                        addQuestion();
+                    }
+                });
+        }
+
+        function loadEdit(id) {
+            return fetch(`${endpoint}?action=quiz_get&id=${id}`, { credentials: 'same-origin' })
+                .then((r) => r.json())
+                .then((result) => {
+                    if (!result.success) throw new Error(result.message);
+
+                    const item = result.item;
+                    if (item.quiz_kind !== quizKind) {
+                        throw new Error('ประเภทชุดแบบทดสอบไม่ตรงกับหน้านี้');
+                    }
+
+                    state.editingId = Number(item.id);
+                    document.getElementById('title').value = item.title;
+                    document.getElementById('description').value = item.description || '';
+
+                    const alphabetSelect = document.getElementById('alphabetType');
+                    if (alphabetSelect) {
+                        alphabetSelect.value = item.alphabet_type;
+                        // กระตุ้น Event ให้ระบบรับรู้การเปลี่ยนประเภทตัวอักษร
+                        alphabetSelect.dispatchEvent(new Event('change'));
+                    }
+
+                    document.getElementById('timeLimit').value = item.time_limit_minutes;
+                    document.getElementById('passScore').value = item.pass_score;
+
+                    // รอให้ดึงรายการตัวอักษรมาจนครบ ก่อนสร้างการ์ดคำถาม
+                    return loadCharacters().then(() => {
+                        questionsContainer.innerHTML = '';
+                        (item.questions || []).forEach((question) => addQuestion(question));
+                        document.getElementById('pageTitle').textContent = 'แก้ไขแบบทดสอบ';
+                        document.getElementById('saveButton').textContent = 'บันทึกการแก้ไข';
+                    });
+                });
+}
+
+        // Event Listeners
+        document.getElementById('alphabetType').addEventListener('change', () => {
+            if (confirm('การเปลี่ยนหมวดจะล้างตัวอักษรที่เลือกในคำถาม ต้องการดำเนินการหรือไม่?')) {
+                loadCharacters();
+            }
+        });
+
+        document.getElementById('addQuestion').addEventListener('click', () => addQuestion());
+
+        document.getElementById('quizForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            messageContainer.textContent = '';
+
+            const payload = {
+                action: state.editingId ? 'quiz_update' : 'quiz_create',
+                id: state.editingId,
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                alphabet_type: document.getElementById('alphabetType').value,
+                quiz_kind: quizKind,
+                time_limit_minutes: Number(document.getElementById('timeLimit').value || 0),
+                pass_score: Number(document.getElementById('passScore').value || 70),
+                questions: [...questionsContainer.children].map((card) => ({
+                    character_id: Number(card.querySelector('.character-id').value),
+                    correct_answer: card.querySelector('.correct-answer').value,
+                    question_text: card.querySelector('.question-text').value,
+                        choice_options: card.querySelector('.choice-options')?.value || [],
+                    audio_file: card.dataset.audioFile || '',
+                    audio_upload_index: card.querySelector('.audio-file')?.files?.length ? [...questionsContainer.children].indexOf(card) : ''
+                }))
+            };
+
+            const formData = new FormData();
+            Object.entries(payload).forEach(([key, value]) => formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value ?? '')));
+            [...questionsContainer.children].forEach((card, index) => {
+                const file = card.querySelector('.audio-file')?.files?.[0];
+                if (file) formData.append(`audio_${index}`, file);
+            });
+
+            fetch(endpoint, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData
+            })
+                .then((r) => r.json())
+                .then((result) => {
+                    if (!result.success) throw new Error(result.message);
+                    window.location.assign(`${manageUrl}?success=1`);
+                })
+                .catch((error) => {
+                    messageContainer.textContent = error.message || 'บันทึกข้อมูลไม่สำเร็จ';
+                });
+        });
+
+        // Initialize Page
+        const editId = Number(new URLSearchParams(location.search).get('id'));
+        loadCharacters()
+            .then(() => (editId ? loadEdit(editId) : null))
+            .catch((error) => {
+                messageContainer.textContent = error.message || 'ไม่สามารถโหลดข้อมูลตัวอักษรได้';
+            });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สมัครสมาชิก — JP Notes</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../style/navbar2.css">
+<link rel="stylesheet" href="../style/register.css">
+<link rel="stylesheet" href="../style/public-auth.css">
+</head>
+<body class="auth-page">
+
+    <div data-navbar></div>
+
+    <section class="register-section">
+        <div class="register-card">
+            
+            <div class="register-promo">
+                <h2>เริ่มต้นเรียนรู้<br>ภาษาญี่ปุ่นวันนี้</h2>
+                <p>สร้างบัญชีเพื่อเข้าถึงเครื่องมือการเรียนรู้ทั้งหมดของเราฟรี</p>
+                <ul class="promo-list">
+                    <li>
+                        <div class="icon">🚀</div>
+                        <div class="text">
+                            <h4>เริ่มต้นได้ทันที</h4>
+                            <p>ไม่ต้องมีพื้นฐานก็สามารถเรียนรู้ได้</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="icon">🎯</div>
+                        <div class="text">
+                            <h4>เป้าหมายชัดเจน</h4>
+                            <p>ติดตามความก้าวหน้าของคุณได้แบบเรียลไทม์</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="icon">✨</div>
+                        <div class="text">
+                            <h4>ฟรีตลอดชีพ</h4>
+                            <p>เรียนรู้ฟีเจอร์พื้นฐานโดยไม่มีค่าใช้จ่ายแอบแฝง</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="form-container">
+                <div class="header-text">
+                    <div class="icon-top">👤</div>
+                    <h1>สมัครสมาชิก</h1>
+                </div>
+
+                <div class="alert" id="registerAlert"></div>
+
+                <form action="../connectapi/register.php" method="post">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstname">ชื่อ</label>
+                            <input type="text" id="firstname" name="firstname" class="form-control" placeholder="ชื่อจริง" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname">นามสกุล</label>
+                            <input type="text" id="lastname" name="lastname" class="form-control" placeholder="นามสกุล" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">ชื่อผู้ใช้งาน</label>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="ชื่อผู้ใช้งาน" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">อีเมล</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="example@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">รหัสผ่าน</label>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="สร้างรหัสผ่าน 8 ตัวอักษรขึ้นไป" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password">ยืนยันรหัสผ่าน</label>
+                        <input type="password" id="confirm-password" name="confirm_password" class="form-control" placeholder="กรอกรหัสผ่านอีกครั้ง" required>
+                    </div>
+
+                    <button type="submit" class="submit-btn">สร้างบัญชีผู้ใช้</button>
+
+                </form>
+
+                <div class="login-link">
+                    มีบัญชีอยู่แล้วใช่ไหม? <a href="login.html" onclick="safeNavigate(event, 'login.html')">เข้าสู่ระบบที่นี่</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="public-footer auth-footer">JP Notes <span>·</span> เรียนรู้ตัวอักษรทีละตัว</footer>
+
+    <div class="modal-overlay" id="customConfirmModal">
+        <div class="modal-box">
+            <div class="modal-icon-alert">⚠️</div>
+            <h3>คุณต้องการออกจากหน้านี้?</h3>
+            <p>คุณมีข้อมูลที่กรอกค้างไว้ หากดำเนินการต่อ ข้อมูลที่ยังไม่บันทึกจะสูญหาย</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">ทำรายการต่อ</button>
+                <button type="button" class="btn-confirm" onclick="confirmLeavePage()">ตกลง (ออกจากหน้า)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const registerForm = document.querySelector('form');
+        const confirmModal = document.getElementById('customConfirmModal');
+        
+        let formChanged = false;
+        let pendingUrl = ''; // เอาไว้เก็บ URL ที่ผู้ใช้ตั้งใจจะไปตอนแรก
+
+        // เช็กว่าผู้ใช้พิมพ์อะไรลงในฟอร์มหรือยัง
+        registerForm.addEventListener('input', () => {
+            formChanged = true;
+        });
+
+        // ถ้ากดยืนยันฟอร์มได้สำเร็จ (Submit) คืนค่าเป็น false จะได้ไม่เตือน
+        registerForm.addEventListener('submit', () => {
+            formChanged = false;
+        });
+
+        // ฟังก์ชันหลักสำหรับจัดการการกดลิงก์ภายในหน้า
+        function safeNavigate(event, targetUrl) {
+            event.preventDefault(); // หยุดการเปิดหน้าต่างตามปกติไว้ก่อน
+
+            if (formChanged) {
+                // ถ้ามีการกรอกฟอร์ม ให้แสดง Custom Modal และเก็บ URL เป้าหมายไว้
+                pendingUrl = targetUrl;
+                confirmModal.classList.add('active');
+            } else {
+                // ถ้ายังไม่ได้พิมพ์อะไรเลย ก็ให้ย้ายหน้าได้ตามปกติ
+                window.location.href = targetUrl;
+            }
+        }
+
+        // ให้เมนูสาธารณะใช้การยืนยันออกจากหน้าเดียวกับลิงก์เข้าสู่ระบบ
+        document.addEventListener('click', (event) => {
+            const navLink = event.target.closest('[data-navbar] a[href]');
+            if (navLink) safeNavigate(event, navLink.href);
+        });
+
+        // ฟังก์ชันปิดกล่องแจ้งเตือน (เมื่อกดยกเลิก)
+        function closeModal() {
+            confirmModal.classList.remove('active');
+            pendingUrl = ''; // เคลียร์ URL ทิ้ง
+        }
+
+        // ฟังก์ชันยืนยันการออกจากหน้า (เมื่อกดตกลง)
+        function confirmLeavePage() {
+            formChanged = false; // ปลดล็อกไม่ให้เบราว์เซอร์เด้งเตือนซ้ำ
+            window.location.href = pendingUrl; // พาไปหน้าที่เก็บไว้
+        }
+
+        // เก็บเบราว์เซอร์แจ้งเตือน (Native) ไว้เฉพาะกรณีผู้ใช้กด "ปิดแท็บ" หรือกด "รีเฟรชหน้า"
+        window.addEventListener('beforeunload', (event) => {
+            if (formChanged) {
+                event.preventDefault();
+                event.returnValue = ''; 
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertEl = document.getElementById('registerAlert');
+            if (!alertEl) return;
+
+            const params = new URLSearchParams(window.location.search);
+            const error = params.get('error');
+            const success = params.get('success');
+
+            if (error) {
+                alertEl.textContent = error;
+                alertEl.className = 'alert error';
+                alertEl.style.display = 'block';
+                return;
+            }
+
+            if (success === 'registered') {
+                alertEl.textContent = 'สมัครสมาชิกสำเร็จแล้ว กรุณาเข้าสู่ระบบ';
+                alertEl.className = 'alert success';
+                alertEl.style.display = 'block';
+            }
+        });
+    </script>
+
+    <script src="public-navbar.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!-- เปลี่ยนจาก <header class="navbar"> เป็น <aside class="sidebar"> -->
+<aside class="sidebar">
+  
+  <!-- 1. ส่วนหัว: แบรนด์และโลโก้ -->
+  <div class="sidebar-brand">
+    <!-- ถ้ามีรูปโลโก้ สามารถใช้แท็ก img แทนได้เลย เช่น:
+    <img src="path/to/your/logo.png" alt="Logo" class="brand-image"> -->
+    <i class="fa-solid fa-book-open-reader brand-icon"></i> 
+    <span class="brand-name">Admin Panel</span>
+  </div>
+
+  <!-- 2. ส่วนกลาง: เมนูนำทาง -->
+  <ul class="nav-menu">
+    <li><a href="/projectjapan/backend/php/srceen/index.php" class="nav-item">แดชบอร์ด</a></li>
+    <li><a href="/projectjapan/Front-end/data/member.php" class="nav-item">ไปหน้าสมาชิก</a></li>
+    <li><a href="/projectjapan/backend/php/srceen/manage_katakana.php" class="nav-item">จัดการตัวอักษร</a></li>
+    <li><a href="/projectjapan/backend/php/srceen/manage_write_quiz.php" class="nav-item">แบบทดสอบเขียน</a></li>
+    <li><a href="/projectjapan/backend/php/srceen/manage_writing_svg_references.php" class="nav-item">เฉลยเส้นตัวอักษร</a></li>
+    <li><a href="/projectjapan/backend/php/srceen/manage_choice_quiz.php" class="nav-item">แบบทดสอบตัวเลือก</a></li>
+    <li><a href="/projectjapan/backend/php/srceen/user_results.php" class="nav-item">ดูผลสมาชิก</a></li>
+  </ul>
+
+  <!-- 3. ส่วนล่าง: โปรไฟล์และ Dropdown -->
+  <div class="sidebar-profile">
+    <div class="profile-dropdown" id="profileDropdown">
+      <button type="button" id="profileBtn" class="profile-btn">
+        <span id="adminNavName">กำลังโหลด...</span>
+        <i class="fa-solid fa-chevron-down arrow-icon"></i>
+      </button>
+
+      <div class="dropdown-menu" id="profileMenu">
+        <div class="user-info-header">
+          <div class="user-display-name" id="adminDisplayName">ผู้ดูแลระบบ</div>
+          <div class="user-email" id="adminEmail">-</div>
+        </div>
+        <div class="dropdown-divider"></div>
+        
+        <a href="/projectjapan/backend/php/srceen/profile.php" class="dropdown-item">
+          <i class="fa-regular fa-user"></i> ข้อมูลส่วนตัว
+        </a>
+        <a href="/projectjapan/backend/php/srceen/change_password.php" class="dropdown-item">
+          <i class="fa-solid fa-key"></i> เปลี่ยนรหัสผ่าน
+        </a>
+        
+        <div class="dropdown-divider"></div>
+        
+        <a href="/projectjapan/backend/php/admin_logout.php" class="dropdown-item logout">
+          <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+        </a>
+      </div>
+    </div>
+  </div>
+  
+</aside>

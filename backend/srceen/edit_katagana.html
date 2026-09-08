@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แก้ไขข้อมูลตัวอักษรและสตูดิโอวิดีโอ SVG</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/create_katakana.css">
+  <style>
+    .studio-layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 1.15fr) minmax(360px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 980px) {
+      .studio-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .preview-card {
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 22px;
+      position: sticky;
+      top: 20px;
+    }
+    /* Video Player Frame */
+    .video-player-frame {
+      width: 100%;
+      max-width: 340px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+      overflow: hidden;
+      position: relative;
+    }
+    .svg-stage {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #ffffff;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .svg-grid-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(to right, rgba(203, 213, 225, 0.5) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.5) 1px, transparent 1px);
+      background-size: 50% 50%;
+    }
+    .svg-grid-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        linear-gradient(45deg, transparent 49.5%, rgba(226, 232, 240, 0.7) 49.5%, rgba(226, 232, 240, 0.7) 50.5%, transparent 50.5%),
+        linear-gradient(-45deg, transparent 49.5%, rgba(226, 232, 240, 0.7) 49.5%, rgba(226, 232, 240, 0.7) 50.5%, transparent 50.5%);
+    }
+    #previewSvg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      position: relative;
+      z-index: 2;
+    }
+    /* Video Timeline & Controls */
+    .video-controls-bar {
+      background: #f1f5f9;
+      border-top: 1px solid #e2e8f0;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .timeline-track {
+      width: 100%;
+      height: 6px;
+      background: #cbd5e1;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+    .timeline-progress {
+      width: 0%;
+      height: 100%;
+      background: #2563eb;
+      border-radius: 999px;
+      transition: width 0.05s linear;
+    }
+    .controls-btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .player-action-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .player-action-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .player-action-btn.primary {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+    .player-action-btn.primary:hover {
+      background: #1d4ed8;
+    }
+    .step-btn-pill {
+      background: #e2e8f0;
+      border: none;
+      color: #475569;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .step-btn-pill:hover {
+      background: #cbd5e1;
+      color: #1e293b;
+    }
+    .step-btn-pill.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    /* Tab Switcher for SVG vs GIF */
+    .view-mode-tabs {
+      display: flex;
+      gap: 6px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .view-mode-tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .view-mode-tab.active {
+      background: #ffffff;
+      color: #1e293b;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    /* Header summary */
+    .char-summary-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .big-char-badge {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      color: #1d4ed8;
+      font-size: 36px;
+      font-weight: 700;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 0 1px rgba(59,130,246,0.2);
+    }
+    .badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .badge-chip.success { background: #dcfce7; color: #166534; }
+    .badge-chip.warning { background: #fef3c7; color: #92400e; }
+    
+    .field-alert { font-size: 13px; font-weight: 500; margin-top: 5px; display: none; }
+    .field-alert.error { color: #dc2626; display: block; }
+    .field-alert.success { color: #16a34a; display: block; }
+    .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+    
+    .btn-auto-design {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-auto-design:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .media-test-box {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 10px;
+    }
+    .audio-wave-anim {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 14px;
+      margin-left: 6px;
+    }
+    .audio-wave-bar {
+      width: 3px;
+      height: 5px;
+      background: #16a34a;
+      border-radius: 2px;
+    }
+    .audio-wave-anim.playing .audio-wave-bar:nth-child(1) { animation: wave 0.7s infinite alternate ease-in-out; }
+    .audio-wave-anim.playing .audio-wave-bar:nth-child(2) { animation: wave 0.9s infinite alternate ease-in-out 0.2s; }
+    .audio-wave-anim.playing .audio-wave-bar:nth-child(3) { animation: wave 0.6s infinite alternate ease-in-out 0.4s; }
+    .audio-wave-anim.playing .audio-wave-bar:nth-child(4) { animation: wave 0.8s infinite alternate ease-in-out 0.1s; }
+    @keyframes wave {
+      0% { height: 4px; }
+      100% { height: 14px; }
+    }
+    .stroke-list-panel {
+      margin-top: 14px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .stroke-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .stroke-list-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <div id="navbar-container"></div>
+
+  <main class="main-content">
+    <div class="create-quiz-card" style="max-width: 1180px;">
+      <div class="header-container">
+        <div class="page-header" style="margin-bottom: 0;">
+          <h2 class="page-title"><i class="fa-solid fa-clapperboard" style="color: #2563eb; margin-right: 8px;"></i> แก้ไขข้อมูลตัวอักษร & วิดีโอ SVG วิธีเขียน</h2>
+          <p class="page-subtitle">เล่นวิดีโอสาธิตวิธีเขียนตามหลักอักษรญี่ปุ่น ทดสอบฟังเสียงที่อัปโหลด และบันทึกข้อมูลอย่างสมบูรณ์</p>
+        </div>
+        <a href="/projectjapan/backend/php/srceen/manage_katakana.php" class="btn-cancel-white" style="text-decoration:none;">
+          <i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i> กลับหน้ารายการ
+        </a>
+      </div>
+
+      <!-- สรุปข้อมูลตัวอักษรเบื้องต้น (Hero Banner) -->
+      <div class="char-summary-header">
+        <div class="big-char-badge" id="heroChar">?</div>
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <h3 style="margin: 0; font-size: 19px; color: #1e293b;" id="heroTitle">กำลังโหลดข้อมูล...</h3>
+            <span id="badgeCharType" class="badge-chip">Katakana</span>
+            <span id="badgeUnicode" class="badge-chip">Unicode: -</span>
+            <span id="badgeSvgStatus" class="badge-chip warning"><i class="fa-solid fa-clock"></i> กำลังตรวจสอบ SVG...</span>
+          </div>
+          <p style="margin: 4px 0 0 0; color: #64748b; font-size: 13px;" id="heroSubtitle">
+            ID: <span id="heroId">-</span> | วรรค: <span id="heroGroup">-</span> | คำอ่าน: <span id="heroRomaji">-</span> | จำนวนเส้น: <span id="heroStrokes">-</span> เส้น
+          </p>
+        </div>
+      </div>
+
+      <div id="formMessage" style="display:none; margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; font-weight: 500;"></div>
+
+      <form id="editCharacterForm" action="/projectjapan/backend/php/action/update_katakana.php" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="id" id="characterId" value="">
+        <input type="hidden" name="strokes_json" id="strokesJson" value="">
+
+        <div class="studio-layout">
+          
+          <!-- คอลัมน์ซ้าย: ฟอร์มแก้ไขข้อมูลตัวอักษร + ทดสอบเสียง -->
+          <div>
+            <div class="section-box" style="margin-bottom: 18px;">
+              <div class="section-box-title"><i class="fa-solid fa-sliders" style="margin-right: 6px;"></i> ข้อมูลตัวอักษร</div>
+
+              <div class="form-row-2col">
+                <div class="form-group">
+                  <label class="form-label" for="charType">ประเภทตัวอักษร *</label>
+                  <select id="charType" name="char_type" class="form-control" required>
+                    <option value="Katakana">Katakana (คาตากานะ)</option>
+                    <option value="Hiragana">Hiragana (ฮิรางานะ)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="charGroup">วรรค (Group) *</label>
+                  <select id="charGroup" name="char_group" class="form-control" required>
+                    <option value="">เลือกวรรค</option>
+                    <option value="a">วรรค a</option>
+                    <option value="ka">วรรค ka</option>
+                    <option value="sa">วรรค sa</option>
+                    <option value="ta">วรรค ta</option>
+                    <option value="na">วรรค na</option>
+                    <option value="ha">วรรค ha</option>
+                    <option value="ma">วรรค ma</option>
+                    <option value="ya">วรรค ya</option>
+                    <option value="ra">วรรค ra</option>
+                    <option value="wa">วรรค wa</option>
+                    <option value="n">วรรค n</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="japaneseChar">ตัวอักษรภาษาญี่ปุ่น *</label>
+                <div style="display: flex; gap: 10px; align-items: stretch;">
+                  <input type="text" id="japaneseChar" name="japanese_char" class="form-control" maxlength="2" required placeholder="เช่น サ" style="font-size: 22px; font-weight: 700; width: 130px; text-align: center;">
+                  <button type="button" id="btnSyncKanjiVg" class="btn-auto-design">
+                    <i class="fa-solid fa-arrows-rotate"></i> ดึงเส้นใหม่จาก KanjiVG
+                  </button>
+                </div>
+                <div id="charAlert" class="field-alert"></div>
+                <small style="color: #64748b; margin-top: 4px; display: block;">
+                  หากเปลี่ยนตัวอักษร ระบบจะตรวจ Unicode และเช็คความซ้ำกับฐานข้อมูลทันที
+                </small>
+              </div>
+
+              <div class="form-row-2col">
+                <div class="form-group">
+                  <label class="form-label" for="romaji">โรมาจิ (Romaji) *</label>
+                  <input type="text" id="romaji" name="romaji" class="form-control" required placeholder="เช่น a, ka, sa">
+                  <div id="romajiAlert" class="field-alert"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="strokeCount">จำนวนเส้น</label>
+                  <input type="number" id="strokeCount" name="stroke_count" class="form-control" min="1" readonly placeholder="จำนวนเส้น" style="background: #f1f5f9;">
+                </div>
+              </div>
+            </div>
+
+            <!-- สื่อประกอบ (รูปภาพและไฟล์เสียง พร้อมปุ่มทดสอบฟังเสียงสด) -->
+            <div class="section-box">
+              <div class="section-box-title"><i class="fa-solid fa-photo-film" style="margin-right: 6px;"></i> ไฟล์รูปภาพและเสียง (ทดสอบฟังได้ทันที)</div>
+
+              <!-- ส่วนรูปภาพ -->
+              <div class="form-group">
+                <label class="form-label" for="imageFile">URL รูปภาพตัวอักษร</label>
+                <div class="input-icon-wrapper">
+                  <i class="fa-solid fa-image"></i>
+                  <input type="text" id="imageFile" name="image_file" class="form-control" placeholder="https://example.com/character.png">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="imageUpload">หรืออัปโหลดไฟล์รูปใหม่จากเครื่อง</label>
+                <input type="file" id="imageUpload" name="image_upload" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
+                <small style="color: #64748b;">หากไม่เลือกไฟล์ ระบบจะใช้รูปเดิม</small>
+                <div id="savedImagePreview" style="display:none; margin-top:10px;">
+                  <small style="font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">รูปภาพที่บันทึกอยู่:</small>
+                  <img id="savedImage" src="" alt="รูปตัวอักษร" style="display:block; max-width:130px; max-height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:8px; background:#fff; padding:4px;">
+                </div>
+              </div>
+
+              <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 18px 0;">
+
+              <!-- ส่วนไฟล์เสียง พร้อมปุ่มทดสอบฟังเสียง -->
+              <div class="form-group">
+                <label class="form-label" for="soundFile">URL ไฟล์เสียงออกเสียง</label>
+                <div style="display:flex; gap:8px;">
+                  <div class="input-icon-wrapper" style="flex:1; margin-bottom:0;">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <input type="text" id="soundFile" name="sound_file" class="form-control" placeholder="https://example.com/sound.mp3">
+                  </div>
+                  <button type="button" id="btnTestUrlSound" class="player-action-btn" style="white-space:nowrap;">
+                    <i class="fa-solid fa-play"></i> ทดสอบ URL
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 12px;">
+                <label class="form-label" for="soundUpload">หรืออัปโหลดไฟล์เสียงใหม่จากเครื่อง</label>
+                <input type="file" id="soundUpload" name="sound_upload" class="form-control" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/m4a,audio/webm,.mp3,.wav,.ogg,.m4a">
+                <small style="color: #64748b;">รองรับ MP3, WAV, OGG, M4A ขนาดไม่เกิน 10 MB (เลือกไฟล์แล้วกดฟังทดสอบได้ทันที)</small>
+
+                <!-- กล่องทดสอบเสียงที่เพิ่งเลือกจากเครื่อง (Audio Test Box) -->
+                <div id="uploadedSoundTestBox" class="media-test-box" style="display:none;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong style="color: #166534; font-size:13px; display:flex; align-items:center;">
+                      <i class="fa-solid fa-music" style="margin-right:6px;"></i> ไฟล์เสียงที่เลือก: <span id="uploadedSoundName" style="margin-left:4px;">-</span>
+                      <span class="audio-wave-anim" id="soundWaveAnim">
+                        <span class="audio-wave-bar"></span>
+                        <span class="audio-wave-bar"></span>
+                        <span class="audio-wave-bar"></span>
+                        <span class="audio-wave-bar"></span>
+                      </span>
+                    </strong>
+                    <button type="button" id="btnPlayUploadedSound" class="player-action-btn primary" style="padding: 5px 12px; font-size:12.5px;">
+                      <i class="fa-solid fa-play"></i> ทดสอบฟังเสียงนี้
+                    </button>
+                  </div>
+                  <audio id="uploadedAudioPlayer" controls style="height:36px; width:100%;"></audio>
+                </div>
+
+                <!-- เสียงเดิมที่บันทึกไว้ในระบบ -->
+                <div id="savedSoundPreview" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+                  <small style="font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">เสียงเดิมที่บันทึกอยู่ในระบบ:</small>
+                  <audio id="savedAudioPlayer" controls style="height:36px; width:100%;"></audio>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- คอลัมน์ขวา: วิดีโอลำดับเส้น SVG (SVG Stroke Video Player) -->
+          <div>
+            <div class="preview-card">
+              
+              <!-- Tab เลือกระหว่าง วิดีโอ SVG กับ ภาพเคลื่อนไหว GIF -->
+              <div class="view-mode-tabs">
+                <button type="button" id="tabSvgMode" class="view-mode-tab active">
+                  <i class="fa-solid fa-clapperboard" style="margin-right: 4px;"></i> วิดีโอวิธีเขียน SVG
+                </button>
+                <button type="button" id="tabGifMode" class="view-mode-tab">
+                  <i class="fa-regular fa-image" style="margin-right: 4px;"></i> ภาพ GIF ต้นฉบับ
+                </button>
+              </div>
+
+              <!-- กรอบตัวเล่นวิดีโอ SVG -->
+              <div id="svgPlayerContainer">
+                <div class="video-player-frame">
+                  <div class="svg-stage">
+                    <div class="svg-grid-bg"></div>
+                    <svg id="previewSvg" viewBox="0 0 109 109">
+                      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="'Prompt', sans-serif">
+                        กำลังโหลดเส้น SVG...
+                      </text>
+                    </svg>
+                  </div>
+
+                  <!-- แถบควบคุมวิดีโอ (Video Controls) -->
+                  <div class="video-controls-bar">
+                    <!-- Progress bar -->
+                    <div class="timeline-track" id="timelineTrack" title="ความคืบหน้าของวิดีโอ">
+                      <div class="timeline-progress" id="timelineProgress"></div>
+                    </div>
+
+                    <!-- แถวปุ่มควบคุมการเล่นวิดีโอ -->
+                    <div class="controls-btn-row">
+                      <div style="display:flex; gap:6px; align-items:center;">
+                        <button type="button" id="btnPlayPause" class="player-action-btn primary" title="เล่น/หยุดวิดีโอ">
+                          <i class="fa-solid fa-play" id="playIcon"></i> <span id="playText">เล่นวิดีโอ</span>
+                        </button>
+                        <button type="button" id="btnReplay" class="player-action-btn" title="เล่นใหม่ตั้งแต่ต้น">
+                          <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                      </div>
+
+                      <div style="font-size: 12px; font-weight: 600; color: #475569;" id="strokeCounterLabel">
+                        เส้นที่ 0 / 0
+                      </div>
+                    </div>
+
+                    <!-- ปุ่มลัดเลือกดูทีละเส้น (Step Controls) -->
+                    <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:2px;" id="stepPillsRow">
+                      <!-- Pills generated dynamically -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ตัวเลือกตั้งค่าลักษณะแอนิเมชันและความเร็ว -->
+                <div style="margin-top: 16px;">
+                  <div class="form-row-2col" style="gap:10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label class="form-label" for="animationStyle" style="font-size: 13px;">สไตล์การลากเส้น</label>
+                      <select id="animationStyle" name="animation_style" class="form-control" style="font-size: 13px; padding: 8px 10px;">
+                        <option value="assisted" selected>โหมดตัวช่วยเขียน (เหมือนหน้าฝึกเขียน - เส้นแดงชัดเจน)</option>
+                        <option value="educational">Educational (หมึกดำ + ตัวเลขลำดับ)</option>
+                        <option value="calligraphy">Calligraphic Shodo (พู่กันตวัดหาง)</option>
+                        <option value="ghost">Ghost Reveal (มีเงาโครงร่างนำทาง)</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label class="form-label" for="strokeDuration" style="font-size: 13px;">ความเร็วในการเขียน</label>
+                      <select id="strokeDuration" name="stroke_duration" class="form-control" style="font-size: 13px; padding: 8px 10px;">
+                        <option value="1.2">0.5x (ช้า 1.2s/เส้น)</option>
+                        <option value="0.75" selected>1.0x (ปกติ 0.75s/เส้น)</option>
+                        <option value="0.70">1.0x (ปกติ 0.70s/เส้น)</option>
+                        <option value="0.45">1.5x (เร็ว 0.45s/เส้น)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-size:12px; color:#475569; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                      <input type="checkbox" id="chkShowPenTip" checked> แสดงหัวพู่กันนำทาง (Pen Tip)
+                    </label>
+                    <label style="font-size:12px; color:#475569; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                      <input type="checkbox" id="chkLoopVideo"> วนซ้ำอัตโนมัติ (Loop)
+                    </label>
+                  </div>
+                </div>
+
+                <!-- รายการแจกแจงเส้น SVG แต่ละเส้น -->
+                <div style="margin-top: 14px;">
+                  <div style="font-weight: 600; font-size: 13px; color: #334155; margin-bottom: 4px;">
+                    <i class="fa-solid fa-list-ol" style="margin-right: 4px;"></i> รายละเอียดเส้นในฐานข้อมูล (<span id="strokeCountBadge">0</span> เส้น)
+                  </div>
+                  <div id="strokeListContainer" class="stroke-list-panel">
+                    <div style="color: #94a3b8; text-align: center; padding: 10px;">ยังไม่มีข้อมูลเส้น</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- กรอบแสดง GIF ต้นฉบับ (แสดงเมื่อสลับแท็บ) -->
+              <div id="gifViewerContainer" style="display:none; text-align:center; padding: 20px 0;">
+                <img id="gifViewerImage" src="" alt="ภาพเคลื่อนไหว GIF" style="max-width:240px; max-height:240px; border-radius:12px; border:1px solid #cbd5e1; background:#fff; padding:8px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                <p style="margin:10px 0 0 0; color:#64748b; font-size:13px;" id="gifViewerText">ภาพลำดับการเขียนต้นฉบับ</p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-actions-footer" style="margin-top: 24px;">
+          <button type="submit" id="btnSubmitForm" class="btn-submit-black" style="padding: 12px 28px; font-size: 15px;">
+            <i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i> บันทึกการแก้ไขตัวอักษรและเส้น SVG
+          </button>
+          <a href="/projectjapan/backend/php/srceen/manage_katakana.php" class="btn-cancel-white" style="padding: 12px 24px;">
+            ยกเลิก
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/projectjapan/backend/script.js"></script>
+  <script>
+    const API_STROKE_URL = '/projectjapan/backend/php/action/character_stroke_manager_api.php';
+    const queryParams = new URLSearchParams(window.location.search);
+    const characterId = parseInt(queryParams.get('id'), 10);
+
+    if (!characterId || Number.isNaN(characterId)) {
+      alert('ไม่พบ ID ตัวอักษรสำหรับแก้ไข');
+      window.location.href = '/projectjapan/backend/php/srceen/manage_katakana.php';
+    }
+
+    document.getElementById('characterId').value = characterId;
+
+    let loadedStrokes = [];
+    let initialChar = '';
+    let isDuplicate = false;
+
+    // Elements
+    const charInput = document.getElementById('japaneseChar');
+    const typeSelect = document.getElementById('charType');
+    const groupSelect = document.getElementById('charGroup');
+    const romajiInput = document.getElementById('romaji');
+    const strokeCountInput = document.getElementById('strokeCount');
+    const strokesJsonInput = document.getElementById('strokesJson');
+    const animStyleSelect = document.getElementById('animationStyle');
+    const durationSelect = document.getElementById('strokeDuration');
+
+    const btnSync = document.getElementById('btnSyncKanjiVg');
+    const btnSubmit = document.getElementById('btnSubmitForm');
+    const svgPreview = document.getElementById('previewSvg');
+    const charAlert = document.getElementById('charAlert');
+    const romajiAlert = document.getElementById('romajiAlert');
+
+    const heroChar = document.getElementById('heroChar');
+    const heroTitle = document.getElementById('heroTitle');
+    const heroId = document.getElementById('heroId');
+    const heroGroup = document.getElementById('heroGroup');
+    const heroRomaji = document.getElementById('heroRomaji');
+    const heroStrokes = document.getElementById('heroStrokes');
+    const badgeCharType = document.getElementById('badgeCharType');
+    const badgeUnicode = document.getElementById('badgeUnicode');
+    const badgeSvgStatus = document.getElementById('badgeSvgStatus');
+    const strokeCountBadge = document.getElementById('strokeCountBadge');
+    const strokeListContainer = document.getElementById('strokeListContainer');
+
+    // Video Engine Controls Elements
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const playIcon = document.getElementById('playIcon');
+    const playText = document.getElementById('playText');
+    const btnReplay = document.getElementById('btnReplay');
+    const timelineProgress = document.getElementById('timelineProgress');
+    const strokeCounterLabel = document.getElementById('strokeCounterLabel');
+    const stepPillsRow = document.getElementById('stepPillsRow');
+    const chkShowPenTip = document.getElementById('chkShowPenTip');
+    const chkLoopVideo = document.getElementById('chkLoopVideo');
+
+    // Audio Test Elements
+    const soundFileInput = document.getElementById('soundFile');
+    const soundUploadInput = document.getElementById('soundUpload');
+    const btnTestUrlSound = document.getElementById('btnTestUrlSound');
+    const uploadedSoundTestBox = document.getElementById('uploadedSoundTestBox');
+    const uploadedSoundName = document.getElementById('uploadedSoundName');
+    const soundWaveAnim = document.getElementById('soundWaveAnim');
+    const btnPlayUploadedSound = document.getElementById('btnPlayUploadedSound');
+    const uploadedAudioPlayer = document.getElementById('uploadedAudioPlayer');
+
+    // Tab switcher
+    const tabSvgMode = document.getElementById('tabSvgMode');
+    const tabGifMode = document.getElementById('tabGifMode');
+    const svgPlayerContainer = document.getElementById('svgPlayerContainer');
+    const gifViewerContainer = document.getElementById('gifViewerContainer');
+    const gifViewerImage = document.getElementById('gifViewerImage');
+
+    function showFormMessage(text, type = 'error') {
+      const messageEl = document.getElementById('formMessage');
+      if (!messageEl) return;
+      messageEl.textContent = text;
+      messageEl.style.display = 'block';
+      messageEl.style.backgroundColor = type === 'error' ? '#fdecea' : '#ecf8ed';
+      messageEl.style.color = type === 'error' ? '#9a1f1f' : '#1f5335';
+      messageEl.style.border = type === 'error' ? '1px solid #f5c2c0' : '1px solid #b8d7b0';
+    }
+
+    function normalizeGroupValue(value) {
+      if (!value) return '';
+      return String(value).trim().replace(/^\s*วรรค\s*/iu, '');
+    }
+
+    /* ==========================================================================
+       REAL JAPANESE STROKE ORDER VIDEO ENGINE (เครื่องเล่นวิดีโอวิธีเขียนจริง)
+       ========================================================================== */
+    class JapaneseStrokeVideoPlayer {
+      constructor(svgEl, options = {}) {
+        this.svg = svgEl;
+        this.options = options;
+        this.strokes = [];
+        this.pathItems = [];
+        this.penTip = null;
+
+        this.isPlaying = false;
+        this.isCompleted = false;
+        this.currentStrokeIndex = 0;
+        this.currentStrokeProgress = 0; // 0.0 to 1.0
+        this.lastTimestamp = 0;
+        this.animFrameId = null;
+        this.pauseBetweenStrokesMs = 180;
+        this.waitingPauseUntil = 0;
+
+        this.onProgressUpdate = null;
+        this.onStrokeChange = null;
+        this.onStateChange = null;
+      }
+
+      setStrokes(strokes) {
+        this.stop();
+        this.strokes = Array.isArray(strokes) ? strokes : [];
+        this.currentStrokeIndex = 0;
+        this.currentStrokeProgress = 0;
+        this.isCompleted = false;
+        this.waitingPauseUntil = 0;
+        this.buildSvgDom();
+      }
+
+      buildSvgDom() {
+        this.svg.innerHTML = '';
+        this.pathItems = [];
+
+        if (!this.strokes.length) {
+          this.svg.innerHTML = `
+            <text x="50%" y="48%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="'Prompt', sans-serif">
+              ยังไม่มีเส้น SVG ในตาราง
+            </text>
+            <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="600" font-family="'Prompt', sans-serif">
+              คลิก 'ดึงเส้นใหม่จาก KanjiVG'
+            </text>
+          `;
+          return;
+        }
+
+        // Filter for Pen Tip Glow
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        defs.innerHTML = `
+          <filter id="penTipGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#dc2626" flood-opacity="0.65"/>
+          </filter>
+        `;
+        this.svg.appendChild(defs);
+
+        const style = (this.options.getStyle && this.options.getStyle()) || 'assisted';
+
+        // 1. Ghost Group (เงาโครงร่างนำทางเบื้องหลัง)
+        const ghostGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        ghostGroup.setAttribute('class', 'stroke-ghost-group');
+        let ghostOpacity = '0.12';
+        if (style === 'ghost') ghostOpacity = '0.35';
+        else if (style === 'educational') ghostOpacity = '0.18';
+        ghostGroup.setAttribute('opacity', ghostOpacity);
+
+        this.strokes.forEach(st => {
+          const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p.setAttribute('d', st.path);
+          p.setAttribute('fill', 'none');
+          p.setAttribute('stroke', '#64748b');
+          p.setAttribute('stroke-width', '4.5');
+          p.setAttribute('stroke-linecap', 'round');
+          p.setAttribute('stroke-linejoin', 'round');
+          ghostGroup.appendChild(p);
+        });
+        this.svg.appendChild(ghostGroup);
+
+        // 2. Active Drawn Group (เส้นเขียนจริงและหมายเลขลำดับเส้น)
+        const activeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        activeGroup.setAttribute('class', 'stroke-active-group');
+        this.svg.appendChild(activeGroup); // Append to SVG first so geometry is accurate
+
+        const strokeColor = (style === 'assisted') ? '#ef4444' : (style === 'calligraphy' ? '#0f172a' : '#1e293b');
+        const strokeWidth = (style === 'calligraphy') ? '4.8' : (style === 'assisted' ? '4.2' : '4.0');
+
+        this.strokes.forEach((st, idx) => {
+          const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p.setAttribute('d', st.path);
+          p.setAttribute('fill', 'none');
+          p.setAttribute('stroke', strokeColor);
+          p.setAttribute('stroke-width', strokeWidth);
+          p.setAttribute('stroke-linecap', 'round');
+          p.setAttribute('stroke-linejoin', 'round');
+
+          activeGroup.appendChild(p);
+
+          const length = Math.max(1, p.getTotalLength());
+          p.style.strokeDasharray = `${length} ${length}`;
+          p.style.strokeDashoffset = `${length}`;
+
+          // Stroke Number Badge (1, 2, 3...)
+          let numGroup = null;
+          const startX = (st.start_x !== null && st.start_x !== undefined) ? Number(st.start_x) : null;
+          const startY = (st.start_y !== null && st.start_y !== undefined) ? Number(st.start_y) : null;
+
+          if (startX !== null && startY !== null) {
+            numGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            numGroup.setAttribute('class', 'stroke-num-badge');
+            numGroup.setAttribute('opacity', '0');
+
+            const numBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            numBg.setAttribute('cx', Math.max(5, startX - 2));
+            numBg.setAttribute('cy', Math.max(5, startY - 2));
+            numBg.setAttribute('r', '4');
+            numBg.setAttribute('fill', '#ef4444');
+
+            const numText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            numText.setAttribute('x', Math.max(5, startX - 2));
+            numText.setAttribute('y', Math.max(5, startY - 2) + 2.5);
+            numText.setAttribute('text-anchor', 'middle');
+            numText.setAttribute('font-size', '5.5');
+            numText.setAttribute('font-weight', 'bold');
+            numText.setAttribute('fill', '#ffffff');
+            numText.setAttribute('font-family', 'sans-serif');
+            numText.textContent = String(st.order || (idx + 1));
+
+            numGroup.appendChild(numBg);
+            numGroup.appendChild(numText);
+            activeGroup.appendChild(numGroup);
+          }
+
+          this.pathItems.push({
+            pathEl: p,
+            numGroup: numGroup,
+            length: length,
+            order: st.order || (idx + 1),
+            startX: startX,
+            startY: startY
+          });
+        });
+
+        // 3. Pen Tip Follower (หัวพู่กันนำทางสีแดง)
+        this.penTip = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.penTip.setAttribute('r', '3.8');
+        this.penTip.setAttribute('fill', '#ef4444');
+        this.penTip.setAttribute('stroke', '#ffffff');
+        this.penTip.setAttribute('stroke-width', '1.3');
+        this.penTip.setAttribute('filter', 'url(#penTipGlow)');
+        this.penTip.setAttribute('opacity', '0');
+        this.svg.appendChild(this.penTip);
+
+        this.applyCurrentState();
+      }
+
+      play() {
+        if (!this.strokes.length) return;
+        if (this.isCompleted) {
+          this.resetToStart();
+        }
+        this.isPlaying = true;
+        this.lastTimestamp = performance.now();
+        if (isNaN(this.currentStrokeProgress)) {
+          this.currentStrokeProgress = 0;
+        }
+        if (this.onStateChange) this.onStateChange(true);
+        if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = requestAnimationFrame((ts) => this.tick(ts));
+      }
+
+      pause() {
+        this.isPlaying = false;
+        if (this.animFrameId) {
+          cancelAnimationFrame(this.animFrameId);
+          this.animFrameId = null;
+        }
+        if (this.onStateChange) this.onStateChange(false);
+      }
+
+      stop() {
+        this.pause();
+        this.currentStrokeIndex = 0;
+        this.currentStrokeProgress = 0;
+        this.waitingPauseUntil = 0;
+        this.isCompleted = false;
+        this.applyCurrentState();
+      }
+
+      resetToStart() {
+        this.currentStrokeIndex = 0;
+        this.currentStrokeProgress = 0;
+        this.waitingPauseUntil = 0;
+        this.isCompleted = false;
+        this.applyCurrentState();
+      }
+
+      jumpToStep(stepIndex) {
+        this.pause();
+        if (stepIndex < 0 || stepIndex >= this.strokes.length) return;
+        this.currentStrokeIndex = stepIndex;
+        this.currentStrokeProgress = 0;
+        this.waitingPauseUntil = 0;
+        this.isCompleted = false;
+        this.applyCurrentState();
+        this.play();
+      }
+
+      applyCurrentState() {
+        const showPen = (this.options.getShowPenTip ? this.options.getShowPenTip() : true);
+        const style = (this.options.getStyle && this.options.getStyle()) || 'assisted';
+        const activeColor = (style === 'assisted') ? '#ef4444' : (style === 'calligraphy' ? '#0f172a' : '#1e293b');
+
+        this.pathItems.forEach((item, idx) => {
+          if (idx < this.currentStrokeIndex) {
+            item.pathEl.style.strokeDashoffset = '0';
+            item.pathEl.setAttribute('stroke', activeColor);
+            item.pathEl.style.opacity = '1';
+            if (item.numGroup) item.numGroup.setAttribute('opacity', '0.7');
+          } else if (idx === this.currentStrokeIndex) {
+            const safeProgress = Math.max(0, Math.min(1, this.currentStrokeProgress || 0));
+            const offset = item.length * (1.0 - safeProgress);
+            item.pathEl.style.strokeDashoffset = `${offset}`;
+            item.pathEl.setAttribute('stroke', activeColor);
+            item.pathEl.style.opacity = '1';
+            if (item.numGroup) item.numGroup.setAttribute('opacity', '1');
+          } else {
+            item.pathEl.style.strokeDashoffset = `${item.length}`;
+            if (item.numGroup) item.numGroup.setAttribute('opacity', '0');
+          }
+        });
+
+        // Position pen tip
+        if (this.currentStrokeIndex < this.pathItems.length && !this.isCompleted && showPen && this.penTip) {
+          const curItem = this.pathItems[this.currentStrokeIndex];
+          const safeProgress = Math.max(0, Math.min(1, this.currentStrokeProgress || 0));
+          const distance = Math.min(curItem.length, Math.max(0, curItem.length * safeProgress));
+          const pt = curItem.pathEl.getPointAtLength(distance);
+          if (pt && !isNaN(pt.x) && !isNaN(pt.y)) {
+            this.penTip.setAttribute('cx', pt.x);
+            this.penTip.setAttribute('cy', pt.y);
+            this.penTip.setAttribute('opacity', '1');
+          } else {
+            this.penTip.setAttribute('opacity', '0');
+          }
+        } else if (this.penTip) {
+          this.penTip.setAttribute('opacity', '0');
+        }
+
+        // Progress & Labels
+        const total = this.pathItems.length;
+        const safeProgress = Math.max(0, Math.min(1, this.currentStrokeProgress || 0));
+        const overallProgress = total > 0 
+          ? Math.min(100, Math.max(0, (((this.currentStrokeIndex + safeProgress) / total) * 100)))
+          : 0;
+        if (this.onProgressUpdate) this.onProgressUpdate(overallProgress);
+        if (this.onStrokeChange) this.onStrokeChange(Math.min(total, this.currentStrokeIndex + 1), total);
+      }
+
+      tick(timestamp) {
+        if (!this.isPlaying) return;
+
+        const deltaMs = Math.max(0, Math.min(100, timestamp - this.lastTimestamp));
+        this.lastTimestamp = timestamp;
+
+        if (this.waitingPauseUntil > 0) {
+          if (timestamp < this.waitingPauseUntil) {
+            this.animFrameId = requestAnimationFrame((ts) => this.tick(ts));
+            return;
+          }
+          this.waitingPauseUntil = 0;
+        }
+
+        const rawDuration = (this.options.getDuration ? this.options.getDuration() : 0.75);
+        const durationSec = (!isNaN(rawDuration) && rawDuration > 0) ? rawDuration : 0.75;
+        const strokeDurationMs = Math.max(150, durationSec * 1000);
+
+        if (isNaN(this.currentStrokeProgress)) {
+          this.currentStrokeProgress = 0;
+        }
+
+        this.currentStrokeProgress += deltaMs / strokeDurationMs;
+
+        if (this.currentStrokeProgress >= 1.0) {
+          this.currentStrokeProgress = 1.0;
+          this.applyCurrentState();
+
+          this.currentStrokeIndex++;
+          this.currentStrokeProgress = 0;
+
+          if (this.currentStrokeIndex >= this.pathItems.length) {
+            this.onVideoComplete();
+            return;
+          } else {
+            this.waitingPauseUntil = timestamp + this.pauseBetweenStrokesMs;
+          }
+        } else {
+          this.applyCurrentState();
+        }
+
+        this.animFrameId = requestAnimationFrame((ts) => this.tick(ts));
+      }
+
+      onVideoComplete() {
+        this.isPlaying = false;
+        this.isCompleted = true;
+        this.currentStrokeProgress = 1.0;
+        this.currentStrokeIndex = this.pathItems.length - 1;
+        this.applyCurrentState();
+        if (this.penTip) this.penTip.setAttribute('opacity', '0');
+        if (this.onProgressUpdate) this.onProgressUpdate(100);
+        if (this.onStateChange) this.onStateChange(false);
+
+        const isLoop = (this.options.getLoop ? this.options.getLoop() : false);
+        if (isLoop) {
+          setTimeout(() => {
+            if (this.options.getLoop && this.options.getLoop()) {
+              this.resetToStart();
+              this.play();
+            }
+          }, 800);
+        }
+      }
+    }
+
+    const videoPlayer = new JapaneseStrokeVideoPlayer(svgPreview, {
+      getStyle: () => animStyleSelect.value,
+      getDuration: () => {
+        const v = parseFloat(durationSelect.value);
+        return (!isNaN(v) && v > 0) ? v : 0.75;
+      },
+      getShowPenTip: () => chkShowPenTip.checked,
+      getLoop: () => chkLoopVideo.checked
+    });
+
+    // เชื่อมต่อ UI กับ Video Engine
+    videoPlayer.onProgressUpdate = (pct) => {
+      timelineProgress.style.width = pct + '%';
+    };
+
+    videoPlayer.onStrokeChange = (curr, total) => {
+      strokeCounterLabel.textContent = `เส้นที่ ${curr} / ${total}`;
+      updateStepPills(curr - 1);
+    };
+
+    videoPlayer.onStateChange = (playing) => {
+      if (playing) {
+        playIcon.className = 'fa-solid fa-pause';
+        playText.textContent = 'หยุดชั่วคราว';
+        btnPlayPause.className = 'player-action-btn primary';
+      } else {
+        playIcon.className = 'fa-solid fa-play';
+        playText.textContent = videoPlayer.isCompleted ? 'เล่นอีกครั้ง' : 'เล่นต่อ';
+      }
+    };
+
+    btnPlayPause.addEventListener('click', () => {
+      if (videoPlayer.isPlaying) {
+        videoPlayer.pause();
+      } else {
+        videoPlayer.play();
+      }
+    });
+
+    btnReplay.addEventListener('click', () => {
+      videoPlayer.resetToStart();
+      videoPlayer.play();
+    });
+
+    animStyleSelect.addEventListener('change', () => {
+      videoPlayer.buildSvgDom();
+      videoPlayer.play();
+    });
+
+    durationSelect.addEventListener('change', () => {
+      if (videoPlayer.isPlaying) {
+        videoPlayer.lastTimestamp = performance.now();
+      }
+    });
+
+    // คลิกที่ Timeline เพื่อเลื่อนตำแหน่งวิดีโอ
+    timelineTrack.addEventListener('click', (e) => {
+      if (!loadedStrokes.length) return;
+      const rect = timelineTrack.getBoundingClientRect();
+      const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const targetStep = Math.min(loadedStrokes.length - 1, Math.floor(clickRatio * loadedStrokes.length));
+      videoPlayer.jumpToStep(targetStep);
+    });
+
+    function updateStepPills(activeIndex) {
+      const pills = stepPillsRow.querySelectorAll('.step-btn-pill');
+      pills.forEach((p, idx) => {
+        if (idx === (activeIndex + 1)) p.classList.add('active');
+        else p.classList.remove('active');
+      });
+    }
+
+    function generateStepPills(count) {
+      stepPillsRow.innerHTML = '';
+      if (!count || count <= 0) return;
+
+      const allBtn = document.createElement('button');
+      allBtn.type = 'button';
+      allBtn.className = 'step-btn-pill';
+      allBtn.innerHTML = '<i class="fa-solid fa-play" style="font-size:10px;"></i> ทั้งหมด';
+      allBtn.title = 'เล่นลำดับเส้นทั้งหมด';
+      allBtn.addEventListener('click', () => {
+        videoPlayer.resetToStart();
+        videoPlayer.play();
+      });
+      stepPillsRow.appendChild(allBtn);
+
+      for (let i = 0; i < count; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'step-btn-pill';
+        btn.textContent = `เส้น ${i + 1}`;
+        btn.title = `เล่นเฉพาะเส้นที่ ${i + 1}`;
+        btn.addEventListener('click', () => {
+          videoPlayer.jumpToStep(i);
+        });
+        stepPillsRow.appendChild(btn);
+      }
+    }
+
+    // 1. โหลดข้อมูลตัวอักษรและเส้น SVG จาก katakana_api.php
+    async function loadCharacterData() {
+      try {
+        const res = await fetch(`/projectjapan/backend/php/action/katakana_api.php?action=get&id=${characterId}`);
+        const data = await res.json();
+
+        if (data.error) {
+          alert(data.error);
+          window.location.href = '/projectjapan/backend/php/srceen/manage_katakana.php';
+          return;
+        }
+
+        initialChar = data.japanese_char || '';
+
+        // กรอกฟอร์ม
+        charInput.value = data.japanese_char || '';
+        typeSelect.value = data.char_type || 'Katakana';
+        groupSelect.value = normalizeGroupValue(data.char_group || '');
+        romajiInput.value = data.romaji || '';
+        strokeCountInput.value = data.stroke_count || 0;
+        soundFileInput.value = data.sound_file || '';
+        document.getElementById('imageFile').value = data.image_file || '';
+
+        // อัปเดต Hero Banner
+        heroChar.textContent = data.japanese_char || '?';
+        heroTitle.textContent = `ตัวอักษร '${data.japanese_char || ''}' (${data.romaji || ''})`;
+        heroId.textContent = data.id;
+        heroGroup.textContent = data.char_group || '-';
+        heroRomaji.textContent = data.romaji || '-';
+        heroStrokes.textContent = data.stroke_count || '0';
+        badgeCharType.textContent = data.char_type || 'Katakana';
+        badgeUnicode.textContent = data.code_point ? `Unicode: ${data.code_point}` : 'Unicode: -';
+
+        // จัดการ SVG และวิดีโอ
+        if (data.animation_style) {
+          animStyleSelect.value = data.animation_style;
+        } else {
+          animStyleSelect.value = 'assisted';
+        }
+
+        if (data.stroke_duration !== undefined && data.stroke_duration !== null) {
+          const durVal = parseFloat(data.stroke_duration);
+          if (!isNaN(durVal)) {
+            let matched = false;
+            for (const opt of durationSelect.options) {
+              if (Math.abs(parseFloat(opt.value) - durVal) < 0.06) {
+                durationSelect.value = opt.value;
+                matched = true;
+                break;
+              }
+            }
+            if (!matched) {
+              const newOpt = new Option(`${durVal}s/เส้น`, String(durVal));
+              durationSelect.add(newOpt);
+              durationSelect.value = String(durVal);
+            }
+          }
+        }
+
+        if (data.has_svg && data.strokes && data.strokes.length > 0) {
+          loadedStrokes = data.strokes;
+          strokesJsonInput.value = JSON.stringify(loadedStrokes);
+          badgeSvgStatus.textContent = 'มีข้อมูล SVG ในระบบ';
+          badgeSvgStatus.className = 'badge-chip success';
+          strokeCountBadge.textContent = loadedStrokes.length;
+          renderStrokeList();
+          generateStepPills(loadedStrokes.length);
+          videoPlayer.setStrokes(loadedStrokes);
+          videoPlayer.play(); // เริ่มเล่นวิดีโอทันทีเหมือนที่ผู้ใช้ต้องการ!
+        } else {
+          badgeSvgStatus.textContent = 'ยังไม่มีเส้น SVG';
+          badgeSvgStatus.className = 'badge-chip warning';
+          strokeCountBadge.textContent = '0';
+          videoPlayer.setStrokes([]);
+        }
+
+        // จัดการรูปภาพและ GIF
+        if (data.image_file) {
+          const imgPreviewBox = document.getElementById('savedImagePreview');
+          const savedImg = document.getElementById('savedImage');
+          savedImg.src = data.image_file;
+          savedImg.onload = () => { imgPreviewBox.style.display = 'block'; };
+
+          gifViewerImage.src = data.image_file;
+          gifViewerText.textContent = `ภาพ GIF: ${data.image_file.split('/').pop()}`;
+        }
+
+        // จัดการเสียงที่บันทึกอยู่เดิม
+        if (data.sound_file) {
+          const soundPreviewBox = document.getElementById('savedSoundPreview');
+          const savedAudio = document.getElementById('savedAudioPlayer');
+          savedAudio.src = data.sound_file;
+          soundPreviewBox.style.display = 'block';
+        }
+
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการโหลดข้อมูลตัวอักษร');
+        window.location.href = '/projectjapan/backend/php/srceen/manage_katakana.php';
+      }
+    }
+
+    // 2. เรนเดอร์รายการแจกแจงเส้น
+    function renderStrokeList() {
+      if (!loadedStrokes.length) {
+        strokeListContainer.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 10px;">ยังไม่มีข้อมูลเส้น</div>';
+        return;
+      }
+
+      strokeListContainer.innerHTML = loadedStrokes.map((st, idx) => `
+        <div class="stroke-list-item">
+          <div>
+            <strong style="color: #1e293b;">เส้นที่ ${st.order || (idx + 1)}</strong>
+            <span style="color: #64748b; font-size: 12px; margin-left: 6px;">
+              ${st.start_x !== null ? `จุดเริ่ม: (${st.start_x}, ${st.start_y})` : ''}
+            </span>
+          </div>
+          <button type="button" class="step-btn-pill" onclick="videoPlayer.jumpToStep(${idx})">
+            <i class="fa-solid fa-play"></i> เล่นเส้นนี้
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // 3. ดึงเส้นใหม่จาก KanjiVG และเริ่มเล่นวิดีโอทันที
+    btnSync.addEventListener('click', async () => {
+      const val = charInput.value.trim();
+      if (!val) {
+        alert('กรุณาระบุตัวอักษรภาษาญี่ปุ่นก่อน');
+        return;
+      }
+
+      btnSync.disabled = true;
+      btnSync.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังดึงเส้น...';
+
+      try {
+        const res = await fetch(`${API_STROKE_URL}?action=auto_generate_svg&char=${encodeURIComponent(val)}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          alert('❌ ' + data.message);
+          return;
+        }
+
+        loadedStrokes = data.strokes;
+        strokeCountInput.value = data.stroke_count;
+        strokesJsonInput.value = JSON.stringify(loadedStrokes);
+
+        badgeSvgStatus.textContent = 'ซิงค์จาก KanjiVG แล้ว';
+        badgeSvgStatus.className = 'badge-chip success';
+        strokeCountBadge.textContent = loadedStrokes.length;
+
+        renderStrokeList();
+        generateStepPills(loadedStrokes.length);
+        videoPlayer.setStrokes(loadedStrokes);
+        videoPlayer.play(); // เริ่มเล่นวิดีโอเส้นใหม่ทันที
+
+        showFormMessage('ดึงข้อมูลเส้น SVG จาก KanjiVG สำเร็จและเริ่มเล่นวิดีโอแล้ว (กดบันทึกเพื่ออัปเดตลงฐานข้อมูล)', 'success');
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+      } finally {
+        btnSync.disabled = false;
+        btnSync.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> ดึงเส้นใหม่จาก KanjiVG';
+      }
+    });
+
+    /* ==========================================================================
+       AUDIO TEST PLAYBACK (ระบบทดสอบฟังเสียงที่อัปโหลดและจาก URL)
+       ========================================================================== */
+    // เมื่อเลือกไฟล์เสียงจากเครื่อง -> ดักจับ Event และทดสอบฟังเสียงได้ทันที!
+    soundUploadInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) {
+        uploadedSoundTestBox.style.display = 'none';
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      uploadedAudioPlayer.src = objectUrl;
+      uploadedSoundName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      uploadedSoundTestBox.style.display = 'block';
+
+      // เล่นเสียงทดสอบทันทีที่อัปโหลด
+      uploadedAudioPlayer.play().then(() => {
+        soundWaveAnim.classList.add('playing');
+        btnPlayUploadedSound.innerHTML = '<i class="fa-solid fa-pause"></i> หยุดเสียง';
+      }).catch(() => {});
+    });
+
+    btnPlayUploadedSound.addEventListener('click', () => {
+      if (uploadedAudioPlayer.paused) {
+        uploadedAudioPlayer.play();
+        soundWaveAnim.classList.add('playing');
+        btnPlayUploadedSound.innerHTML = '<i class="fa-solid fa-pause"></i> หยุดเสียง';
+      } else {
+        uploadedAudioPlayer.pause();
+        soundWaveAnim.classList.remove('playing');
+        btnPlayUploadedSound.innerHTML = '<i class="fa-solid fa-play"></i> ทดสอบฟังเสียงนี้';
+      }
+    });
+
+    uploadedAudioPlayer.addEventListener('ended', () => {
+      soundWaveAnim.classList.remove('playing');
+      btnPlayUploadedSound.innerHTML = '<i class="fa-solid fa-play"></i> ทดสอบฟังเสียงนี้';
+    });
+
+    uploadedAudioPlayer.addEventListener('pause', () => {
+      soundWaveAnim.classList.remove('playing');
+      btnPlayUploadedSound.innerHTML = '<i class="fa-solid fa-play"></i> ทดสอบฟังเสียงนี้';
+    });
+
+    // ทดสอบฟังเสียงจาก URL
+    btnTestUrlSound.addEventListener('click', () => {
+      const url = soundFileInput.value.trim();
+      if (!url) {
+        alert('กรุณากรอก URL ไฟล์เสียงก่อน');
+        return;
+      }
+      const testAudio = new Audio(url);
+      btnTestUrlSound.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...';
+      testAudio.play().then(() => {
+        btnTestUrlSound.innerHTML = '<i class="fa-solid fa-volume-high"></i> กำลังเล่น';
+        testAudio.onended = () => {
+          btnTestUrlSound.innerHTML = '<i class="fa-solid fa-play"></i> ทดสอบ URL';
+        };
+      }).catch(err => {
+        alert('ไม่สามารถเล่นเสียงจาก URL นี้ได้ กรุณาตรวจสอบลิงก์');
+        btnTestUrlSound.innerHTML = '<i class="fa-solid fa-play"></i> ทดสอบ URL';
+      });
+    });
+
+    // Tab Switcher (SVG vs GIF)
+    tabSvgMode.addEventListener('click', () => {
+      tabSvgMode.classList.add('active');
+      tabGifMode.classList.remove('active');
+      svgPlayerContainer.style.display = 'block';
+      gifViewerContainer.style.display = 'none';
+      videoPlayer.play();
+    });
+
+    tabGifMode.addEventListener('click', () => {
+      tabGifMode.classList.add('active');
+      tabSvgMode.classList.remove('active');
+      svgPlayerContainer.style.display = 'none';
+      gifViewerContainer.style.display = 'block';
+      videoPlayer.pause();
+    });
+
+    // ตรวจสอบตัวอักษรซ้ำ
+    charInput.addEventListener('input', async () => {
+      const val = charInput.value.trim();
+      const type = typeSelect.value;
+      charAlert.className = 'field-alert';
+      charAlert.style.display = 'none';
+      charInput.classList.remove('input-error');
+      btnSubmit.disabled = false;
+
+      if (!val) return;
+      if (val.length !== 1) {
+        charAlert.textContent = '❌ กรุณากรอกตัวอักษรเพียง 1 ตัวเท่านั้น';
+        charAlert.className = 'field-alert error';
+        charInput.classList.add('input-error');
+        btnSubmit.disabled = true;
+        return;
+      }
+
+      if (val === initialChar) return;
+
+      try {
+        const res = await fetch(`${API_STROKE_URL}?action=check_duplicate&char=${encodeURIComponent(val)}&type=${encodeURIComponent(type)}`);
+        const data = await res.json();
+
+        if (data.exists && data.existing_character && data.existing_character.character_id !== characterId) {
+          isDuplicate = true;
+          charAlert.textContent = `⚠️ ตัวอักษร '${val}' มีอยู่ในระบบแล้ว (ID: ${data.existing_character.character_id}) ไม่สามารถแก้ไขเป็นตัวนี้ได้`;
+          charAlert.className = 'field-alert error';
+          charInput.classList.add('input-error');
+          btnSubmit.disabled = true;
+        } else {
+          isDuplicate = false;
+          charAlert.textContent = `✅ ตัวอักษร '${val}' สามารถใช้งานได้`;
+          charAlert.className = 'field-alert success';
+          btnSubmit.disabled = false;
+        }
+      } catch (e) {}
+    });
+
+    // ส่งฟอร์มบันทึก
+    document.getElementById('editCharacterForm').addEventListener('submit', function (e) {
+      if (isDuplicate) {
+        e.preventDefault();
+        alert('ตัวอักษรนี้ซ้ำกับตัวอื่นในระบบ กรุณาเปลี่ยนตัวอักษร');
+        return;
+      }
+      strokesJsonInput.value = JSON.stringify(loadedStrokes);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCharacterData();
+    });
+  </script>
+</body>
+</html>

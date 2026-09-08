@@ -1,0 +1,372 @@
+/* =========================================
+   1. Base & Typography
+   ========================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Prompt', sans-serif;
+}
+
+body {
+  background-color: #f4f7fe; /* ปรับสีพื้นหลังให้ดูสว่างและทันสมัยขึ้น */
+  color: #334155;
+}
+
+/* Main Content Layout (รองรับ Sidebar) */
+.main-content {
+  padding: 30px 40px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* =========================================
+   2. Dashboard Header (ส่วนต้อนรับด้านบน)
+   ========================================= */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.header-title h1 {
+  font-size: 26px;
+  color: #0b1326;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.header-title p {
+  font-size: 15px;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.header-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  background-color: #0ea5e9;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #bae6fd;
+}
+
+/* =========================================
+   3. Stats Grid (การ์ด 4 ใบด้านบน)
+   ========================================= */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.stat-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+}
+
+/* สีไอคอนของ Stat Cards */
+.stat-icon-wrapper.blue { background: #e0f2fe; color: #0284c7; }
+.stat-icon-wrapper.orange { background: #ffedd5; color: #ea580c; }
+.stat-icon-wrapper.green { background: #dcfce7; color: #16a34a; }
+.stat-icon-wrapper.purple { background: #f3e8ff; color: #9333ea; }
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.stat-number-group {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0b1326;
+}
+
+.stat-badge {
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.stat-badge.success { background: #dcfce7; color: #16a34a; }
+
+.stat-subtext {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* =========================================
+   4. Dashboard Body Grid (แบ่ง 2 คอลัมน์)
+   ========================================= */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px; /* ซ้ายเมนู ขวาสถิติ */
+  gap: 24px;
+  align-items: start;
+}
+
+/* ส่วน Title ของ Section */
+.section-title {
+  margin-bottom: 20px;
+}
+.section-title h2 {
+  font-size: 18px;
+  color: #0b1326;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.section-title p {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* =========================================
+   5. Feature Cards (ฝั่งซ้าย - ปุ่มเมนู)
+   ========================================= */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: #0b1326;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.feature-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background-color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+}
+
+.feature-details {
+  flex: 1;
+}
+
+.feature-details h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.feature-details p {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.arrow-icon {
+  font-size: 16px;
+  color: #94a3b8;
+  transition: transform 0.3s ease;
+}
+.feature-card:hover .arrow-icon {
+  transform: translateX(5px);
+  color: #0b1326;
+}
+
+/* ธีมสีของแต่ละเมนู */
+.feature-pink { background-color: #fce7f3; border-color: #fbcfe8; }
+.feature-pink .feature-icon { color: #db2777; }
+
+.feature-green { background-color: #dcfce7; border-color: #bbf7d0; }
+.feature-green .feature-icon { color: #16a34a; }
+
+.feature-cyan { background-color: #e0f2fe; border-color: #bae6fd; }
+.feature-cyan .feature-icon { color: #0284c7; }
+
+.feature-blue { background-color: #dbeafe; border-color: #bfdbfe; }
+.feature-blue .feature-icon { color: #2563eb; }
+
+/* =========================================
+   6. Widgets & Recent Stats (ฝั่งขวา)
+   ========================================= */
+.recent-stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.widget-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.widget-title {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.widget-title h3 {
+  font-size: 17px;
+  color: #0b1326;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-title i {
+  color: #64748b;
+}
+
+/* List แสดงสถิติ */
+.stats-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.stats-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* จุดวงกลมนำหน้า */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.dot.green { background-color: #10b981; }
+.dot.blue { background-color: #3b82f6; }
+.dot.purple { background-color: #8b5cf6; }
+.dot.orange { background-color: #f97316; }
+
+.stats-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+.stats-value.green-text { color: #10b981; }
+.stats-value.blue-text { color: #3b82f6; }
+.stats-value.purple-text { color: #8b5cf6; }
+.stats-value.dark-text { color: #0f172a; }
+
+/* กล่องคำแนะนำ (Info Box) */
+.info-box {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+}
+.info-box .widget-title {
+  border-bottom-color: #fde68a;
+}
+.info-box .widget-title h3,
+.info-box .widget-title i {
+  color: #d97706;
+}
+.info-box p {
+  font-size: 14px;
+  color: #92400e;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* =========================================
+   7. Responsive Design (ปรับโครงสร้างหน้าจอเล็ก)
+   ========================================= */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* ย้ายกล่องสถิติลงไปด้านล่างแทนเมื่อจอเล็ก */
+  }
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* แสดงการ์ดบนสุด 2x2 */
+  }
+}
+
+@media (max-width: 768px) {
+  .feature-grid {
+    grid-template-columns: 1fr; /* เมนูฝั่งซ้ายเรียงแถวเดียว */
+  }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}

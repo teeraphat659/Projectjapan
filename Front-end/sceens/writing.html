@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เว็บสำหรับเรียนรู้ตัวอักษร</title>
+    <link rel="stylesheet" href="../style/writing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-writing">
+    <script>
+        fetch('../data/writing.php?mode=check', { redirect: 'manual' })
+            .then(async response => {
+                if (response.type === 'opaqueredirect' || response.status === 302) {
+                    throw new Error('unauthorized');
+                }
+
+                const data = await response.json().catch(() => null);
+                if (!data || !data.authorized) {
+                    throw new Error('unauthorized');
+                }
+            })
+            .catch(() => {
+                window.location.replace('../sceens/login.html');
+            });
+    </script>
+
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+    <div class="leave-practice-modal" id="leavePracticeModal" hidden role="dialog" aria-modal="true" aria-labelledby="leavePracticeTitle">
+        <div class="leave-practice-card">
+            <button class="leave-practice-close" id="stayPracticeTopBtn" type="button" aria-label="อยู่หน้าฝึกต่อ">
+                <i class="fas fa-xmark" aria-hidden="true"></i>
+            </button>
+            <p class="eyebrow">กำลังทำแบบทดสอบ</p>
+            <h2 id="leavePracticeTitle">ต้องการออกจากหน้านี้หรือไม่?</h2>
+            <p id="leavePracticeMessage">ระบบจะบันทึกตัวอักษรที่กำลังวาดก่อนออกจากหน้า ข้อมูลที่ยังทำไม่เสร็จจะกลับมาทำต่อได้จากประวัติ</p>
+            <div class="leave-practice-actions">
+                <button class="btn btn-stay-practice" id="stayPracticeBtn" type="button">อยู่ทำต่อ</button>
+                <button class="btn btn-abandon-practice" id="abandonPracticeBtn" type="button">ละทิ้งรอบนี้</button>
+                <button class="btn btn-leave-practice" id="leavePracticeBtn" type="button">บันทึกแล้วออก</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-ready-modal" id="testReadyModal" hidden role="dialog" aria-modal="true" aria-labelledby="testReadyTitle">
+        <div class="test-ready-card">
+            <p class="eyebrow">แบบทดสอบเขียน</p>
+            <h2 id="testReadyTitle">พร้อมเริ่มทำแบบทดสอบหรือยัง?</h2>
+            <p>เมื่อกด “พร้อม เริ่มทำแบบทดสอบ” ระบบจะเริ่มจับเวลา และเปิดปุ่มฟังเสียงจากไฟล์ที่แอดมินอัปโหลดไว้ในตารางตัวอักษร</p>
+            <button class="btn btn-ready-test" id="readyTestBtn" type="button"><i class="fas fa-play" aria-hidden="true"></i> พร้อม เริ่มทำแบบทดสอบ</button>
+            <p class="test-ready-status" id="testReadyStatus" role="status"></p>
+        </div>
+    </div>
+
+    <main class="container">
+        <section class="panel left-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">ฝึกเขียนแบบโต้ตอบ</p>
+                    <h2>ฝึกเขียนตัวอักษรแบบตรงไปตรงมา</h2>
+                </div>
+            </div>
+
+            <div class="character-display-card">
+                <div class="display-top">
+                    <span class="badge" id="groupBadge">ยังไม่ได้เลือก</span>
+                    <div class="display-meta">
+                        <div class="character-display" id="characterDisplay">-</div>
+                        <div class="romaji" id="romajiDisplay" hidden></div>
+                    </div>
+                    <button class="btn btn-audio" id="audioBtn" type="button">
+                        <i class="fas fa-volume-up"></i> ฟังเสียง
+                    </button>
+                </div>
+                <div class="animation-box" id="animationBox">
+                    <p>ตัวอย่างลำดับการเขียนจะปรากฏที่นี่</p>
+                </div>
+            </div>
+
+            <div class="character-list-wrap">
+                <div class="list-header">
+                    <h3>ตัวอักษรในวรรค</h3>
+                    <span id="statusMessage">กำลังโหลดข้อมูล...</span>
+                </div>
+                <div class="character-list" id="characterList"></div>
+            </div>
+
+            <section class="current-evaluation" id="currentEvaluation" hidden aria-live="polite">
+                <div class="current-evaluation-header">
+                    <h3>ผลการประมวลผลล่าสุด</h3>
+                    <div class="current-evaluation-header-actions">
+                        <span id="currentEvaluationSource"></span>
+                        <button type="button" class="evaluation-close-btn" id="evaluationCloseBtn" aria-label="ปิดผลการประมวลผล"><i class="fas fa-xmark" aria-hidden="true"></i> ปิดผลการตรวจ</button>
+                    </div>
+                </div>
+                <div class="current-evaluation-scores">
+                    <div><span>รูปทรง</span><strong id="currentShapeScore">0%</strong></div>
+                    <div><span>ตำแหน่ง</span><strong id="currentAlignmentScore">0%</strong></div>
+                    <div><span>คะแนนรวม</span><strong id="currentTotalScore">0%</strong></div>
+                </div>
+                <p class="result-level" id="currentResultLevel">กำลังประเมิน</p>
+                <div class="ai-explanation-box">
+                    <div class="ai-explanation-heading"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i><strong id="evaluationMethodTitle">ระบบตรวจจากต้นแบบและกฎการเขียน</strong></div>
+                    <p id="currentEvaluationExplanation">กำลังรอคำอธิบายจาก AI</p>
+                </div>
+                <div class="score-breakdown" id="scoreBreakdown"></div>
+                <p id="currentEvaluationFeedback"></p>
+                <ul id="currentEvaluationReasons"></ul>
+                <div class="stroke-replay">
+                    <div class="stroke-replay-header"><strong>ดูการเขียนย้อนหลัง</strong><span id="replayStrokeLabel">พร้อมเล่น</span></div>
+                    <canvas id="replayCanvas" width="620" height="260"></canvas>
+                    <div class="stroke-replay-controls">
+                        <button type="button" id="replayPlayBtn"><i class="fas fa-play"></i> เล่น</button>
+                        <button type="button" id="replayPauseBtn"><i class="fas fa-pause"></i> หยุด</button>
+                        <button type="button" id="replayPrevBtn"><i class="fas fa-backward-step"></i> เส้นก่อน</button>
+                        <button type="button" id="replayNextBtn"><i class="fas fa-forward-step"></i> เส้นถัดไป</button>
+                    </div>
+                    <ol id="strokeAnalysisList" class="stroke-analysis-list"></ol>
+                </div>
+                <div class="evaluation-popup-actions">
+                    <button type="button" class="btn evaluation-close-footer-btn" id="evaluationCloseFooterBtn"><i class="fas fa-xmark" aria-hidden="true"></i> ปิดผลการตรวจ</button>
+                    <button type="button" class="btn btn-next" id="evaluationNextBtn"><i class="fas fa-arrow-right" aria-hidden="true"></i> ตัวอักษรถัดไป</button>
+                </div>
+            </section>
+        </section>
+
+        <section class="panel right-panel">
+            <div class="practice-header">
+                <div>
+                    <p class="eyebrow">พื้นที่ฝึกเขียน</p>
+                    <h2 id="progressText">0/0</h2>
+                </div>
+                <div class="practice-meta">
+                    <div class="practice-pill timer-pill" id="timerDisplay">เวลารวม: 00:00</div>
+                    <div class="practice-pill" id="characterTimerDisplay">ตัวอักษรนี้: 00:00</div>
+                    <div class="practice-pill mode-pill" id="modeDisplay">โหมด: </div>
+                    <div class="practice-pill" id="practiceHint">แตะเพื่อเริ่มเขียน</div>
+                </div>
+            </div>
+
+            <div class="drawing-area">
+                <div class="trace-overlay" id="traceOverlay" hidden></div>
+                <canvas id="drawCanvas" width="620" height="420"></canvas>
+                <div class="canvas-hint">ลากเมาส์หรือนิ้วเพื่อฝึกเขียน</div>
+            </div>
+            <section class="evaluation-criteria" aria-label="เกณฑ์การประมวลผล">
+                <div class="criteria-heading">
+                    <div>
+                        <p class="eyebrow">เกณฑ์การประมวลผล</p>
+                        <h3>วาดเสร็จแล้ว ระบบจะตรวจให้</h3>
+                    </div>
+                    <span class="criteria-state" id="criteriaState">รอการวาด</span>
+                </div>
+                <div class="criteria-list">
+                    <div class="criteria-item">
+                        <span class="criteria-icon"><i class="fas fa-pen-nib" aria-hidden="true"></i></span>
+                        <div><strong>ความแม่นยำของรูปทรง</strong><span>รูปแบบและสัดส่วนใกล้เคียงตัวอักษรต้นแบบ</span></div>
+                    </div>
+                    <div class="criteria-item">
+                        <span class="criteria-icon"><i class="fas fa-ruler-horizontal" aria-hidden="true"></i></span>
+                        <div><strong>ตำแหน่งอยู่ในเส้นแนวแบบ</strong><span>วางตัวอักษรให้อยู่กึ่งกลางและในพื้นที่ที่กำหนด</span></div>
+                    </div>
+                </div>
+            </section>
+            <div class="drawn-stroke-controls" id="drawnStrokeControls" hidden></div>
+
+            <div class="action-buttons">
+                <button class="btn btn-clear" id="clearBtn" type="button">ล้าง</button>
+                <div class="action-right">
+                    <button class="btn btn-evaluate" id="evaluateBtn" type="button" disabled>
+                        <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> ประมวลผล
+                    </button>
+                    <button class="btn btn-next" id="nextBtn" type="button">ถัดไป</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const characterList = document.getElementById('characterList');
+            const characterDisplay = document.getElementById('characterDisplay');
+            const romajiDisplay = document.getElementById('romajiDisplay');
+            const animationBox = document.getElementById('animationBox');
+            const progressText = document.getElementById('progressText');
+            const statusMessage = document.getElementById('statusMessage');
+            const groupBadge = document.getElementById('groupBadge');
+            const practiceHint = document.getElementById('practiceHint');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const characterTimerDisplay = document.getElementById('characterTimerDisplay');
+            const modeDisplay = document.getElementById('modeDisplay');
+            const audioBtn = document.getElementById('audioBtn');
+            const characterAudio = new Audio();
+            const testReadyModal = document.getElementById('testReadyModal');
+            const readyTestBtn = document.getElementById('readyTestBtn');
+            const testReadyStatus = document.getElementById('testReadyStatus');
+            const clearBtn = document.getElementById('clearBtn');
+            const evaluateBtn = document.getElementById('evaluateBtn');
+            const criteriaState = document.getElementById('criteriaState');
+            const evaluationCriteria = document.querySelector('.evaluation-criteria');
+            const nextBtn = document.getElementById('nextBtn');
+            const canvas = document.getElementById('drawCanvas');
+            const traceOverlay = document.getElementById('traceOverlay');
+            const drawnStrokeControls = document.getElementById('drawnStrokeControls');
+            const currentEvaluation = document.getElementById('currentEvaluation');
+            const currentShapeScore = document.getElementById('currentShapeScore');
+            const currentAlignmentScore = document.getElementById('currentAlignmentScore');
+            const currentTotalScore = document.getElementById('currentTotalScore');
+            const currentEvaluationSource = document.getElementById('currentEvaluationSource');
+            const currentEvaluationFeedback = document.getElementById('currentEvaluationFeedback');
+            const currentEvaluationExplanation = document.getElementById('currentEvaluationExplanation');
+            const currentEvaluationReasons = document.getElementById('currentEvaluationReasons');
+            const scoreBreakdown = document.getElementById('scoreBreakdown');
+            const evaluationCloseBtn = document.getElementById('evaluationCloseBtn');
+            const evaluationCloseFooterBtn = document.getElementById('evaluationCloseFooterBtn');
+            const evaluationNextBtn = document.getElementById('evaluationNextBtn');
+            const replayCanvas = document.getElementById('replayCanvas');
+            const replayContext = replayCanvas.getContext('2d');
+            const replayStrokeLabel = document.getElementById('replayStrokeLabel');
+            const strokeAnalysisList = document.getElementById('strokeAnalysisList');
+            let replayAttempt = null;
+            let replayTimer = null;
+            let replayAnimationFrame = null;
+            let replayStrokeIndex = -1;
+            let replayProgress = 0;
+            const ctx = canvas.getContext('2d');
+            const navUsername = document.getElementById('navUsername');
+
+            const params = new URLSearchParams(window.location.search);
+            const initialType = params.get('type') === 'katakana' ? 'katakana' : 'hiragana';
+            
+            // --- ปรับแก้: รับค่า group_id จาก URL (รองรับ group_name กรณีเก่ายังค้างอยู่) ---
+            const initialGroupId = params.get('group_id') || params.get('quiz_set_id') || params.get('group_name') || '';
+            const initialMode = params.get('mode') === 'test' ? 'test' : 'guide';
+            const initialWritingMode = params.get('writing_mode') === 'unassisted' ? 'unassisted' : 'assisted';
+            const initialCharacter = params.get('character') || '';
+            const initialSessionId = Number(params.get('session_id') || 0);
+            const initialQuizSetId = Number(params.get('quiz_set_id') || 0);
+            const initialQuizSource = params.get('quiz_source') || '';
+
+            const state = {
+                type: initialType,
+                mode: initialMode,
+                writingMode: initialWritingMode,
+                groupId: initialGroupId,
+                characters: [],
+                analysisProfiles: {},
+                index: 0,
+                characterStartedAt: null,
+                testStarted: initialMode !== 'test'
+            };
+            
+            function updateEvaluateButton() {
+                const canEvaluate = state.mode === 'test' && state.testStarted && hasDrawing;
+                evaluateBtn.disabled = !canEvaluate;
+                criteriaState.textContent = canEvaluate ? 'พร้อมประมวลผล' : (state.mode === 'test' && !state.testStarted ? 'รอเริ่มแบบทดสอบ' : 'รอการวาด');
+                criteriaState.classList.toggle('is-ready', canEvaluate);
+            }
+
+            function updateTestControls() {
+                const locked = state.mode === 'test' && !state.testStarted;
+                clearBtn.disabled = locked;
+                nextBtn.disabled = locked;
+                canvas.setAttribute('aria-disabled', locked ? 'true' : 'false');
+                updateEvaluateButton();
+            }
+
+            function showCurrentEvaluation(evaluation) {
+                const safeNumber = value => Math.max(0, Math.min(100, Number(value) || 0));
+                const cleanMessage = value => String(value || '')
+                    .replace(/\s+/g, ' ').replace(/[•/|]{2,}/g, '•').trim();
+                const shape = safeNumber(evaluation.shape_accuracy);
+                const alignment = safeNumber(evaluation.alignment_score);
+                const total = safeNumber(evaluation.total_score);
+                currentShapeScore.textContent = `${shape}%`;
+                currentAlignmentScore.textContent = `${alignment}%`;
+                currentTotalScore.textContent = `${total}%`;
+                document.getElementById('currentResultLevel').textContent = evaluation.result_level || (total >= 85 ? 'ดีมาก' : (total >= 60 ? 'พอใช้' : 'ควรฝึกเพิ่ม'));
+                currentEvaluationSource.textContent = evaluation.evaluation_source === 'ai+rules' ? 'AI + ระบบตรวจเส้น' : 'ระบบตรวจเส้น';
+                document.getElementById('evaluationMethodTitle').textContent = evaluation.evaluation_source === 'ai+rules'
+                    ? 'AI ช่วยอธิบายผลร่วมกับกฎระบบ'
+                    : 'ระบบเทียบกับเฉลยที่ใกล้เคียงที่สุด';
+                const reasons = [...new Set((Array.isArray(evaluation.error_reasons) ? evaluation.error_reasons : [])
+                    .map(cleanMessage).filter(Boolean))].slice(0, 3);
+                currentEvaluationFeedback.textContent = cleanMessage(evaluation.ai_feedback) || (reasons.length ? `จุดที่ควรปรับ: ${reasons.join(' • ')}` : 'ทำได้ดี ลองรักษารูปทรงและตำแหน่งแบบนี้ไว้');
+                const explanation = cleanMessage(evaluation.ai_explanation) || (reasons.length
+                    ? 'ระบบพบจุดที่ควรปรับตามรายการด้านล่าง'
+                    : `ระบบเปรียบเทียบรูปทรง (${shape}%) และตำแหน่ง (${alignment}%) กับเฉลยที่ใกล้เคียงที่สุด`);
+                currentEvaluationExplanation.textContent = explanation;
+                const breakdown = Array.isArray(evaluation.score_breakdown) ? evaluation.score_breakdown : [];
+                scoreBreakdown.innerHTML = breakdown.map(function (part) {
+                    const partScore = safeNumber(part.score);
+                    const weight = safeNumber(part.weight);
+                    return `<div class="score-breakdown-item"><span>${escapeHtml(part.label || 'คะแนน')}</span><strong>${partScore}%</strong><small>น้ำหนัก ${weight}%</small><i style="width:${partScore}%"></i></div>`;
+                }).join('');
+                currentEvaluationReasons.innerHTML = reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('');
+                currentEvaluation.hidden = false;
+            }
+
+            function clearCurrentEvaluation() {
+                currentEvaluation.hidden = true;
+                currentEvaluationReasons.innerHTML = '';
+                currentEvaluationFeedback.textContent = '';
+                currentEvaluationExplanation.textContent = 'กำลังรอคำอธิบายจาก AI';
+                scoreBreakdown.innerHTML = '';
+                replayAttempt = null;
+                replayStrokeIndex = -1;
+                if (replayTimer) window.clearInterval(replayTimer);
+                if (replayAnimationFrame) window.cancelAnimationFrame(replayAnimationFrame);
+                replayAnimationFrame = null;
+                replayProgress = 0;
+                clearReplayCanvas();
+                strokeAnalysisList.innerHTML = '';
+            }
+
+            function openEvaluationPopup() {
+                currentEvaluation.classList.add('is-popup');
+                currentEvaluation.setAttribute('role', 'dialog');
+                currentEvaluation.setAttribute('aria-modal', 'true');
+                currentEvaluation.setAttribute('aria-label', 'ผลการประมวลผลการเขียน');
+                document.body.classList.add('evaluation-popup-open');
+                playReplay();
+            }
+
+            function closeEvaluationPopup() {
+                currentEvaluation.classList.remove('is-popup');
+                currentEvaluation.removeAttribute('aria-modal');
+                document.body.classList.remove('evaluation-popup-open');
+                if (replayAnimationFrame) window.cancelAnimationFrame(replayAnimationFrame);
+                replayAnimationFrame = null;
+            }
+
+            evaluationCloseBtn.addEventListener('click', closeEvaluationPopup);
+            evaluationCloseFooterBtn.addEventListener('click', closeEvaluationPopup);
+            evaluationNextBtn.addEventListener('click', function () {
+                closeEvaluationPopup();
+                nextBtn.click();
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && currentEvaluation.classList.contains('is-popup')) {
+                    closeEvaluationPopup();
+                }
+            });
+
+            function resizeReplayCanvas() {
+                const rect = replayCanvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const width = Math.max(1, Math.round(rect.width * dpr));
+                const height = Math.max(1, Math.round(rect.height * dpr));
+                if (replayCanvas.width === width && replayCanvas.height === height) return;
+                replayCanvas.width = width;
+                replayCanvas.height = height;
+                replayContext.setTransform(dpr, 0, 0, dpr, 0, 0);
+                replayContext.lineCap = 'round';
+                replayContext.lineJoin = 'round';
+            }
+
+            function clearReplayCanvas() {
+                const rect = replayCanvas.getBoundingClientRect();
+                replayContext.clearRect(0, 0, rect.width, rect.height);
+            }
+
+            function drawReplayStroke(stroke, progress = 1) {
+                const points = Array.isArray(stroke?.points) ? stroke.points : [];
+                if (points.length < 2) return;
+                const sourceRect = canvas.getBoundingClientRect();
+                const targetRect = replayCanvas.getBoundingClientRect();
+                const scaleX = targetRect.width / Math.max(1, sourceRect.width);
+                const scaleY = targetRect.height / Math.max(1, sourceRect.height);
+                const position = Math.max(0, Math.min(points.length - 1, (points.length - 1) * progress));
+                const end = Math.floor(position);
+                const fraction = position - end;
+                replayContext.beginPath();
+                replayContext.moveTo(points[0].x * scaleX, points[0].y * scaleY);
+                for (let index = 1; index <= end; index++) {
+                    replayContext.lineTo(points[index].x * scaleX, points[index].y * scaleY);
+                }
+                if (end < points.length - 1) {
+                    const current = points[end];
+                    const next = points[end + 1];
+                    replayContext.lineTo(
+                        (current.x + (next.x - current.x) * fraction) * scaleX,
+                        (current.y + (next.y - current.y) * fraction) * scaleY
+                    );
+                }
+                replayContext.stroke();
+            }
+
+            function renderReplayFrame(lastStroke = replayStrokeIndex, activeProgress = 1) {
+                resizeReplayCanvas();
+                clearReplayCanvas();
+                const sourceRect = canvas.getBoundingClientRect();
+                const targetRect = replayCanvas.getBoundingClientRect();
+                const scaleX = targetRect.width / Math.max(1, sourceRect.width);
+                const scaleY = targetRect.height / Math.max(1, sourceRect.height);
+                replayContext.lineWidth = 14 * ((scaleX + scaleY) / 2);
+                replayContext.lineCap = 'round';
+                replayContext.lineJoin = 'round';
+                replayContext.strokeStyle = '#172033';
+                const strokes = replayAttempt?.trajectory?.strokes || [];
+                strokes.forEach((stroke, index) => {
+                    if (index < lastStroke) drawReplayStroke(stroke);
+                    if (index === lastStroke) drawReplayStroke(stroke, activeProgress);
+                });
+                if (lastStroke >= 0 && strokes[lastStroke]) {
+                    const analysis = replayAttempt?.strokeAnalysis?.[lastStroke] || {};
+                    drawReplayAnalysisMarker(strokes[lastStroke], analysis, scaleX, scaleY);
+                }
+                strokeAnalysisList.querySelectorAll('[data-stroke-analysis-index]').forEach(function (item) {
+                    item.classList.toggle('is-playing', Number(item.dataset.strokeAnalysisIndex) === lastStroke);
+                });
+                replayStrokeLabel.textContent = lastStroke >= 0 ? `แสดงถึงเส้นที่ ${lastStroke + 1}` : 'พร้อมเล่น';
+            }
+
+            function drawReplayAnalysisMarker(stroke, analysis, scaleX, scaleY) {
+                const points = Array.isArray(stroke.points) ? stroke.points : [];
+                if (!points.length) return;
+                const point = points[Math.floor(points.length / 2)];
+                const markerX = point.x * scaleX;
+                const markerY = point.y * scaleY;
+                const score = Number.isFinite(Number(analysis.score))
+                    ? `${Math.max(0, Math.min(100, Number(analysis.score)))}%` : '!';
+                replayContext.save();
+                replayContext.fillStyle = '#dc3545';
+                replayContext.strokeStyle = '#ffffff';
+                replayContext.lineWidth = 3;
+                replayContext.beginPath();
+                replayContext.arc(markerX, markerY, 12, 0, Math.PI * 2);
+                replayContext.fill();
+                replayContext.stroke();
+                replayContext.fillStyle = '#ffffff';
+                replayContext.font = 'bold 10px sans-serif';
+                replayContext.textAlign = 'center';
+                replayContext.textBaseline = 'middle';
+                replayContext.fillText(score, markerX, markerY);
+                replayContext.restore();
+            }
+
+            function renderStrokeAnalysis(attempt) {
+                const strokes = attempt?.trajectory?.strokes || [];
+                const analyses = Array.isArray(attempt?.strokeAnalysis) ? attempt.strokeAnalysis : [];
+                const metrics = Array.isArray(attempt?.strokeMetrics) ? attempt.strokeMetrics : [];
+                strokeAnalysisList.innerHTML = strokes.map((stroke, index) => {
+                    const strokeNumber = getStrokeNumber(stroke, index + 1);
+                    const analysis = analyses.find(item => Number(item?.stroke_number) === strokeNumber) || analyses[index] || {};
+                    const metric = metrics[index] || {};
+                    const reason = analysis.reason || (index >= 0 ? 'ระบบเก็บเส้นนี้ไว้สำหรับตรวจลำดับและรูปทรง' : '');
+                    const suggestion = analysis.suggestion || 'ลองเขียนตามทิศทางของเส้นตัวอย่าง';
+                    const score = Number.isFinite(Number(analysis.score)) ? `${Math.max(0, Math.min(100, Number(analysis.score)))}%` : '';
+                    return `<li data-stroke-analysis-index="${index}"><button type="button" data-replay-stroke="${index}">เส้นที่ ${strokeNumber}${score ? ` (${score})` : ''}</button><span>${escapeHtml(reason)}</span><small>${escapeHtml(suggestion)}</small></li>`;
+                }).join('');
+            }
+
+            function showReplay(attempt) {
+                replayAttempt = attempt;
+                replayStrokeIndex = -1;
+                renderReplayFrame();
+                renderStrokeAnalysis(attempt);
+            }
+
+            function playReplay() {
+                const strokes = replayAttempt?.trajectory?.strokes || [];
+                if (!strokes.length) return;
+                if (replayTimer) window.clearInterval(replayTimer);
+                if (replayAnimationFrame) window.cancelAnimationFrame(replayAnimationFrame);
+                replayStrokeIndex = -1;
+                replayProgress = 0;
+                const durations = strokes.map(() => 650);
+                const totalDuration = durations.reduce((total, duration) => total + duration, 0);
+                const startedAt = performance.now();
+
+                function animateReplayFrame(now) {
+                    let elapsed = Math.min(totalDuration, now - startedAt);
+                    let activeIndex = durations.length - 1;
+                    let activeElapsed = durations[activeIndex];
+                    for (let index = 0; index < durations.length; index++) {
+                        if (elapsed <= durations[index]) {
+                            activeIndex = index;
+                            activeElapsed = elapsed;
+                            break;
+                        }
+                        elapsed -= durations[index];
+                    }
+                    replayStrokeIndex = activeIndex;
+                    const linearProgress = Math.min(1, activeElapsed / durations[activeIndex]);
+                    replayProgress = 1 - Math.pow(1 - linearProgress, 3);
+                    renderReplayFrame(replayStrokeIndex, replayProgress);
+                    if (now - startedAt < totalDuration) {
+                        replayAnimationFrame = window.requestAnimationFrame(animateReplayFrame);
+                    } else {
+                        replayProgress = 1;
+                        renderReplayFrame(strokes.length - 1, 1);
+                        replayAnimationFrame = null;
+                    }
+                }
+
+                replayAnimationFrame = window.requestAnimationFrame(animateReplayFrame);
+            }
+
+            document.getElementById('replayPlayBtn').addEventListener('click', playReplay);
+            document.getElementById('replayPauseBtn').addEventListener('click', () => {
+                if (replayTimer) window.clearInterval(replayTimer);
+                replayTimer = null;
+                if (replayAnimationFrame) window.cancelAnimationFrame(replayAnimationFrame);
+                replayAnimationFrame = null;
+            });
+            document.getElementById('replayPrevBtn').addEventListener('click', () => {
+                if (replayAnimationFrame) window.cancelAnimationFrame(replayAnimationFrame);
+                replayAnimationFrame = null;
+                replayStrokeIndex = Math.max(-1, replayStrokeIndex - 1);
+                replayProgress = replayStrokeIndex >= 0 ? 1 : 0;
+                renderReplayFrame(replayStrokeIndex, replayProgress);
+            });
+            document.getElementById('replayNextBtn').addEventListener('click', () => {
+                if (replayAnimationFrame) window.cancelAnimationFrame(replayAnimationFrame);
+                replayAnimationFrame = null;
+                const count = replayAttempt?.trajectory?.strokes?.length || 0;
+                replayStrokeIndex = Math.min(count - 1, replayStrokeIndex + 1);
+                replayProgress = 1;
+                renderReplayFrame(replayStrokeIndex, replayProgress);
+            });
+            strokeAnalysisList.addEventListener('click', event => {
+                const button = event.target.closest('[data-replay-stroke]');
+                if (!button) return;
+                replayStrokeIndex = Number(button.dataset.replayStroke);
+                renderReplayFrame();
+            });
+
+            function showSavedEvaluation(attempt) {
+                if (!attempt || (!attempt.totalScore && !attempt.feedback)) {
+                    clearCurrentEvaluation();
+                    return;
+                }
+                showCurrentEvaluation({
+                    shape_accuracy: attempt.accuracy,
+                    alignment_score: attempt.alignment,
+                    total_score: attempt.totalScore,
+                    evaluation_source: attempt.evaluationSource,
+                    ai_feedback: attempt.feedback,
+                    error_reasons: attempt.errorReasons,
+                    score_breakdown: attempt.scoreBreakdown,
+                    ai_explanation: attempt.aiExplanation
+                });
+                showReplay(attempt);
+            }
+
+            if (state.mode === 'guide') {
+                evaluateBtn.style.display = 'none';
+                evaluationCriteria.hidden = true;
+            }
+
+            let drawing = false;
+            let drawingRect = null;
+            let hasDrawing = false;
+            let drawingNeedsSave = false;
+            let strokeCount = 0;
+            let timerInterval = null;
+            let currentCharacterElapsedMs = 0;
+            let currentStroke = null;
+            let currentTrajectory = { strokes: [] };
+            let guideAnimationTimers = [];
+            let traceGuideStep = 0;
+            const completedCharacters = new Set();
+            let writingSessionId = initialSessionId > 0 ? initialSessionId : null;
+            let writingSessionPromise = null;
+            const attemptsByCharacter = new Map();
+            let userResults = {
+                mode: initialMode,
+                score: 0,
+                total: 0,
+                startedAt: null,
+                completedAt: null,
+                rows: []
+            };
+
+            let pendingNavigationUrl = '';
+            let navigationApproved = false;
+            let navigationPromptOpen = false;
+            const leavePracticeModal = document.getElementById('leavePracticeModal');
+            const leavePracticeMessage = document.getElementById('leavePracticeMessage');
+            const stayPracticeBtn = document.getElementById('stayPracticeBtn');
+            const stayPracticeTopBtn = document.getElementById('stayPracticeTopBtn');
+            const leavePracticeBtn = document.getElementById('leavePracticeBtn');
+            const abandonPracticeBtn = document.getElementById('abandonPracticeBtn');
+
+            function isPracticeInProgress() {
+                return state.mode === 'test' && state.testStarted && state.characters.length > 0 && !userResults.completedAt;
+            }
+
+            function closeLeavePracticePrompt() {
+                leavePracticeModal.hidden = true;
+                navigationPromptOpen = false;
+                pendingNavigationUrl = '';
+            }
+
+            function openLeavePracticePrompt(url) {
+                pendingNavigationUrl = url || '';
+                navigationPromptOpen = true;
+                leavePracticeMessage.textContent = hasDrawing
+                    ? 'ระบบจะบันทึกตัวอักษรที่กำลังวาดก่อนออกจากหน้า ข้อมูลที่ยังทำไม่เสร็จจะกลับมาทำต่อได้จากประวัติ'
+                    : 'ข้อมูลที่บันทึกแล้วจะไม่หาย แต่แบบทดสอบนี้ยังทำไม่ครบ คุณสามารถกลับมาทำต่อได้จากประวัติ';
+                leavePracticeModal.hidden = false;
+                leavePracticeBtn.focus();
+            }
+
+            async function approveLeavingPractice() {
+                if (!navigationPromptOpen) return;
+                leavePracticeBtn.disabled = true;
+                stayPracticeBtn.disabled = true;
+                try {
+                    if (hasDrawing && drawingNeedsSave) {
+                        await saveCurrentDrawing();
+                    }
+                    navigationApproved = true;
+                    const destination = pendingNavigationUrl;
+                    closeLeavePracticePrompt();
+                    if (destination) {
+                        window.location.assign(destination);
+                    } else {
+                        window.history.back();
+                    }
+                } catch (error) {
+                    leavePracticeMessage.textContent = error.message || 'บันทึกข้อมูลไม่สำเร็จ กรุณาอยู่หน้านี้แล้วลองอีกครั้ง';
+                } finally {
+                    leavePracticeBtn.disabled = false;
+                    stayPracticeBtn.disabled = false;
+                }
+            }
+
+            async function abandonPractice() {
+                if (!navigationPromptOpen) return;
+                leavePracticeBtn.disabled = true;
+                abandonPracticeBtn.disabled = true;
+                stayPracticeBtn.disabled = true;
+                try {
+                    if (writingSessionId) {
+                        const response = await fetch('../connectapi/writing_progress.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ action: 'abandon_session', writing_session_id: writingSessionId })
+                        });
+                        const result = await response.json().catch(() => null);
+                        if (!response.ok || !result || result.status !== 'success') {
+                            throw new Error(result && result.message ? result.message : 'ไม่สามารถละทิ้งรอบการฝึกได้');
+                        }
+                    }
+                    navigationApproved = true;
+                    const destination = pendingNavigationUrl;
+                    closeLeavePracticePrompt();
+                    if (destination) window.location.assign(destination);
+                    else window.history.back();
+                } catch (error) {
+                    leavePracticeMessage.textContent = error.message || 'ละทิ้งรอบการฝึกไม่สำเร็จ';
+                } finally {
+                    leavePracticeBtn.disabled = false;
+                    abandonPracticeBtn.disabled = false;
+                    stayPracticeBtn.disabled = false;
+                }
+            }
+
+            stayPracticeBtn.addEventListener('click', closeLeavePracticePrompt);
+            stayPracticeTopBtn.addEventListener('click', closeLeavePracticePrompt);
+            leavePracticeBtn.addEventListener('click', approveLeavingPractice);
+            abandonPracticeBtn.addEventListener('click', abandonPractice);
+            leavePracticeModal.addEventListener('click', function (event) {
+                if (event.target === leavePracticeModal) closeLeavePracticePrompt();
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && navigationPromptOpen) closeLeavePracticePrompt();
+            });
+
+            window.addEventListener('beforeunload', function (event) {
+                if (!navigationApproved && isPracticeInProgress()) {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+
+            window.history.pushState({ writingPractice: true }, '', window.location.href);
+            window.addEventListener('popstate', function () {
+                if (!isPracticeInProgress() || navigationApproved) return;
+                window.history.pushState({ writingPractice: true }, '', window.location.href);
+                openLeavePracticePrompt('');
+            });
+
+            document.addEventListener('click', function (event) {
+                const link = event.target.closest('a[href]');
+                if (!link || !isPracticeInProgress() || navigationApproved) return;
+                if (link.target && link.target !== '_self' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                const destination = new URL(link.href, window.location.href);
+                if (destination.href === window.location.href) return;
+                event.preventDefault();
+                openLeavePracticePrompt(destination.href);
+            }, true);
+
+            function updateNextButton() {
+                const isLastCharacter = state.index + 1 >= state.characters.length;
+                const currentKey = state.characters[state.index] ? getCharacterKey(state.characters[state.index]) : '';
+                const currentWritten = currentKey !== '' && attemptsByCharacter.has(currentKey);
+                nextBtn.textContent = isLastCharacter && currentWritten ? 'สรุปผล' : 'ถัดไป';
+            }
+
+            function formatGroupName(groupName) {
+                const value = (groupName || '').toString().trim();
+                if (!value) return 'ตัวอักษร';
+
+                const normalized = value.replace(/^วรรค\s+/u, '').trim();
+                return normalized ? normalized : 'ตัวอักษร';
+            }
+
+            function setStatus(text) {
+                statusMessage.textContent = text;
+            }
+
+            function formatElapsedTime(ms) {
+                const totalSeconds = Math.max(0, Math.round(ms / 1000));
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            function updateTimerDisplay() {
+                if (!userResults.startedAt) {
+                    timerDisplay.textContent = 'เวลารวม: 00:00';
+                    characterTimerDisplay.textContent = 'ตัวอักษรนี้: 00:00';
+                    return;
+                }
+                const elapsed = Date.now() - userResults.startedAt;
+                timerDisplay.textContent = `เวลารวม: ${formatElapsedTime(elapsed)}`;
+                characterTimerDisplay.textContent = `ตัวอักษรนี้: ${formatElapsedTime(getCurrentCharacterTimeMs())}`;
+            }
+
+            function startTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                if (!userResults.startedAt) {
+                    userResults.startedAt = Date.now();
+                }
+                updateTimerDisplay();
+                timerInterval = window.setInterval(updateTimerDisplay, 1000);
+            }
+
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            function beginWritingTimer() {
+                if (!userResults.startedAt) {
+                    userResults.startedAt = Date.now();
+                    startTimer();
+                } else if (!timerInterval) {
+                    startTimer();
+                }
+
+                if (!state.characterStartedAt) {
+                    state.characterStartedAt = Date.now();
+                    updateTimerDisplay();
+                }
+            }
+
+            function pauseCharacterTimer() {
+                if (!state.characterStartedAt) {
+                    return;
+                }
+
+                currentCharacterElapsedMs += Date.now() - state.characterStartedAt;
+                state.characterStartedAt = null;
+                updateTimerDisplay();
+            }
+
+            function getCharacterKey(item) {
+                return String(item && (item.character_id ?? item.id ?? item.character_jp ?? item.romaji));
+            }
+
+            function getCurrentCharacterTimeMs() {
+                const item = state.characters[state.index];
+                const savedAttempt = item ? attemptsByCharacter.get(getCharacterKey(item)) : null;
+                const savedTime = savedAttempt ? savedAttempt.timeSpentMs || 0 : 0;
+                if (!state.characterStartedAt) {
+                    return savedTime + currentCharacterElapsedMs;
+                }
+                const activeTime = Date.now() - state.characterStartedAt;
+                return savedTime + currentCharacterElapsedMs + Math.max(0, activeTime);
+            }
+
+            function calculateDrawingMetrics(sourceCanvas) {
+                try {
+                    const ctx = sourceCanvas.getContext('2d');
+                    const w = sourceCanvas.width;
+                    const h = sourceCanvas.height;
+                    if (!w || !h) return { accuracy: 0, alignment: 0 };
+
+                    const imageData = ctx.getImageData(0, 0, w, h);
+                    const data = imageData.data;
+                    let totalDrawn = 0;
+                    let sumX = 0, sumY = 0;
+                    let qTL = 0, qTR = 0, qBL = 0, qBR = 0;
+                    const midX = w / 2, midY = h / 2;
+
+                    for (let y = 0; y < h; y += 4) {
+                        for (let x = 0; x < w; x += 4) {
+                            const alpha = data[(y * w + x) * 4 + 3];
+                            if (alpha > 30) {
+                                totalDrawn++;
+                                sumX += x;
+                                sumY += y;
+                                if (x < midX && y < midY) qTL++;
+                                else if (x >= midX && y < midY) qTR++;
+                                else if (x < midX && y >= midY) qBL++;
+                                else qBR++;
+                            }
+                        }
+                    }
+
+                    if (totalDrawn < 15) {
+                        return { accuracy: 0, alignment: 0 };
+                    }
+
+                    const avgX = sumX / totalDrawn;
+                    const avgY = sumY / totalDrawn;
+                    const offsetX = Math.abs(avgX - midX) / (w / 2);
+                    const offsetY = Math.abs(avgY - midY) / (h / 2);
+                    const distFromCenter = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+
+                    const alignment = Math.max(30, Math.min(98, Math.round((1 - Math.min(1, distFromCenter * 1.4)) * 100)));
+                    
+                    const quads = [qTL, qTR, qBL, qBR].filter(q => q > (totalDrawn * 0.05)).length;
+                    const quadScore = Math.min(100, quads * 25);
+                    const densityScore = totalDrawn > 30 ? Math.min(95, 60 + Math.min(35, totalDrawn / 25)) : 40;
+                    
+                    const accuracy = Math.max(35, Math.min(98, Math.round((alignment * 0.4) + (quadScore * 0.3) + (densityScore * 0.3))));
+                    return { accuracy, alignment };
+                } catch (e) {
+                    return { accuracy: 75, alignment: 80 };
+                }
+            }
+
+            function buildResultRows() {
+                return state.characters.map((item, index) => {
+                    const attempt = attemptsByCharacter.get(getCharacterKey(item));
+                    const acc = attempt ? (attempt.accuracy || 0) : 0;
+                    const align = attempt ? (attempt.alignment || 0) : 0;
+                    const totalScore = Number(attempt?.totalScore) || 0;
+                    const isPassed = totalScore >= 60;
+                    return {
+                        question: item.romaji || item.character_jp || 'ตัวอักษร',
+                        targetCharacter: item.character_jp || '',
+                        status: attempt ? (state.mode === 'test' ? (isPassed ? 'ผ่าน' : 'ต้องปรับปรุง') : 'วาดเรียบร้อย') : 'ยังไม่ได้วาด',
+                        drawnImage: attempt ? attempt.imageUrl : null,
+                        trajectory: attempt ? attempt.trajectory || { strokes: [] } : { strokes: [] },
+                        time: attempt ? formatElapsedTime(attempt.timeSpentMs || 0) : '00:00',
+                        elapsedMs: attempt ? attempt.timeSpentMs || 0 : 0,
+                        sequenceNo: index + 1,
+                        rowAccuracy: acc,
+                        rowAlignment: align,
+                        totalScore,
+                        feedback: attempt ? attempt.feedback || '' : '',
+                        errorReasons: attempt ? attempt.errorReasons || [] : [],
+                        aiExplanation: attempt ? attempt.aiExplanation || '' : '',
+                        strokeMetrics: attempt ? attempt.strokeMetrics || [] : []
+                    };
+                });
+            }
+
+            async function completeWritingSession(elapsedMs) {
+                if (!writingSessionId) {
+                    await ensureWritingSession();
+                }
+
+                const response = await fetch('../connectapi/writing_progress.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'complete_session',
+                        writing_session_id: writingSessionId,
+                        total_time_ms: elapsedMs,
+                        total_characters: state.characters.length
+                    })
+                });
+                const result = await response.json().catch(() => null);
+                if (!response.ok || !result || result.status !== 'success') {
+                    throw new Error(result && result.message ? result.message : 'ไม่สามารถบันทึกสรุปผลได้');
+                }
+                return result;
+            }
+
+            async function goToResultPage() {
+                stopTimer();
+                const percent = userResults.total > 0 ? Math.round((userResults.score / userResults.total) * 100) : 0;
+                const elapsedMs = userResults.startedAt && userResults.completedAt
+                    ? userResults.completedAt - userResults.startedAt
+                    : 0;
+
+                let totalAcc = 0, totalAlign = 0, count = 0;
+                attemptsByCharacter.forEach((att) => {
+                    if (att && att.accuracy) {
+                        totalAcc += att.accuracy || 0;
+                        totalAlign += att.alignment || 0;
+                        count++;
+                    }
+                });
+
+                const avgAcc = count > 0 ? Math.round(totalAcc / count) : 0;
+                const avgAlign = count > 0 ? Math.round(totalAlign / count) : 0;
+
+                const resultData = {
+                    type: state.type === 'katakana' ? 'Katakana' : 'Hiragana',
+                    group: formatGroupName(state.groupId || 'ตัวอักษร'),
+                    groupId: String(state.groupId || '').trim(),
+                    mode: state.mode,
+                    score: userResults.score,
+                    total: userResults.total,
+                    percentage: percent,
+                    accuracy: avgAcc,
+                    alignment: avgAlign,
+                    summaryStatus: avgAcc >= 75 ? 'ดีเยี่ยม' : (avgAcc >= 50 ? 'ผ่านเกณฑ์' : 'ควรปรับปรุงเพิ่มเติม'),
+                    time: formatElapsedTime(elapsedMs),
+                    timeMs: elapsedMs,
+                    writingSessionId: writingSessionId,
+                    rows: userResults.rows
+                };
+                sessionStorage.setItem('writingResultData', JSON.stringify(resultData));
+
+                const nextUrl = writingSessionId
+                    ? `../data/writingresult.php?session_id=${encodeURIComponent(writingSessionId)}`
+                    : '../data/writingresult.php';
+
+                await completeWritingSession(elapsedMs);
+
+                window.location.assign(nextUrl);
+                return true;
+            }
+
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = 14;
+                ctx.strokeStyle = '#111111';
+                ctx.shadowBlur = 0;
+                ctx.shadowColor = '#111111';
+                ctx.globalAlpha = 1;
+                ctx.clearRect(0, 0, rect.width, rect.height);
+            }
+
+            function updatePracticeHint() {
+                if (state.mode === 'test' && !state.testStarted) {
+                    practiceHint.textContent = 'กด “พร้อม เริ่มทำแบบทดสอบ” ก่อนเริ่มจับเวลา';
+                    updateEvaluateButton();
+                    return;
+                }
+                if (state.writingMode === 'assisted' && state.mode === 'guide') {
+                    practiceHint.textContent = 'วาดตามเส้นนำทางหรือภาพตัวอย่างในโหมดมีตัวช่วย';
+                } else {
+                    practiceHint.textContent = hasDrawing ? 'ฝึกต่อได้เลย' : 'แตะเพื่อเริ่มเขียน';
+                }
+                updateEvaluateButton();
+            }
+
+            function playGuideAnimation() {
+                const guideSvg = animationBox.querySelector('.guide-svg');
+                if (!guideSvg) return;
+                guideAnimationTimers.forEach(function (timer) {
+                    window.clearTimeout(timer);
+                });
+                guideAnimationTimers = [];
+
+                const strokes = Array.from(guideSvg.querySelectorAll('.guide-stroke'));
+                if (!strokes.length) {
+                    guideSvg.classList.remove('is-playing');
+                    void guideSvg.offsetWidth;
+                    guideSvg.classList.add('is-playing');
+                    return;
+                }
+
+                strokes.sort(function (first, second) {
+                    return Number(first.dataset.strokeOrder || 0) - Number(second.dataset.strokeOrder || 0);
+                });
+                strokes.forEach(function (stroke) {
+                    stroke.classList.remove('is-visible');
+                    stroke.classList.remove('is-current');
+                    stroke.style.visibility = 'hidden';
+                    stroke.style.opacity = '0';
+                    if (typeof stroke.getTotalLength === 'function') {
+                        const length = stroke.getTotalLength();
+                        stroke.style.setProperty('--stroke-length', length);
+                        stroke.style.strokeDasharray = length;
+                        stroke.style.strokeDashoffset = length;
+                    }
+                });
+                animationBox.querySelectorAll('[data-guide-step]').forEach(function (button) {
+                    button.classList.remove('active');
+                });
+                strokes.forEach(function (stroke, index) {
+                    const timer = window.setTimeout(function () {
+                        stroke.classList.add('is-visible');
+                        stroke.classList.add('is-current');
+                        stroke.style.visibility = 'visible';
+                        stroke.style.opacity = '0.9';
+                        stroke.style.strokeDashoffset = '0';
+                    }, index * 650);
+                    guideAnimationTimers.push(timer);
+                });
+            }
+
+            function showGuideStep(stepIndex) {
+                const guideSvg = animationBox.querySelector('.guide-svg');
+                if (!guideSvg) return;
+                guideAnimationTimers.forEach(function (timer) {
+                    window.clearTimeout(timer);
+                });
+                guideAnimationTimers = [];
+
+                const strokes = Array.from(guideSvg.querySelectorAll('.guide-stroke'))
+                    .sort(function (first, second) {
+                        return Number(first.dataset.strokeOrder || 0) - Number(second.dataset.strokeOrder || 0);
+                    });
+                strokes.forEach(function (stroke, index) {
+                    const isShown = index <= stepIndex;
+                    stroke.classList.toggle('is-visible', isShown);
+                    stroke.classList.toggle('is-current', index === stepIndex);
+                    stroke.style.visibility = isShown ? 'visible' : 'hidden';
+                    stroke.style.opacity = isShown ? (index === stepIndex ? '1' : '0.42') : '0';
+                    stroke.style.strokeDashoffset = isShown ? '0' : (stroke.style.strokeDasharray || '0');
+                });
+                const currentStroke = strokes[stepIndex];
+                if (currentStroke) {
+                    currentStroke.style.strokeDashoffset = currentStroke.style.strokeDasharray || '0';
+                }
+
+                animationBox.querySelectorAll('[data-guide-step]').forEach(function (button) {
+                    button.classList.toggle('active', Number(button.dataset.guideStep) === stepIndex);
+                });
+            }
+
+            function renderTraceGuide(item) {
+                traceGuideStep = 0;
+                const strokePaths = Array.isArray(item.stroke_paths) ? item.stroke_paths : [];
+                if (!strokePaths.length) {
+                    traceOverlay.innerHTML = '';
+                    return;
+                }
+
+                const character = escapeHtml(item.character_jp || '');
+                traceOverlay.innerHTML = `
+                    <div class="trace-guide-panel">
+                        <svg class="trace-guide-svg" viewBox="0 0 109 109" aria-label="เส้นนำทาง ${character}">
+                            ${strokePaths.map(function (stroke, index) {
+                                const order = Number(stroke.order) || index + 1;
+                                return `<path class="trace-guide-stroke" data-stroke-order="${order}" d="${escapeHtml(stroke.path || '')}"></path>`;
+                            }).join('')}
+                        </svg>
+                        <div class="trace-guide-label">ขีดตามเส้นนำทางทีละเส้น</div>
+                        <div class="trace-guide-steps" aria-label="เลือกเส้นที่ต้องการดู">
+                            ${strokePaths.map(function (stroke, index) {
+                                return `<button type="button" class="trace-guide-btn" data-trace-step="${index}">เส้นที่ ${index + 1}</button>`;
+                            }).join('')}
+                        </div>
+                        <div class="trace-guide-actions">
+                            <button type="button" class="trace-guide-btn" data-trace-next>เส้นถัดไป</button>
+                            <button type="button" class="trace-guide-btn" data-trace-teach>สอนก่อน</button>
+                            <button type="button" class="trace-guide-btn" data-trace-all>แสดงทั้งหมด</button>
+                        </div>
+                    </div>`;
+                showTraceGuideStep(0);
+            }
+
+            function getTraceGuideStrokes() {
+                return Array.from(traceOverlay.querySelectorAll('.trace-guide-stroke'))
+                    .sort(function (first, second) {
+                        return Number(first.dataset.strokeOrder || 0) - Number(second.dataset.strokeOrder || 0);
+                    });
+            }
+
+            function animateTraceGuideStroke(stroke) {
+                if (!stroke || typeof stroke.getTotalLength !== 'function') return;
+                const length = Math.max(1, stroke.getTotalLength());
+                stroke.getAnimations().forEach(function (animation) {
+                    animation.cancel();
+                });
+                stroke.style.strokeDasharray = length;
+                stroke.style.strokeDashoffset = length;
+                const animation = stroke.animate(
+                    [{ strokeDashoffset: length }, { strokeDashoffset: 0 }],
+                    { duration: 900, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' }
+                );
+                animation.onfinish = function () {
+                    stroke.style.strokeDasharray = 'none';
+                    stroke.style.strokeDashoffset = '0';
+                };
+            }
+
+            function showTraceGuideStep(stepIndex) {
+                const strokes = getTraceGuideStrokes();
+                if (!strokes.length) return;
+                traceGuideStep = Math.max(0, Math.min(stepIndex, strokes.length - 1));
+                strokes.forEach(function (stroke, index) {
+                    const visible = index <= traceGuideStep;
+                    stroke.classList.toggle('is-current', index === traceGuideStep);
+                    stroke.style.visibility = visible ? 'visible' : 'hidden';
+                    stroke.style.opacity = index === traceGuideStep ? '0.9' : '0.2';
+                });
+                traceOverlay.querySelectorAll('[data-trace-step]').forEach(function (button) {
+                    button.classList.toggle('is-active', Number(button.dataset.traceStep) === traceGuideStep);
+                });
+                animateTraceGuideStroke(strokes[traceGuideStep]);
+            }
+
+            function advanceTraceGuideAfterStroke() {
+                if (state.mode !== 'guide') return;
+                const strokes = getTraceGuideStrokes();
+                if (!strokes.length) return;
+                if (currentTrajectory.strokes.length >= strokes.length) {
+                    traceGuideStep = strokes.length;
+                    strokes.forEach(function (stroke) {
+                        stroke.classList.remove('is-current');
+                        stroke.style.visibility = 'hidden';
+                        stroke.style.opacity = '0';
+                    });
+                    traceOverlay.hidden = true;
+                    return;
+                }
+                const nextStep = Math.min(currentTrajectory.strokes.length, strokes.length - 1);
+                showTraceGuideStep(nextStep);
+            }
+
+            function playTraceGuide() {
+                guideAnimationTimers.forEach(function (timer) {
+                    window.clearTimeout(timer);
+                });
+                guideAnimationTimers = [];
+                const strokes = getTraceGuideStrokes();
+                if (!strokes.length) return;
+                strokes.forEach(function (stroke) {
+                    stroke.classList.remove('is-current');
+                    stroke.style.visibility = 'hidden';
+                    stroke.style.opacity = '0';
+                });
+                strokes.forEach(function (stroke, index) {
+                    const timer = window.setTimeout(function () {
+                        stroke.style.visibility = 'visible';
+                        stroke.style.opacity = '0.9';
+                        stroke.classList.add('is-current');
+                    }, index * 750);
+                    guideAnimationTimers.push(timer);
+                });
+                traceGuideStep = strokes.length - 1;
+            }
+
+            function escapeHtml(value) {
+                return String(value).replace(/[&<>"']/g, function (character) {
+                    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character];
+                });
+            }
+
+            function renderGuideAnimation(item) {
+                const character = escapeHtml(item.character_jp || item.romaji || '');
+                const strokePaths = Array.isArray(item.stroke_paths) ? item.stroke_paths : [];
+                const guideMarkup = strokePaths.length
+                    ? strokePaths.map(function (stroke) {
+                        const strokeOrder = Number(stroke.order) || 1;
+                        return `<path class="guide-stroke" data-stroke-order="${strokeOrder}" d="${escapeHtml(stroke.path || '')}"></path>`;
+                    }).join('')
+                    : `<text class="guide-character" x="54.5" y="78" text-anchor="middle">${character}</text>`;
+                animationBox.innerHTML = `
+                    <div class="guide-stage">
+                        <svg class="guide-svg" viewBox="0 0 109 109" role="img" aria-label="ลำดับการเขียน ${character}">
+                            <line class="guide-grid-line" x1="54.5" y1="6" x2="54.5" y2="103"></line>
+                            <line class="guide-grid-line" x1="6" y1="54.5" x2="103" y2="54.5"></line>
+                            ${guideMarkup}
+                        </svg>
+                        <div class="guide-caption">${strokePaths.length ? 'ลำดับเส้น SVG' : 'ตัวช่วยเขียน'} ${state.type === 'katakana' ? 'คาตาคานะ' : 'ฮิรางานะ'}</div>
+                        ${strokePaths.length ? `<div class="guide-step-controls">
+                            ${strokePaths.map(function (stroke, index) {
+                                return `<button class="guide-step-btn" type="button" data-guide-step="${index}">เส้นที่ ${index + 1}</button>`;
+                            }).join('')}
+                            <button class="guide-step-btn guide-full-btn" type="button" data-guide-full>เล่นเต็มลำดับ</button>
+                        </div>` : ''}
+                        <button class="btn guide-replay-btn" type="button" data-guide-replay>
+                            <i class="fas fa-rotate-right"></i> เขียนนำทางอีกครั้ง
+                        </button>
+                    </div>`;
+                playGuideAnimation();
+            }
+
+            animationBox.addEventListener('click', function (event) {
+                if (event.target.closest('[data-guide-replay]')) {
+                    playGuideAnimation();
+                }
+                const stepButton = event.target.closest('[data-guide-step]');
+                if (stepButton) {
+                    showGuideStep(Number(stepButton.dataset.guideStep));
+                }
+                if (event.target.closest('[data-guide-full]')) {
+                    playGuideAnimation();
+                }
+            });
+
+            traceOverlay.addEventListener('click', function (event) {
+                const stepButton = event.target.closest('[data-trace-step]');
+                if (stepButton) {
+                    showTraceGuideStep(Number(stepButton.dataset.traceStep));
+                    return;
+                }
+                if (event.target.closest('[data-trace-next]')) {
+                    showTraceGuideStep(traceGuideStep + 1);
+                }
+                if (event.target.closest('[data-trace-teach]')) {
+                    playTraceGuide();
+                }
+                if (event.target.closest('[data-trace-all]')) {
+                    const strokes = getTraceGuideStrokes();
+                    showTraceGuideStep(strokes.length - 1);
+                }
+            });
+
+            function drawStrokeBadge(point, strokeNumber) {
+                if (!point) return;
+                const badgeX = point.x - 15;
+                const badgeY = point.y;
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(badgeX, badgeY, 9, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(220, 53, 69, 0.9)';
+                ctx.fill();
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.stroke();
+                ctx.font = 'bold 11px "Noto Sans Thai", sans-serif';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(strokeNumber, badgeX, badgeY + 1);
+                ctx.restore();
+            }
+
+            function getStrokeNumber(stroke, fallbackNumber) {
+                const number = Number(stroke && stroke.strokeNumber);
+                return Number.isInteger(number) && number > 0 ? number : fallbackNumber;
+            }
+
+            function getNextStrokeNumber() {
+                const usedNumbers = new Set(currentTrajectory.strokes.map(function (stroke, index) {
+                    return getStrokeNumber(stroke, index + 1);
+                }));
+                let nextNumber = 1;
+                while (usedNumbers.has(nextNumber)) nextNumber += 1;
+                return nextNumber;
+            }
+
+            function renderTrajectoryOnCanvas(trajectory) {
+                const strokes = trajectory && Array.isArray(trajectory.strokes) ? trajectory.strokes : [];
+                if (!strokes.length) return false;
+
+                const rect = canvas.getBoundingClientRect();
+                const canvasWidth = rect.width || 620;
+                const canvasHeight = rect.height || 420;
+                const savedWidth = Number(trajectory.canvas_width) || 620;
+                const savedHeight = Number(trajectory.canvas_height) || 420;
+                const allPoints = strokes.flatMap(function (stroke) {
+                    return Array.isArray(stroke.points) ? stroke.points : [];
+                });
+                const largestPointX = allPoints.reduce((largest, point) => Math.max(largest, Number(point.x) || 0), 0);
+                const largestPointY = allPoints.reduce((largest, point) => Math.max(largest, Number(point.y) || 0), 0);
+                // Older attempts may contain DPR/CSS coordinates larger than their stored metadata.
+                const sourceWidth = Math.max(savedWidth, largestPointX);
+                const sourceHeight = Math.max(savedHeight, largestPointY);
+                // Keep the original proportions and never enlarge an old drawing when it is restored.
+                const scale = Math.min(1, canvasWidth / sourceWidth, canvasHeight / sourceHeight);
+                const offsetX = (canvasWidth - (sourceWidth * scale)) / 2;
+                const offsetY = (canvasHeight - (sourceHeight * scale)) / 2;
+                const scaledStrokes = strokes.map(function (stroke) {
+                    return Object.assign({}, stroke, {
+                        points: (stroke.points || []).map(function (point) {
+                            return {
+                                x: (Number(point.x || 0) * scale) + offsetX,
+                                y: (Number(point.y || 0) * scale) + offsetY
+                            };
+                        })
+                    });
+                });
+                ctx.clearRect(0, 0, rect.width, rect.height);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = Math.max(8, 14 * scale);
+                ctx.strokeStyle = '#111111';
+                scaledStrokes.forEach(function (stroke, index) {
+                    const points = Array.isArray(stroke.points) ? stroke.points : [];
+                    if (!points.length) return;
+                    drawStrokeBadge(points[0], getStrokeNumber(stroke, index + 1));
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    points.slice(1).forEach(function (point) {
+                        ctx.lineTo(point.x, point.y);
+                    });
+                    ctx.stroke();
+                });
+                hasDrawing = true;
+                strokeCount = scaledStrokes.length;
+                currentStroke = null;
+                currentTrajectory = {
+                    canvas_width: canvasWidth,
+                    canvas_height: canvasHeight,
+                    strokes: scaledStrokes.map(function (stroke, index) {
+                        return Object.assign({}, stroke, { strokeNumber: getStrokeNumber(stroke, index + 1) });
+                    })
+                };
+                drawingNeedsSave = false;
+                renderDrawnStrokeControls();
+                practiceHint.textContent = 'แก้ไขเส้นที่วาดต่อได้ แล้วกดบันทึกอีกครั้ง';
+                return true;
+            }
+
+            function renderSavedDrawingOnCanvas(imageUrl, trajectory) {
+                if (renderTrajectoryOnCanvas(trajectory)) {
+                    return;
+                }
+                if (!imageUrl) {
+                    clearCanvas();
+                    return;
+                }
+
+                const savedImage = new Image();
+                savedImage.onload = function () {
+                    const rect = canvas.getBoundingClientRect();
+                    const canvasWidth = rect.width || canvas.width;
+                    const canvasHeight = rect.height || canvas.height;
+                    const imageScale = Math.min(
+                        1,
+                        (canvasWidth * 0.9) / savedImage.naturalWidth,
+                        (canvasHeight * 0.9) / savedImage.naturalHeight
+                    );
+                    const imageWidth = savedImage.naturalWidth * imageScale;
+                    const imageHeight = savedImage.naturalHeight * imageScale;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(
+                        savedImage,
+                        (canvasWidth - imageWidth) / 2,
+                        (canvasHeight - imageHeight) / 2,
+                        imageWidth,
+                        imageHeight
+                    );
+                    hasDrawing = true;
+                    drawingNeedsSave = false;
+                    strokeCount = 0;
+                    currentStroke = null;
+                    currentTrajectory = { strokes: [] };
+                    updateEvaluateButton();
+                    practiceHint.textContent = 'ข้อมูลเดิมเป็นภาพ กรุณาล้างแล้ววาดใหม่เพื่อแก้ไขเป็นเส้น';
+                };
+                savedImage.onerror = function () {
+                    clearCanvas();
+                };
+                savedImage.src = imageUrl;
+            }
+
+            function clearCanvas(preserveEvaluation = false) {
+                const rect = canvas.getBoundingClientRect();
+                ctx.clearRect(0, 0, rect.width, rect.height);
+                if (!preserveEvaluation) {
+                    clearCurrentEvaluation();
+                }
+                hasDrawing = false;
+                drawingNeedsSave = false;
+                strokeCount = 0;
+                currentStroke = null;
+                currentTrajectory = { strokes: [] };
+                renderDrawnStrokeControls();
+                updatePracticeHint();
+            }
+
+            function renderDrawnStrokeControls() {
+                const strokes = currentTrajectory && Array.isArray(currentTrajectory.strokes)
+                    ? currentTrajectory.strokes
+                    : [];
+                drawnStrokeControls.hidden = strokes.length === 0;
+                drawnStrokeControls.innerHTML = strokes.length
+                    ? `<span class="drawn-stroke-title">เลือกแก้ไขเส้นที่วาด</span>${strokes.map(function (stroke, index) {
+                        const strokeNumber = getStrokeNumber(stroke, index + 1);
+                        return `<button type="button" class="drawn-stroke-delete" data-delete-drawn-stroke="${index}">
+                            <i class="fas fa-eraser"></i> ลบเส้นที่ ${strokeNumber}
+                        </button>`;
+                    }).join('')}`
+                    : '';
+            }
+
+            function redrawCurrentTrajectory() {
+                const rect = canvas.getBoundingClientRect();
+                ctx.clearRect(0, 0, rect.width, rect.height);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = 14;
+                ctx.strokeStyle = '#111111';
+                currentTrajectory.strokes.forEach(function (stroke, index) {
+                    const points = Array.isArray(stroke.points) ? stroke.points : [];
+                    if (!points.length) return;
+                    drawStrokeBadge(points[0], getStrokeNumber(stroke, index + 1));
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    points.slice(1).forEach(function (point) {
+                        ctx.lineTo(point.x, point.y);
+                    });
+                    ctx.stroke();
+                });
+                hasDrawing = currentTrajectory.strokes.length > 0;
+                strokeCount = currentTrajectory.strokes.length;
+                renderDrawnStrokeControls();
+                updatePracticeHint();
+            }
+
+            drawnStrokeControls.addEventListener('click', function (event) {
+                const deleteButton = event.target.closest('[data-delete-drawn-stroke]');
+                if (!deleteButton) return;
+                const strokeIndex = Number(deleteButton.dataset.deleteDrawnStroke);
+                if (!Number.isInteger(strokeIndex) || strokeIndex < 0) return;
+                currentTrajectory.strokes.splice(strokeIndex, 1);
+                drawingNeedsSave = true;
+                clearCurrentEvaluation();
+                currentStroke = null;
+                redrawCurrentTrajectory();
+            });
+
+            function getPoint(event) {
+                const rect = drawingRect || canvas.getBoundingClientRect();
+                const source = event.touches && event.touches.length ? event.touches[0] : event;
+
+                // The drawing context already scales CSS coordinates by the DPR.
+                return {
+                    x: source.clientX - rect.left,
+                    y: source.clientY - rect.top
+                };
+            }
+
+            function startDraw(event) {
+                if (document.body.classList.contains('evaluation-popup-open')) return;
+                if (state.mode === 'test' && !state.testStarted) {
+                    practiceHint.textContent = 'กรุณากด “พร้อม เริ่มทำแบบทดสอบ” ก่อนเริ่มวาด';
+                    return;
+                }
+                event.preventDefault();
+                clearCurrentEvaluation();
+                drawingRect = canvas.getBoundingClientRect();
+                if (typeof canvas.setPointerCapture === 'function' && event.pointerId !== undefined) {
+                    canvas.setPointerCapture(event.pointerId);
+                }
+                drawing = true;
+                drawingNeedsSave = true;
+                strokeCount = getNextStrokeNumber();
+                
+                const point = getPoint(event);
+
+                ctx.save();
+                
+                const badgeX = point.x - 15; 
+                const badgeY = point.y;
+                
+                ctx.beginPath();
+                ctx.arc(badgeX, badgeY, 9, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(220, 53, 69, 0.9)';
+                ctx.fill();
+                
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.stroke();
+
+                ctx.font = 'bold 11px "Noto Sans Thai", sans-serif';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(strokeCount, badgeX, badgeY + 1);
+                
+                ctx.restore();
+
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = 14;
+                ctx.strokeStyle = '#111111';
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                
+                ctx.beginPath();
+                ctx.moveTo(point.x, point.y);
+                
+                currentStroke = {
+                    startPoint: { x: Number(point.x.toFixed(2)), y: Number(point.y.toFixed(2)) },
+                    endPoint: { x: Number(point.x.toFixed(2)), y: Number(point.y.toFixed(2)) },
+                    points: [{ x: Number(point.x.toFixed(2)), y: Number(point.y.toFixed(2)), t: Date.now() }]
+                };
+                
+                beginWritingTimer();
+                practiceHint.textContent = 'กำลังวาด...';
+            }
+
+            function drawPath(event) {
+                if (document.body.classList.contains('evaluation-popup-open') || !drawing || !currentStroke) return;
+                event.preventDefault();
+                const point = getPoint(event);
+                const normalizedPoint = { x: Number(point.x.toFixed(2)), y: Number(point.y.toFixed(2)), t: Date.now() };
+                ctx.lineTo(point.x, point.y);
+                ctx.stroke();
+                currentStroke.endPoint = { x: normalizedPoint.x, y: normalizedPoint.y };
+                currentStroke.points.push(normalizedPoint);
+                hasDrawing = true;
+            }
+
+            function stopDraw(event) {
+                if (!drawing) return;
+                if (event && typeof canvas.releasePointerCapture === 'function' && event.pointerId !== undefined
+                    && canvas.hasPointerCapture(event.pointerId)) {
+                    canvas.releasePointerCapture(event.pointerId);
+                }
+                drawing = false;
+                drawingRect = null;
+                ctx.closePath();
+                if (currentStroke) {
+                    currentTrajectory.strokes.push({
+                        strokeNumber: strokeCount,
+                        startPoint: currentStroke.startPoint,
+                        endPoint: currentStroke.endPoint,
+                        points: currentStroke.points
+                    });
+                    currentStroke = null;
+                    advanceTraceGuideAfterStroke();
+                }
+                hasDrawing = currentTrajectory.strokes.length > 0;
+                renderDrawnStrokeControls();
+                pauseCharacterTimer();
+                practiceHint.textContent = hasDrawing ? 'ฝึกต่อได้เลย' : 'แตะเพื่อเริ่มเขียน';
+                updateEvaluateButton();
+            }
+
+            canvas.addEventListener('pointerdown', startDraw);
+            canvas.addEventListener('pointermove', drawPath);
+            canvas.addEventListener('pointerup', stopDraw);
+            canvas.addEventListener('pointerleave', stopDraw);
+            canvas.addEventListener('pointercancel', stopDraw);
+            document.addEventListener('touchmove', function (event) {
+                if (drawing) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            window.addEventListener('resize', function () {
+                resizeCanvas();
+                if (replayAttempt) {
+                    renderReplayFrame();
+                } else {
+                    resizeReplayCanvas();
+                }
+            });
+
+            function renderCharacterList() {
+                characterList.innerHTML = '';
+                if (!state.characters.length) {
+                    characterList.innerHTML = '<p class="empty-state">ไม่มีตัวอักษรในวรรคนี้</p>';
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+                state.characters.forEach((item, index) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    const characterKey = getCharacterKey(item);
+                    const isCompleted = completedCharacters.has(characterKey) || attemptsByCharacter.has(characterKey);
+                    button.className = 'char-chip' + (index === state.index ? ' active' : '') + (isCompleted ? ' completed' : '');
+                    const charDisplaySymbol = (state.mode === 'test' && !isCompleted) ? '?' : (item.character_jp || '');
+                    button.innerHTML = `
+                        <span class="char-chip-jp">${charDisplaySymbol}</span>
+                        <span class="char-chip-romaji">${item.romaji || ''}</span>
+                        <span class="char-chip-status">${isCompleted ? '✓ เสร็จแล้ว' : 'ยังไม่เสร็จ'}</span>
+                    `;
+                    button.addEventListener('click', async function () {
+                        await selectCharacter(index);
+                    });
+                    fragment.appendChild(button);
+                });
+
+                characterList.appendChild(fragment);
+            }
+
+            async function hydrateSavedAttemptsFromSession() {
+                if (!writingSessionId || !state.characters.length) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `../connectapi/writing_progress.php?action=get_session_summary&writing_session_id=${encodeURIComponent(writingSessionId)}`,
+                        { credentials: 'same-origin', cache: 'no-store' }
+                    );
+                    const payload = await response.json().catch(() => null);
+                    if (!response.ok || !payload || payload.status !== 'success' || !Array.isArray(payload.attempts)) {
+                        return;
+                    }
+
+                    attemptsByCharacter.clear();
+                    completedCharacters.clear();
+
+                    payload.attempts.forEach((attempt) => {
+                        if (!attempt || !attempt.image_url) {
+                            return;
+                        }
+
+                        const sequenceNo = Number(attempt.sequence_no || 0);
+                        const targetIndex = sequenceNo > 0 ? sequenceNo - 1 : -1;
+                        const item = targetIndex >= 0 && targetIndex < state.characters.length
+                            ? state.characters[targetIndex]
+                            : state.characters.find((candidate) => {
+                                const candidateText = (candidate.character_jp || candidate.romaji || '').trim();
+                                const attemptText = (attempt.target_character || attempt.romaji || '').trim();
+                                return candidateText && attemptText && candidateText === attemptText;
+                            });
+
+                        if (!item) {
+                            return;
+                        }
+
+                        const key = getCharacterKey(item);
+                        attemptsByCharacter.set(key, {
+                            imageUrl: attempt.image_url,
+                            trajectory: attempt.trajectory || { strokes: [] },
+                            timeSpentMs: Number(attempt.time_spent_ms) || 0,
+                            strokeCount: Number(attempt.stroke_count) || 0,
+                            accuracy: Number(attempt.shape_accuracy) || 0,
+                            alignment: Number(attempt.alignment_score) || 0,
+                            totalScore: Number(attempt.total_score) || 0,
+                            feedback: attempt.feedback || '',
+                            evaluationSource: attempt.evaluation_source || 'rules',
+                            errorReasons: Array.isArray(attempt.error_reasons) ? attempt.error_reasons : [],
+                            aiExplanation: attempt.ai_explanation || '',
+                            strokeAnalysis: Array.isArray(attempt.stroke_analysis) ? attempt.stroke_analysis : [],
+                            strokeMetrics: Array.isArray(attempt.stroke_metrics) ? attempt.stroke_metrics : [],
+                            scoreBreakdown: Array.isArray(attempt.score_breakdown) ? attempt.score_breakdown : []
+                        });
+                        completedCharacters.add(key);
+                    });
+
+                    const currentItem = state.characters[state.index];
+                    if (currentItem) {
+                        const currentAttempt = attemptsByCharacter.get(getCharacterKey(currentItem));
+                        if (currentAttempt && currentAttempt.imageUrl) {
+                            renderSavedDrawingOnCanvas(currentAttempt.imageUrl, currentAttempt.trajectory);
+                            showSavedEvaluation(currentAttempt);
+                        }
+                    }
+
+                    renderCharacterList();
+                    updateNextButton();
+                } catch (error) {
+                    console.warn('Unable to hydrate saved attempts from session:', error);
+                }
+            }
+
+            function setCharacter(index) {
+                if (!state.characters.length) {
+                    characterDisplay.textContent = '…';
+                    romajiDisplay.textContent = '';
+                    romajiDisplay.hidden = true;
+                    progressText.textContent = '0/0';
+                    groupBadge.textContent = 'ตัวอักษร';
+                    animationBox.innerHTML = '<p>ตัวอย่างลำดับการเขียนจะปรากฏที่นี่</p>';
+                    clearCanvas(true);
+                    return;
+                }
+
+                const item = state.characters[index];
+                state.index = index;
+                clearCurrentEvaluation();
+                state.characterStartedAt = null;
+                currentCharacterElapsedMs = 0;
+                currentStroke = null;
+                currentTrajectory = { strokes: [] };
+                
+                if (state.mode === 'test') {
+                    characterDisplay.textContent = item.romaji ? item.romaji : '?';
+                    romajiDisplay.textContent = `จงเขียนตัวอักษรสำหรับเสียง "${item.romaji || ''}"`;
+                    romajiDisplay.hidden = false;
+                } else {
+                    characterDisplay.textContent = item.character_jp || item.romaji || '…';
+                    romajiDisplay.textContent = item.romaji || '';
+                    romajiDisplay.hidden = !item.romaji;
+                }
+                
+                progressText.textContent = `${index + 1}/${state.characters.length}`;
+                groupBadge.textContent = formatGroupName(item.char_group || item.group_name_th || 'ตัวอักษร');
+                if (state.mode !== 'test' || state.testStarted) {
+                    if (userResults.startedAt === null) userResults.startedAt = Date.now();
+                    startTimer();
+                } else {
+                    stopTimer();
+                }
+
+                updateNextButton();
+
+                modeDisplay.textContent = `โหมด: ${state.writingMode === 'assisted' ? 'มีตัวช่วย' : 'ไม่มีตัวช่วย'}`;
+                animationBox.innerHTML = '';
+                if (state.writingMode === 'assisted' && state.mode === 'guide') {
+                    renderGuideAnimation(item);
+                } else {
+                    const placeholder = document.createElement('p');
+                    placeholder.textContent = 'ฟังเสียงอ่านและวาดตัวอักษรลงบนกระดานด้านขวา';
+                    animationBox.appendChild(placeholder);
+                }
+
+                if (state.writingMode === 'assisted' && state.mode === 'guide') {
+                    traceOverlay.hidden = false;
+                    traceOverlay.innerHTML = '';
+                    if (Array.isArray(item.stroke_paths) && item.stroke_paths.length) {
+                        renderTraceGuide(item);
+                    } else if (item.stroke_image && item.stroke_image !== 'null') {
+                        const previewImg = document.createElement('img');
+                        previewImg.src = item.stroke_image;
+                        previewImg.alt = 'ภาพตัวอย่างการเขียน';
+                        previewImg.className = 'guide-image';
+                        traceOverlay.appendChild(previewImg);
+                    } else {
+                        const overlayChar = document.createElement('span');
+                        overlayChar.textContent = item.character_jp || item.romaji || '';
+                        traceOverlay.appendChild(overlayChar);
+                    }
+                } else {
+                    traceOverlay.hidden = true;
+                    traceOverlay.innerHTML = '';
+                }
+
+                updateAudioButton();
+                updatePracticeHint();
+                updateTestControls();
+                const savedAttempt = attemptsByCharacter.get(getCharacterKey(item));
+                if (savedAttempt && savedAttempt.imageUrl) {
+                    renderSavedDrawingOnCanvas(savedAttempt.imageUrl, savedAttempt.trajectory);
+                    showSavedEvaluation(savedAttempt);
+                } else {
+                    clearCanvas(true);
+                }
+                renderCharacterList();
+                updateTimerDisplay();
+            }
+
+            async function selectCharacter(index) {
+                if (index === state.index) return;
+                if (hasDrawing && drawingNeedsSave) {
+                    try {
+                        await saveCurrentDrawing();
+                    } catch (error) {
+                        practiceHint.textContent = error.message || 'บันทึกภาพที่วาดไม่สำเร็จ';
+                        return;
+                    }
+                }
+                setCharacter(index);
+            }
+
+            function requestJson(url, fallbackValue) {
+                return fetch(url)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status);
+                        }
+                        return response.text();
+                    })
+                    .then(function (text) {
+                        if (!text || !text.trim()) {
+                            return fallbackValue;
+                        }
+                        try {
+                            const parsed = JSON.parse(text);
+                            if (Array.isArray(parsed)) {
+                                return parsed;
+                            }
+                            if (parsed && typeof parsed === 'object' && parsed.error) {
+                                return fallbackValue;
+                            }
+                            return fallbackValue;
+                        } catch (error) {
+                            return fallbackValue;
+                        }
+                    })
+                    .catch(function () {
+                        return fallbackValue;
+                    });
+            }
+
+            function loadQuestionProfiles() {
+                if (!initialQuizSetId) {
+                    state.analysisProfiles = {};
+                    return Promise.resolve();
+                }
+                return fetch('../connectapi/writing_progress.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ action: 'get_question_profiles', quiz_set_id: initialQuizSetId })
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        state.analysisProfiles = result && result.status === 'success' && result.profiles
+                            ? result.profiles
+                            : {};
+                        state.characters = state.characters.map(character => ({
+                            ...character,
+                            analysis_profile: state.analysisProfiles[String(Number(character.character_id ?? character.id ?? 0))] || {}
+                        }));
+                    })
+                    .catch(() => {
+                        state.analysisProfiles = {};
+                    });
+            }
+
+            // --- ปรับแก้: ฟังก์ชันดึงตัวอักษรจาก Ex2.php โดยใช้ group_id ---
+            function loadDefaultCharacters() {
+                const groupId = state.groupId; 
+                setStatus('กำลังโหลดตัวอักษร...');
+                
+                if (!groupId) {
+                    setStatus('กรุณาระบุวรรคตัวอักษร');
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    type: state.type,
+                });
+                if (String(groupId).match(/^\d+$/)) {
+                    params.set('group_id', groupId);
+                } else {
+                    params.set('group_name', groupId);
+                }
+                if (state.mode === 'test') {
+                    params.set('quiz_group', '1');
+                    if (initialQuizSource) params.set('quiz_source', initialQuizSource);
+                }
+
+                requestJson(
+                    `../connectapi/Ex2.php?${params.toString()}`,
+                    []
+                ).then(function (chars) {
+                    state.characters = Array.isArray(chars) ? chars : [];
+                    if (state.characters.length > 0) {
+                        const displayGroupName = formatGroupName(state.characters[0].group_name_th || state.characters[0].char_group || 'ตัวอักษร');
+                        setStatus(`ฝึกตัวอักษรจาก ${displayGroupName}`);
+                        loadQuestionProfiles()
+                            .then(function () {
+                                const targetIndex = initialCharacter
+                                    ? state.characters.findIndex(function (item) {
+                                        return (item.character_jp || '').trim() === initialCharacter.trim();
+                                    })
+                                    : -1;
+                                setCharacter(targetIndex >= 0 ? targetIndex : 0);
+                                if (state.mode === 'test') {
+                                    testReadyModal.hidden = false;
+                                    testReadyStatus.textContent = '';
+                                    updatePracticeHint();
+                                    return null;
+                                }
+                                return ensureWritingSession().then(hydrateSavedAttemptsFromSession);
+                            })
+                            .catch(function (error) {
+                                console.error('Unable to start writing session:', error);
+                            });
+                    } else {
+                        setStatus(`โหลดข้อมูลไม่สำเร็จ หรือไม่มีข้อมูล`);
+                    }
+                });
+            }
+
+            function getCroppedCanvasImage(sourceCanvas) {
+                const ctx = sourceCanvas.getContext('2d');
+                const w = sourceCanvas.width;
+                const h = sourceCanvas.height;
+                const imageData = ctx.getImageData(0, 0, w, h);
+                
+                let minX = w, minY = h, maxX = 0, maxY = 0;
+                let hasContent = false;
+
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const alpha = imageData.data[(y * w + x) * 4 + 3];
+                        if (alpha > 0) {
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                            hasContent = true;
+                        }
+                    }
+                }
+
+                if (!hasContent) return null;
+
+                const padding = Math.max(32, Math.round(Math.min(w, h) * 0.06));
+                const sourceMinX = Math.max(0, minX - padding);
+                const sourceMinY = Math.max(0, minY - padding);
+                const sourceMaxX = Math.min(w, maxX + padding);
+                const sourceMaxY = Math.min(h, maxY + padding);
+                const cropWidth = (sourceMaxX - sourceMinX) + padding * 2;
+                const cropHeight = (sourceMaxY - sourceMinY) + padding * 2;
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = cropWidth;
+                tempCanvas.height = cropHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                tempCtx.fillStyle = '#FFFFFF';
+                tempCtx.fillRect(0, 0, cropWidth, cropHeight);
+                
+                const croppedData = ctx.getImageData(sourceMinX, sourceMinY, sourceMaxX - sourceMinX, sourceMaxY - sourceMinY);
+                tempCtx.putImageData(croppedData, padding, padding);
+
+                return tempCanvas.toDataURL('image/png');
+            }
+
+            async function ensureWritingSession() {
+                if (writingSessionId) return writingSessionId;
+                if (writingSessionPromise) return writingSessionPromise;
+
+                writingSessionPromise = (async function () {
+                    const response = await fetch('../connectapi/writing_progress.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            action: 'start_session',
+                            writing_type: state.type,
+                            group_name: state.groupId || '',
+                            practice_mode: state.mode,
+                            writing_mode: state.writingMode,
+                            total_characters: state.characters.length
+                        })
+                    });
+                    const result = await response.json().catch(() => null);
+                    if (!response.ok || !result || result.status !== 'success' || !result.writing_session_id) {
+                        throw new Error(result && result.message ? result.message : 'ไม่สามารถเริ่มรอบการฝึกได้');
+                    }
+                    writingSessionId = Number(result.writing_session_id);
+                    return writingSessionId;
+                })();
+
+                try {
+                    return await writingSessionPromise;
+                } finally {
+                    writingSessionPromise = null;
+                }
+            }
+
+            async function saveCurrentDrawing() {
+                const characterItem = state.characters[state.index];
+                const base64Img = getCroppedCanvasImage(canvas);
+                if (!characterItem || !base64Img) {
+                    throw new Error('ไม่พบภาพที่วาดสำหรับบันทึก');
+                }
+
+                const characterId = Number(characterItem.character_id ?? characterItem.id ?? 0);
+                if (!characterId) {
+                    throw new Error('ไม่พบรหัสตัวอักษรสำหรับบันทึก');
+                }
+
+                const writingSessionIdForRequest = await ensureWritingSession();
+                const totalCharacterTime = getCurrentCharacterTimeMs();
+                const response = await fetch('../connectapi/writing_progress.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'save_attempt',
+                        writing_session_id: writingSessionIdForRequest,
+                        template_character_id: characterId,
+                        quiz_set_id: initialQuizSetId,
+                        sequence_no: state.index + 1,
+                        time_spent_ms: totalCharacterTime,
+                        stroke_count: strokeCount,
+                        image: base64Img,
+                        analysis_profile: characterItem.analysis_profile || {},
+                        trajectory: Object.assign({}, currentTrajectory, {
+                            canvas_width: Math.round(canvas.clientWidth || canvas.width),
+                            canvas_height: Math.round(canvas.clientHeight || canvas.height)
+                        })
+                    })
+                });
+                const result = await response.json().catch(() => null);
+                if (!response.ok || !result || result.status !== 'success') {
+                    throw new Error(result && result.message ? result.message : 'ไม่สามารถบันทึกภาพที่วาดได้');
+                }
+
+                const metrics = result.ai_evaluation || calculateDrawingMetrics(canvas);
+                attemptsByCharacter.set(getCharacterKey(characterItem), {
+                    imageUrl: result.image_url || base64Img,
+                    trajectory: currentTrajectory,
+                    timeSpentMs: totalCharacterTime,
+                    strokeCount: strokeCount,
+                    accuracy: Number(metrics.shape_accuracy ?? metrics.accuracy ?? 0),
+                    alignment: Number(metrics.alignment_score ?? metrics.alignment ?? 0),
+                    totalScore: Number(metrics.total_score ?? 0),
+                    feedback: metrics.ai_feedback || '',
+                    evaluationSource: metrics.evaluation_source || 'rules',
+                    errorReasons: Array.isArray(metrics.error_reasons) ? metrics.error_reasons : [],
+                    aiExplanation: metrics.ai_explanation || '',
+                    strokeAnalysis: Array.isArray(metrics.stroke_analysis) ? metrics.stroke_analysis : [],
+                    strokeMetrics: Array.isArray(metrics.stroke_metrics) ? metrics.stroke_metrics : [],
+                    scoreBreakdown: Array.isArray(metrics.score_breakdown) ? metrics.score_breakdown : []
+                });
+                requestAiEvaluation(result.writing_attempt_id, characterItem);
+                completedCharacters.add(getCharacterKey(characterItem));
+                hasDrawing = false;
+                drawingNeedsSave = false;
+                state.characterStartedAt = null;
+                currentCharacterElapsedMs = 0;
+                currentStroke = null;
+                currentTrajectory = { strokes: [] };
+                updatePracticeHint();
+                updateTimerDisplay();
+                renderCharacterList();
+                updateNextButton();
+                practiceHint.textContent = 'บันทึกตัวอักษรนี้แล้ว คุณสามารถคลิกกลับมาแก้ไขได้';
+                return result;
+            }
+
+            async function requestAiEvaluation(attemptId, characterItem) {
+                if (!attemptId || !writingSessionId) return;
+                try {
+                    const response = await fetch('../connectapi/writing_progress.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            action: 'ai_evaluate_attempt',
+                            writing_session_id: writingSessionId,
+                            writing_attempt_id: attemptId
+                        })
+                    });
+                    const result = await response.json().catch(() => null);
+                    if (!response.ok || !result || !result.ai_available || !result.ai_evaluation) return;
+                    const key = getCharacterKey(characterItem);
+                    const attempt = attemptsByCharacter.get(key);
+                    if (!attempt) return;
+                    Object.assign(attempt, {
+                        accuracy: Number(result.ai_evaluation.shape_accuracy ?? attempt.accuracy),
+                        alignment: Number(result.ai_evaluation.alignment_score ?? attempt.alignment),
+                        totalScore: Number(result.ai_evaluation.total_score ?? attempt.totalScore),
+                        feedback: result.ai_evaluation.ai_feedback || attempt.feedback,
+                        evaluationSource: 'ai+rules',
+                        errorReasons: Array.isArray(result.ai_evaluation.error_reasons) ? result.ai_evaluation.error_reasons : attempt.errorReasons,
+                        aiExplanation: result.ai_evaluation.ai_explanation || attempt.aiExplanation,
+                        strokeAnalysis: Array.isArray(result.ai_evaluation.stroke_analysis) ? result.ai_evaluation.stroke_analysis : attempt.strokeAnalysis,
+                        strokeMetrics: Array.isArray(result.ai_evaluation.stroke_metrics) ? result.ai_evaluation.stroke_metrics : attempt.strokeMetrics
+                    });
+                    if (state.characters[state.index] && getCharacterKey(state.characters[state.index]) === key) {
+                        showCurrentEvaluation(result.ai_evaluation);
+                        showReplay(attempt);
+                    }
+                    renderCharacterList();
+                } catch (error) {
+                    console.warn('Gemini background evaluation unavailable:', error);
+                }
+            }
+
+            clearBtn.addEventListener('click', function () {
+                const characterItem = state.characters[state.index];
+                if (characterItem) {
+                    const characterKey = getCharacterKey(characterItem);
+                    attemptsByCharacter.delete(characterKey);
+                    completedCharacters.delete(characterKey);
+                }
+                clearCanvas();
+                renderCharacterList();
+                updateNextButton();
+            });
+
+            async function finalizePractice() {
+                if (!state.characters.length) {
+                    practiceHint.textContent = 'ไม่มีตัวอักษรให้ประเมิน';
+                    return false;
+                }
+                const missingCharacters = state.characters.filter((item) => !attemptsByCharacter.has(getCharacterKey(item)));
+                if (missingCharacters.length > 0) {
+                    practiceHint.textContent = `กรุณาเขียนให้ครบทุกตัวก่อนสรุปผล (เหลือ ${missingCharacters.length} ตัว)`;
+                    return false;
+                }
+                nextBtn.disabled = true;
+                evaluateBtn.disabled = true;
+                try {
+                    if (hasDrawing && drawingNeedsSave) {
+                        await saveCurrentDrawing();
+                    }
+                    userResults.total = state.characters.length;
+                    userResults.score = [...attemptsByCharacter.values()].filter(attempt => Number(attempt.totalScore) >= 60).length;
+                    userResults.completedAt = Date.now();
+                    userResults.rows = buildResultRows();
+                    return await goToResultPage();
+                } catch (error) {
+                    practiceHint.textContent = error.message || 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่';
+                    return false;
+                } finally {
+                    nextBtn.disabled = false;
+                    evaluateBtn.disabled = false;
+                }
+            }
+
+            evaluateBtn.addEventListener('click', async function () {
+                if (state.mode !== 'test' || !hasDrawing) return;
+                evaluateBtn.disabled = true;
+                criteriaState.textContent = 'กำลังประมวลผล...';
+                practiceHint.textContent = 'กำลังวิเคราะห์ตัวอักษรนี้...';
+                try {
+                    if (drawingNeedsSave) {
+                        const result = await saveCurrentDrawing();
+                        showCurrentEvaluation(result.ai_evaluation || {});
+                        showReplay(attemptsByCharacter.get(getCharacterKey(state.characters[state.index])));
+                    } else {
+                        showSavedEvaluation(attemptsByCharacter.get(getCharacterKey(state.characters[state.index])));
+                    }
+                    openEvaluationPopup();
+                    criteriaState.textContent = 'ประมวลผลแล้ว';
+                    practiceHint.textContent = 'ตรวจผลด้านล่างได้เลย แล้วกดถัดไปเมื่อพร้อม';
+                } catch (error) {
+                    criteriaState.textContent = 'ประมวลผลไม่สำเร็จ';
+                    practiceHint.textContent = error.message || 'ไม่สามารถประมวลผลตัวอักษรนี้ได้';
+                } finally {
+                    evaluateBtn.disabled = false;
+                    updateEvaluateButton();
+                }
+            });
+
+            nextBtn.addEventListener('click', async function () {
+                if (!state.characters.length) return;
+
+                nextBtn.disabled = true;
+                try {
+                    if (hasDrawing && drawingNeedsSave) {
+                        await saveCurrentDrawing();
+                    }
+
+                    const isLastCharacter = state.index + 1 >= state.characters.length;
+                    if (isLastCharacter) {
+                        await finalizePractice();
+                        return;
+                    }
+
+                    setCharacter(state.index + 1);
+                    nextBtn.textContent = 'ถัดไป';
+                } catch (error) {
+                    practiceHint.textContent = error.message || 'บันทึกภาพที่วาดไม่สำเร็จ กรุณาลองใหม่';
+                } finally {
+                    nextBtn.disabled = false;
+                }
+            });
+
+            function updateAudioButton() {
+                const currentCharacter = state.characters[state.index];
+                const hasAdminAudio = Boolean(String(currentCharacter?.sound_file || '').trim());
+                const allowed = state.mode === 'test' && state.testStarted && hasAdminAudio;
+                audioBtn.hidden = state.mode !== 'test';
+                audioBtn.disabled = !allowed;
+                audioBtn.innerHTML = allowed
+                    ? '<i class="fas fa-volume-up"></i> ฟังเสียง'
+                    : (!state.testStarted
+                        ? '<i class="fas fa-lock"></i> เริ่มแบบทดสอบก่อนฟังเสียง'
+                        : '<i class="fas fa-volume-mute"></i> ยังไม่มีเสียง');
+                audioBtn.title = allowed
+                    ? 'ฟังไฟล์เสียงที่แอดมินอัปโหลดไว้ในตารางตัวอักษร'
+                    : 'เสียงใช้ได้เฉพาะระหว่างทำแบบทดสอบ และต้องเป็นไฟล์จากตารางตัวอักษร';
+            }
+
+            readyTestBtn.addEventListener('click', async function () {
+                readyTestBtn.disabled = true;
+                testReadyStatus.textContent = 'กำลังเตรียมแบบทดสอบ...';
+                try {
+                    await ensureWritingSession();
+                    await hydrateSavedAttemptsFromSession();
+                    state.testStarted = true;
+                    userResults.startedAt = Date.now();
+                    startTimer();
+                    testReadyModal.hidden = true;
+                    updateAudioButton();
+                    updatePracticeHint();
+                    updateTestControls();
+                } catch (error) {
+                    testReadyStatus.textContent = error.message || 'เริ่มแบบทดสอบไม่สำเร็จ กรุณาลองใหม่';
+                } finally {
+                    readyTestBtn.disabled = false;
+                }
+            });
+
+            audioBtn.addEventListener('click', function () {
+                if (state.mode !== 'test' || !state.testStarted) return;
+                const currentCharacter = state.characters[state.index];
+                const soundFile = String(currentCharacter?.sound_file || '').trim();
+                if (!soundFile) {
+                    practiceHint.textContent = 'ตัวอักษรนี้ยังไม่มีไฟล์เสียงที่แอดมินอัปโหลด';
+                    return;
+                }
+                characterAudio.src = soundFile;
+                characterAudio.currentTime = 0;
+                characterAudio.play().catch(function () {
+                    practiceHint.textContent = 'เปิดไฟล์เสียงจากตารางตัวอักษรไม่สำเร็จ';
+                });
+            });
+
+            function loadUserName() {
+                if (!navUsername) return;
+                fetch('../connectapi/nav_state.php', { cache: 'no-store', credentials: 'same-origin' })
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data && data.loggedIn) {
+                            navUsername.textContent = data.username || data.name || 'ผู้ใช้';
+                        } else {
+                            navUsername.textContent = 'ผู้ใช้';
+                        }
+                    })
+                    .catch(function () {
+                        navUsername.textContent = 'ผู้ใช้';
+                    });
+            }
+
+            resizeCanvas();
+            resizeReplayCanvas();
+            loadUserName();
+            loadDefaultCharacters();
+        });
+    </script>
+</body>
+</html>

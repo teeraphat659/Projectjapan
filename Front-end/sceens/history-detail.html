@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดประวัติการทำแบบทดสอบ | JP Learning</title>
+    <link rel="stylesheet" href="../style/history-detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page history-detail-page">
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+    <main class="history-detail-main">
+        <section class="history-detail-panel">
+            <header class="history-detail-header">
+                <div>
+                    <p class="eyebrow"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการทำแบบทดสอบ</p>
+                    <h1 id="pageTitle">รายละเอียดผลแบบทดสอบ</h1>
+                    <p id="pageDescription">กำลังโหลดข้อมูล...</p>
+                </div>
+                <div class="detail-actions">
+                    <a class="button button-secondary" href="../data/history.php"><i class="fa-solid fa-arrow-left"></i> กลับประวัติ</a>
+                    <button class="button button-primary" id="retryButton" type="button" hidden><i class="fa-solid fa-rotate-right"></i> ทำอีกครั้ง</button>
+                </div>
+            </header>
+
+            <div class="load-status" id="loadStatus">กำลังโหลดผลย้อนหลัง...</div>
+            <div class="summary-grid" id="summaryGrid" hidden>
+                <div><span>ทำได้</span><strong id="completedValue">-</strong></div>
+                <div><span>เปอร์เซ็นต์</span><strong id="percentValue">-</strong></div>
+                <div><span>คะแนนเฉลี่ย</span><strong id="scoreValue">-</strong></div>
+                <div><span>ผ่านเกณฑ์</span><strong id="passedValue">-</strong></div>
+                <div><span>เวลาที่ใช้</span><strong id="timeValue">-</strong></div>
+                <div><span>วันที่ทำ</span><strong id="dateValue">-</strong></div>
+            </div>
+
+            <div class="meta-grid" id="metaGrid" hidden>
+                <div><span>ชุดตัวอักษร</span><strong id="typeValue">-</strong></div>
+                <div><span>วรรค</span><strong id="groupValue">-</strong></div>
+                <div><span>โหมด</span><strong id="modeValue">-</strong></div>
+                <div><span>สถานะ</span><strong id="statusValue">-</strong></div>
+            </div>
+
+            <section class="attempt-section" id="attemptSection" hidden>
+                <div class="section-heading">
+                    <div><h2>รายละเอียดตัวอักษรที่ทำ</h2><p>กดรายการเพื่อดูภาพและผลตรวจโดยละเอียด</p></div>
+                    <span id="attemptCount">0 รายการ</span>
+                </div>
+                <div class="attempt-list" id="attemptList"></div>
+            </section>
+        </section>
+    </main>
+
+    <div class="attempt-modal" id="attemptModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="attempt-modal__dialog">
+            <button class="modal-close" id="modalClose" type="button" aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-heading"><strong id="modalTitle">ข้อที่ -</strong><span id="modalStatus">-</span></div>
+            <div class="comparison-grid">
+                <div class="comparison-box"><b>ตัวอักษรของคุณ</b><div class="view-switch"><button class="active" data-view="image" type="button">รูปที่วาด</button><button data-view="replay" type="button">Replay</button></div><div class="canvas-box" id="userCanvas"></div></div>
+                <div class="comparison-box"><b>ตัวอักษรที่ถูกต้อง</b><div class="canvas-box correct-box" id="correctCanvas"></div></div>
+            </div>
+            <div class="replay-controls"><button id="playButton" type="button"><i class="fa-solid fa-play"></i> เล่น</button><button id="pauseButton" type="button"><i class="fa-solid fa-pause"></i> หยุด</button><span id="replayStatus">พร้อมเล่น</span></div>
+            <div class="score-panel">
+                <div class="score-row"><span>รูปทรง</span><div><i id="shapeFill"></i></div><b id="shapeScore">0%</b></div>
+                <div class="score-row"><span>ตำแหน่ง</span><div><i id="alignFill"></i></div><b id="alignScore">0%</b></div>
+                <div class="score-row"><strong>คะแนนรวม</strong><div><i id="totalFill"></i></div><b id="totalScore">0%</b></div>
+            </div>
+            <div class="metrics-panel" id="metricsPanel" hidden></div>
+            <div class="explanation-panel" id="explanationPanel" hidden></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const $ = id => document.getElementById(id);
+            const sessionId = new URLSearchParams(location.search).get('session_id');
+            let attempts = [];
+            let selectedAttempt = null;
+            let replayFrame = null;
+
+            const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+            const clamp = value => Math.max(0, Math.min(100, Number(value) || 0));
+            const score = value => Number(clamp(value)).toFixed(1).replace(/\.0$/, '');
+            const duration = value => { const seconds = Math.max(0, Math.round(Number(value) / 1000)); return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`; };
+            const date = value => value ? new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(String(value).replace(' ', 'T'))) : '-';
+            const trajectory = value => { if (typeof value !== 'string') return value || { strokes: [] }; try { return JSON.parse(value) || { strokes: [] }; } catch { return { strokes: [] }; } };
+
+            if (!/^\d+$/.test(sessionId || '')) { showError('ไม่พบรหัสประวัติที่ต้องการ'); return; }
+            try {
+                const response = await fetch(`../connectapi/writing_progress.php?action=get_test_history_detail&writing_session_id=${encodeURIComponent(sessionId)}`, { credentials: 'same-origin', cache: 'no-store' });
+                const payload = await response.json().catch(() => null);
+                if (response.status === 401) { location.href = '../sceens/login.html'; return; }
+                if (!response.ok || !payload?.session) throw new Error(payload?.message || 'โหลดข้อมูลไม่สำเร็จ');
+                render(payload.session, Array.isArray(payload.attempts) ? payload.attempts : []);
+            } catch (error) { showError(error.message); }
+
+            function render(session, rows) {
+                attempts = rows;
+                const completed = Number(session.completed_characters) || 0, total = Number(session.total_characters) || 0;
+                const scored = rows.filter(row => Number(row.is_completed) === 1);
+                const average = scored.length ? scored.reduce((sum, row) => sum + clamp(row.total_score), 0) / scored.length : 0;
+                const passed = scored.filter(row => Number(row.is_passed) === 1 || Number(row.total_score) >= 60).length;
+                const type = String(session.writing_type).toLowerCase() === 'katakana' ? 'Katakana' : 'Hiragana';
+                $('pageTitle').textContent = `รายละเอียดผล ${type}`;
+                $('pageDescription').textContent = `วรรค ${session.group_name || '-'} · โหมด${session.writing_mode === 'assisted' ? 'มีตัวช่วย' : 'ไม่มีตัวช่วย'}`;
+                $('loadStatus').textContent = completed >= total && total ? 'ทำแบบทดสอบครบแล้ว' : 'บันทึกผลการทำแบบทดสอบแล้ว';
+                $('summaryGrid').hidden = false; $('metaGrid').hidden = false; $('attemptSection').hidden = false;
+                $('completedValue').textContent = `${completed} / ${total}`; $('percentValue').textContent = `${total ? Math.round(completed / total * 100) : 0}%`; $('scoreValue').textContent = `${score(average)}%`; $('passedValue').textContent = `${passed} / ${scored.length}`; $('timeValue').textContent = duration(session.total_time_ms); $('dateValue').textContent = date(session.completed_at || session.started_at);
+                $('typeValue').textContent = type; $('groupValue').textContent = session.group_name || '-'; $('modeValue').textContent = session.writing_mode === 'assisted' ? 'มีตัวช่วย' : 'ไม่มีตัวช่วย'; $('statusValue').textContent = completed >= total && total ? 'ทำครบแล้ว' : 'บันทึกแล้ว'; $('attemptCount').textContent = `${rows.length} รายการ`;
+                $('attemptList').innerHTML = rows.length ? rows.map((row, index) => `<button class="attempt-card" type="button" data-index="${index}"><span class="attempt-card__image">${row.image_url ? `<img src="${escapeHtml(row.image_url)}" alt="${escapeHtml(row.target_character || '')}">` : 'ไม่มีภาพ'}</span><span><b>ข้อที่ ${index + 1}: ${escapeHtml(row.target_character || '-')}</b><small>${duration(row.time_spent_ms)} · ${Number(row.stroke_count) || 0} เส้น</small></span><strong class="${Number(row.is_passed) ? 'passed' : 'failed'}">${Number(row.is_passed) ? 'ผ่าน' : 'ต้องปรับปรุง'}</strong></button>`).join('') : '<p>ยังไม่มีรายละเอียดการวาด</p>';
+                document.querySelectorAll('[data-index]').forEach(button => button.addEventListener('click', () => openAttempt(rows[Number(button.dataset.index)])));
+                $('retryButton').hidden = false; $('retryButton').onclick = () => { location.href = `../data/writing.php?type=${type.toLowerCase()}&mode=test&group_name=${encodeURIComponent(session.group_name || '')}`; };
+            }
+
+            function openAttempt(row) {
+                selectedAttempt = row; stopReplay(); $('attemptModal').hidden = false;
+                const character = row.target_character || row.romaji || '-'; const total = clamp(row.total_score); const passed = Number(row.is_passed) === 1 || total >= 60; const data = trajectory(row.trajectory);
+                $('modalTitle').textContent = character; $('modalStatus').textContent = passed ? `ผ่าน · ${score(total)}%` : `ต้องปรับปรุง · ${score(total)}%`; $('modalStatus').className = passed ? 'passed' : 'failed';
+                $('userCanvas').innerHTML = data.strokes?.length ? `<img data-view-content="image" src="${escapeHtml(row.image_url || '')}" alt="ภาพที่วาด"><canvas data-view-content="replay" hidden></canvas>` : `<img data-view-content="image" src="${escapeHtml(row.image_url || '')}" alt="ภาพที่วาด">`;
+                $('correctCanvas').innerHTML = `<span class="answer-character">${escapeHtml(character)}</span>`; setView('image'); setScore('shape', row.shape_accuracy); setScore('align', row.alignment_score); setScore('total', total); renderDetails(row);
+            }
+
+            function setView(view) { const data = trajectory(selectedAttempt?.trajectory), valid = Array.isArray(data.strokes) && data.strokes.length; if (view === 'replay' && !valid) view = 'image'; document.querySelectorAll('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === view)); const image = document.querySelector('[data-view-content="image"]'), canvas = document.querySelector('[data-view-content="replay"]'); if (image) image.hidden = view !== 'image'; if (canvas) canvas.hidden = view !== 'replay'; if (view === 'replay' && canvas) draw(canvas, data); }
+            function draw(canvas, data, visible = Infinity, activeProgress = 1) {
+                const strokes = data.strokes || [];
+                const width = canvas.clientWidth || 260;
+                const height = canvas.clientHeight || 260;
+                const ratio = devicePixelRatio || 1;
+                const pixelWidth = Math.max(1, Math.round(width * ratio));
+                const pixelHeight = Math.max(1, Math.round(height * ratio));
+                if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+                    canvas.width = pixelWidth;
+                    canvas.height = pixelHeight;
+                }
+                const context = canvas.getContext('2d');
+                context.setTransform(ratio, 0, 0, ratio, 0, 0);
+                context.clearRect(0, 0, width, height);
+                context.strokeStyle = '#172033';
+                context.lineWidth = 8;
+                context.lineCap = 'round';
+                context.lineJoin = 'round';
+                const sourceWidth = Number(data.canvas_width) || 620;
+                const sourceHeight = Number(data.canvas_height) || 420;
+                strokes.slice(0, visible).forEach((stroke, strokeIndex) => {
+                    const points = Array.isArray(stroke.points) ? stroke.points : [];
+                    if (points.length < 2) return;
+                    const progress = strokeIndex === visible - 1 ? Math.max(0, Math.min(1, activeProgress)) : 1;
+                    const position = (points.length - 1) * progress;
+                    const end = Math.floor(position);
+                    const fraction = position - end;
+                    const pointX = point => (Number(point.x) || 0) * width / sourceWidth;
+                    const pointY = point => (Number(point.y) || 0) * height / sourceHeight;
+                    context.beginPath();
+                    context.moveTo(pointX(points[0]), pointY(points[0]));
+                    for (let index = 1; index <= end; index++) {
+                        context.lineTo(pointX(points[index]), pointY(points[index]));
+                    }
+                    if (end < points.length - 1) {
+                        const current = points[end];
+                        const next = points[end + 1];
+                        context.lineTo(
+                            pointX(current) + (pointX(next) - pointX(current)) * fraction,
+                            pointY(current) + (pointY(next) - pointY(current)) * fraction
+                        );
+                    }
+                    context.stroke();
+                });
+            }
+            function play() {
+                stopReplay();
+                setView('replay');
+                const canvas = document.querySelector('[data-view-content="replay"]');
+                const data = trajectory(selectedAttempt?.trajectory);
+                const strokes = Array.isArray(data.strokes) ? data.strokes : [];
+                if (!canvas || !strokes.length) return;
+                const durations = strokes.map(() => 650);
+                const totalDuration = durations.reduce((sum, value) => sum + value, 0);
+                const started = performance.now();
+                function frame(now) {
+                    let elapsed = Math.min(totalDuration, now - started);
+                    let strokeIndex = strokes.length - 1;
+                    let strokeElapsed = durations[strokeIndex];
+                    for (let index = 0; index < durations.length; index++) {
+                        if (elapsed <= durations[index]) {
+                            strokeIndex = index;
+                            strokeElapsed = elapsed;
+                            break;
+                        }
+                        elapsed -= durations[index];
+                    }
+                    const linearProgress = Math.min(1, strokeElapsed / durations[strokeIndex]);
+                    const progress = 1 - Math.pow(1 - linearProgress, 3);
+                    draw(canvas, data, strokeIndex + 1, progress);
+                    $('replayStatus').textContent = now - started >= totalDuration ? 'เล่นจบแล้ว' : `กำลังเล่นเส้นที่ ${strokeIndex + 1}`;
+                    if (now - started < totalDuration) replayFrame = requestAnimationFrame(frame);
+                    else replayFrame = null;
+                }
+                replayFrame = requestAnimationFrame(frame);
+            }
+            function stopReplay() { if (replayFrame) cancelAnimationFrame(replayFrame); replayFrame = null; }
+            function setScore(name, value) { const number = clamp(value); $(`${name}Fill`).style.width = `${number}%`; $(`${name}Score`).textContent = `${score(number)}%`; }
+            function renderDetails(row) { const metrics = row.stroke_metrics || [], reasons = row.error_reasons || [], box = $('metricsPanel'), explanation = $('explanationPanel'); box.hidden = !metrics.length; box.innerHTML = metrics.length ? `<b>วิเคราะห์แยกรายเส้น</b>${metrics.map(metric => `<p>เส้นที่ ${metric.stroke_number}: รูปทรง ${score(metric.shape_score)}% · ทิศทาง ${score(metric.direction_score)}% · ตำแหน่ง ${score(metric.position_score)}%</p>`).join('')}` : ''; const feedback = row.ai_explanation || row.feedback || ''; explanation.hidden = !reasons.length && !feedback; explanation.innerHTML = `<b>ผลการตรวจ</b>${reasons.length ? `<ul>${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul>` : ''}<p>${escapeHtml(feedback)}</p>`; }
+            function closeAttempt() { stopReplay(); $('attemptModal').hidden = true; }
+            function showError(message) { $('loadStatus').textContent = message || 'ไม่สามารถโหลดข้อมูลได้'; $('loadStatus').className = 'load-status error'; }
+            document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view)));
+            $('playButton').addEventListener('click', play); $('pauseButton').addEventListener('click', () => { stopReplay(); $('replayStatus').textContent = 'หยุดชั่วคราว'; }); $('modalClose').addEventListener('click', closeAttempt); $('attemptModal').addEventListener('click', event => { if (event.target === $('attemptModal')) closeAttempt(); }); document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAttempt(); });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+/* =========================================
+   สไตล์เฉพาะหน้าจัดการแบบทดสอบตัวเลือก
+   ========================================= */
+
+/* การ์ดหลัก */
+.quiz-container-card {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 28px;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ส่วนหัวของการ์ด */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.quiz-title-group .quiz-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.quiz-title-group .quiz-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* ปุ่มเพิ่มแบบทดสอบมุมขวาบน */
+.btn-add-top {
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-add-top:hover {
+  background-color: #262626;
+}
+
+/* ช่องค้นหา */
+.quiz-search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 14px;
+  gap: 10px;
+  margin-bottom: 14px;
+  background-color: #ffffff;
+}
+
+.quiz-search-box i {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.quiz-search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #374151;
+  background: transparent;
+}
+
+.quiz-search-box input::placeholder {
+  color: #9ca3af;
+}
+
+/* สรุปจำนวนรายการ */
+.quiz-count-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 20px;
+}
+
+/* พื้นที่ตรงกลางกรณีไม่มีข้อมูล (Empty State) */
+.quiz-empty-state {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 0;
+}
+
+/* ปุ่มเพิ่มแบบทดสอบตรงกลาง */
+.btn-add-center {
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 12px 100px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add-center:hover {
+  background-color: #262626;
+}

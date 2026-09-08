@@ -1,0 +1,11 @@
+# Local secrets
+Front-end/connectapi/gemini_config.local.php
+.env
+.env.*
+!.env.example
+
+# Runtime logs and temporary files
+**/logs/*.log
+**/logs/*.txt
+**/uploads/*
+!**/uploads/.htaccess

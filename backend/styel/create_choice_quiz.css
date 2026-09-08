@@ -1,0 +1,206 @@
+/* =========================================
+   สไตล์เฉพาะหน้าสร้างแบบทดสอบ (Create Quiz Page)
+   ========================================= */
+
+/* การ์ดครอบเนื้อหาหลัก */
+.create-quiz-card {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ส่วนหัวหน้า */
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* กล่องส่วนข้อมูลแบบทดสอบ (Fieldset / Section Box) */
+.section-box {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.section-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+/* ฟอร์มและอินพุต */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'Prompt', sans-serif;
+  color: #1f2937;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.form-control::placeholder {
+  color: #9ca3af;
+}
+
+/* Custom Select Dropdown Styling */
+select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%236B7280' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* ส่วนหัวข้อข้อสอบ และ ปุ่มเพิ่มข้อ */
+.questions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.btn-add-question {
+  background-color: #1f2937;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add-question:hover {
+  background-color: #000000;
+}
+
+/* แถวคู่ในกล่องคำถาม (เลือกอักษร + เสียง) */
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ปุ่มเพิ่มตัวเลือก */
+.btn-add-choice-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.btn-add-choice {
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add-choice:hover {
+  background-color: #262626;
+}
+
+/* กล่องยังไม่มีตัวเลือก (Empty Choices Box) */
+.empty-choices-box {
+  background-color: #d1d5db;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-top: 8px;
+}
+
+/* ส่วนปุ่มการทำงานด้านล่างสุด (สร้างแบบทดสอบ / ยกเลิก) */
+.form-actions-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-submit-quiz {
+  flex: 1;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.btn-submit-quiz:hover {
+  background-color: #262626;
+}
+
+.btn-cancel-quiz {
+  width: 140px;
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel-quiz:hover {
+  background-color: #f3f4f6;
+}

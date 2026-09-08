@@ -1,0 +1,287 @@
+/* =========================================
+   สไตล์เฉพาะหน้าจัดการแบบทดสอบเขียน (manage_write_quiz.css)
+   ========================================= */
+
+/* การ์ดหลัก */
+.quiz-container-card {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 28px;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ส่วนหัวของการ์ด */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.quiz-title-group .quiz-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.quiz-title-group .quiz-subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* ปุ่มเพิ่มแบบทดสอบมุมขวาบน */
+.btn-add-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-add-top:hover {
+  background-color: #262626;
+}
+
+/* ช่องค้นหา */
+.quiz-search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 14px;
+  gap: 10px;
+  margin-bottom: 14px;
+  background-color: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.quiz-search-box:focus-within {
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.05);
+}
+
+.quiz-search-box i {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.quiz-search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #374151;
+  background: transparent;
+}
+
+.quiz-search-box input::placeholder {
+  color: #9ca3af;
+}
+
+/* สรุปจำนวนรายการ และ ข้อความแจ้งเตือน */
+.quiz-count-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.quiz-message {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.quiz-message:not(:empty) {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+/* รายการแบบทดสอบ (Quiz List) */
+.quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.quiz-row {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.quiz-row:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.quiz-row h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.quiz-row p {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* รายละเอียดและแท็กข้อมูล (Meta Badges) */
+.quiz-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.quiz-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f3f4f6;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+
+/* สีเฉพาะแท็กประเภทตัวอักษร และ แท็กวรรค */
+.quiz-meta .tag-type {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.quiz-meta .tag-group {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/* ปุ่มการทำงาน (Edit / Delete) */
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.row-actions button,
+.row-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.row-actions button:hover,
+.row-actions a:hover {
+  opacity: 0.9;
+}
+
+.edit-btn {
+  color: #ffffff;
+  background-color: #111827;
+}
+
+.delete-btn {
+  color: #b91c1c;
+  background-color: #fee2e2;
+}
+
+.delete-btn:hover {
+  background-color: #fca5a5;
+}
+
+/* พื้นที่กรณีไม่มีข้อมูล (Empty State) */
+.quiz-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 0;
+  gap: 16px;
+  text-align: center;
+}
+
+.quiz-empty-state p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.btn-add-center {
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 12px 36px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-add-center:hover {
+  background-color: #262626;
+}
+
+/* รองรับ Responsive สำหรับหน้าจอขนาดเล็ก */
+@media (max-width: 640px) {
+  .quiz-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .btn-add-top {
+    justify-content: center;
+  }
+
+  .quiz-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .row-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+}

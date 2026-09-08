@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>แบบทดสอบจับคู่ - JP Learning</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/jpmatch.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-match-setup">
+<script>
+    fetch('../data/jpmatch.php', { redirect: 'manual' })
+        .then(response => {
+            if (response.type === 'opaqueredirect' || response.status === 302) {
+                throw new Error('unauthorized');
+            }
+        })
+        .catch(() => {
+            window.location.replace('../sceens/login.html');
+        });
+</script>
+
+<div data-member-navbar></div>
+<script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+<main class="match-page">
+    <header class="match-header">
+        <h1>ฝึกจับคู่ตัวอักษร</h1>
+        <p>ฝึกจับคู่คาตาคานะจากตัวอักษรทั้งหมด</p>
+    </header>
+
+    <section class="match-card">
+        <h3>พร้อมเริ่มฝึกแล้ว</h3>
+        <p>เลือกชุดคำถามได้ หรือปล่อยให้ระบบสุ่มจากตัวอักษรทั้งหมด</p>
+
+        <div class="form-row">
+            <label for="quizSetSelect">ชุดแบบทดสอบ</label>
+            <select id="quizSetSelect">
+                <option value="">สุ่มจากตัวอักษรทั้งหมด</option>
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button id="startBtn" class="start-btn">เริ่มเกม</button>
+        </div>
+    </section>
+
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const quizSetSelect = document.getElementById('quizSetSelect');
+    const startBtn = document.getElementById('startBtn');
+
+    fetch('../connectapi/match_quiz.php?list_sets=1&set_type=katakana', { credentials: 'same-origin' })
+        .then(response => response.json())
+        .then(result => {
+            if (!result.success) throw new Error(result.message || 'ไม่สามารถโหลดชุดแบบทดสอบได้');
+            (result.sets || []).forEach(quizSet => {
+                const option = document.createElement('option');
+                option.value = quizSet.id;
+                option.textContent = quizSet.title;
+                quizSetSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error(error));
+
+    startBtn.addEventListener('click', () => {
+        const params = new URLSearchParams({
+            mode: 'pair',
+            type: 'katakana',
+            quiz_set_id: quizSetSelect.value
+        });
+        window.location.href = `../data/jpmatch_play.php?${params.toString()}`;
+    });
+});
+</script>
+</body>
+</html>

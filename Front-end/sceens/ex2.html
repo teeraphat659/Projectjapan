@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฝึกเขียนตัวอักษรญี่ปุ่น</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/ex2.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-practice-setup">
+
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+    <!-- Header -->
+    <section class="header">
+        <h1>ฝึกเขียนตัวอักษรภาษาญี่ปุ่น</h1>
+        <p>เลือกโหมดการฝึกเขียนที่เหมาะกับคุณเพื่อเริ่มต้นเรียนรู้</p>
+    </section>
+
+    <!-- Card Area -->
+    <section class="card-container">
+
+        <!-- Card 1 -->
+        <div class="card guide-card">
+            <span class="card-badge"><i class="fa-solid fa-graduation-cap"></i> โหมดฝึกซ้อม</span>
+            <i class="fa-solid fa-book-open icon"></i>
+
+            <h2>โหมดฝึกแบบมีตัวช่วย</h2>
+
+            <p>
+                ฝึกเขียนพร้อมเส้นนำทางและลำดับการขีด
+                เหมาะสำหรับผู้เริ่มต้นเรียนรู้
+            </p>
+
+            <label for="guide-mode" style="display:block; text-align:left; margin-bottom:8px; font-weight:600; color:var(--text-dark);">เลือกชุดตัวอักษร</label>
+            <select id="guide-mode">
+                <option value="">กรุณาเลือกชุดตัวอักษร</option>
+                <option value="hiragana">ฮิรางานะ (Hiragana)</option>
+                <option value="katakana">คาตาคานะ (Katakana)</option>
+            </select>
+
+            <div id="guide-list" class="character-list" style="margin-top:12px; text-align:left;"></div>
+
+            <div id="guide-preview" class="stroke-preview" style="margin-top:12px; display:none;">
+                <img src="" alt="stroke" style="max-width:140px; display:block; margin:0 auto;">
+            </div>
+
+            <button id="start-guide" type="button" style="margin-top: 20px;">
+                <i class="fa-solid fa-play"></i> เริ่มฝึกเขียน
+            </button>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card test-card">
+            <span class="card-badge"><i class="fa-solid fa-trophy"></i> โหมดทดสอบ</span>
+            <i class="fa-solid fa-pen-ruler icon"></i>
+
+            <h2>โหมดฝึกแบบไม่มีตัวช่วย</h2>
+
+            <p>
+                ทบทวนโดยเขียนตามคำอ่านแบบไม่มีเส้นนำทาง
+                ทดสอบความจำและความแม่นยำ
+            </p>
+
+            <label for="test-mode" style="display:block; text-align:left; margin-bottom:8px; font-weight:600; color:var(--text-dark);">เลือกประเภทตัวอักษร</label>
+            <select id="test-mode">
+                <option value="">กรุณาเลือกชุดตัวอักษร</option>
+                <option value="hiragana">ฮิรางานะ (Hiragana)</option>
+                <option value="katakana">คาตาคานะ (Katakana)</option>
+            </select>
+
+            <div id="test-list" class="character-list" style="margin-top:12px; text-align:left;"></div>
+
+            <div id="test-preview" class="stroke-preview" style="margin-top:12px; display:none;">
+                <img src="" alt="stroke" style="max-width:140px; display:block; margin:0 auto;">
+            </div>
+
+            <button id="start-test" type="button" style="margin-top: 20px;">
+                <i class="fa-solid fa-pen-to-square"></i> เริ่มแบบทดสอบ
+            </button>
+        </div>
+
+    </section>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const guideSetSelect = document.getElementById('guide-mode');
+        const testSetSelect = document.getElementById('test-mode');
+        const guideList = document.getElementById('guide-list');
+        const testList = document.getElementById('test-list');
+        const guidePreview = document.querySelector('#guide-preview img');
+        const testPreview = document.querySelector('#test-preview img');
+        const startGuideBtn = document.getElementById('start-guide');
+        const startTestBtn = document.getElementById('start-test');
+
+        const practiceSelections = {
+            guide: { type: '', group: '', character: '', writingMode: 'assisted', quizSource: '' },
+            test: { type: '', group: '', character: '', writingMode: 'unassisted', quizSource: '' }
+        };
+
+        function saveSelection(mode, type, group, character, writingMode, quizSource) {
+            practiceSelections[mode].type = type || '';
+            practiceSelections[mode].group = group || '';
+            practiceSelections[mode].character = character || '';
+            practiceSelections[mode].quizSource = quizSource || '';
+            if (mode === 'test') {
+                practiceSelections[mode].writingMode = 'unassisted';
+            } else if (writingMode === 'assisted' || writingMode === 'unassisted') {
+                practiceSelections[mode].writingMode = writingMode;
+            }
+        }
+
+        function goToWriting(mode) {
+            const selection = practiceSelections[mode];
+            if (!selection.type || !selection.group) {
+                alert('กรุณาเลือกชุดตัวอักษรและวรรคก่อนเริ่มฝึก');
+                return;
+            }
+
+            const params = new URLSearchParams({
+                type: selection.type,
+                character: selection.character,
+                mode: mode === 'test' ? 'test' : 'guide',
+                writing_mode: selection.writingMode
+            });
+            if (mode === 'test') {
+                params.set('quiz_set_id', selection.group);
+                params.set('quiz_group', '1');
+                params.set('quiz_source', selection.quizSource);
+            } else {
+                params.set('group_id', selection.group);
+            }
+
+            window.location.href = `../data/writing.php?${params.toString()}`;
+        }
+
+        function renderList(list, container, previewImg, buttonEl, defaultLabel, currentType, mode) {
+            container.innerHTML = '';
+            previewImg.parentElement.style.display = 'none';
+            
+            if (!Array.isArray(list) || !list.length) {
+                const emptyText = mode === 'test' ? 'ไม่มีชุดแบบทดสอบ/วรรคให้ใช้งานในโหมดนี้' : 'ไม่มีข้อมูลวรรคในชุดนี้';
+                container.innerHTML = `<p style="color:#888;">${emptyText}</p>`;
+                if (buttonEl) buttonEl.textContent = defaultLabel;
+                return;
+            }
+
+            const sel = document.createElement('select');
+            sel.style.width = '100%';
+            sel.style.padding = '12px';
+            sel.style.borderRadius = '8px';
+            sel.style.border = '1px solid var(--border)';
+            sel.style.fontSize = '16px';
+            sel.style.backgroundColor = '#fff';
+            sel.style.cursor = 'pointer';
+            sel.style.outline = 'none';
+
+            const emptyOpt = document.createElement('option');
+            emptyOpt.value = '';
+            emptyOpt.textContent = mode === 'test' ? 'กรุณาเลือกชุดแบบทดสอบ/วรรค' : 'กรุณาเลือกวรรคตัวอักษร';
+            sel.appendChild(emptyOpt);
+
+            list.forEach(item => {
+                const opt = document.createElement('option');
+                const label = item.group_name || ''; 
+                const groupId = item.group_id || ''; // รับค่า ID วรรคมาใช้
+                if(label && groupId) {
+                    opt.value = groupId; // กำหนด value เป็น ID แทนชื่อวรรค
+                    opt.textContent = label;
+                    if (item.quiz_source) opt.dataset.quizSource = item.quiz_source;
+                    sel.appendChild(opt);
+                }
+            });
+
+            const groupCharsDiv = document.createElement('div');
+            groupCharsDiv.style.marginTop = '10px';
+
+            sel.addEventListener('change', function () {
+                const val = this.value || ''; // ตอนนี้ val คือ group_id
+                const selectedItem = list.find((item) => String(item.group_id || '') === String(val)
+                    && String(item.quiz_source || '') === String(this.selectedOptions[0]?.dataset.quizSource || ''))
+                    || list.find((item) => String(item.group_id || '') === String(val));
+                saveSelection(mode, currentType, val, '', selectedItem?.writing_mode, selectedItem?.quiz_source);
+                
+                if (buttonEl) {
+                    if (val) buttonEl.textContent = mode === 'test' ? 'เลือกชุดแบบทดสอบแล้ว' : 'เลือกวรรคแล้ว';
+                    else buttonEl.textContent = defaultLabel;
+                }
+
+                if (!val) {
+                    groupCharsDiv.innerHTML = '';
+                    previewImg.parentElement.style.display = 'none';
+                    return;
+                }
+
+                groupCharsDiv.innerHTML = '<p style="color:#888; margin-top: 10px;">กำลังโหลดตัวอักษร...</p>';
+                
+                // เปลี่ยน Path ไปที่ Ex2.php และส่งพารามิเตอร์ group_id
+                const quizParam = mode === 'test'
+                    ? `&quiz_group=1&quiz_source=${encodeURIComponent(selectedItem?.quiz_source || '')}`
+                    : '';
+                fetch(`../connectapi/Ex2.php?type=${encodeURIComponent(currentType)}&group_id=${encodeURIComponent(val)}${quizParam}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return res.json();
+                    })
+                    .then(chars => {
+                        if (chars && !Array.isArray(chars)) {
+                            throw new Error(chars.error || 'Invalid character response');
+                        }
+                        renderCharsList(chars, groupCharsDiv, previewImg, buttonEl, mode);
+                    })
+                    .catch(err => {
+                        console.error('API fetch error', err);
+                        groupCharsDiv.innerHTML = '<p style="color:#c00; margin-top: 10px;">โหลดตัวอักษรไม่สำเร็จ</p>';
+                    });
+            });
+
+            container.appendChild(sel);
+            container.appendChild(groupCharsDiv);
+        }
+
+        function renderCharsList(chars, container, previewImg, buttonEl, mode) {
+            container.innerHTML = '';
+            if (!Array.isArray(chars) || !chars.length) {
+                container.innerHTML = '<p style="color:#888; margin-top: 10px;">ไม่มีตัวอักษรในวรรคนี้</p>';
+                return;
+            }
+
+            const uniqueChars = Array.from(new Map(chars.map((item) => [
+                String(item.character_id || item.id || `${item.character_jp}:${item.romaji}`), item
+            ])).values());
+
+            const listEl = document.createElement('div');
+            listEl.style.border = '1px solid var(--border)';
+            listEl.style.borderRadius = '8px';
+            listEl.style.overflow = 'hidden';
+            listEl.style.marginTop = '12px';
+
+            uniqueChars.forEach(item => {
+                const row = document.createElement('div');
+                row.style.padding = '12px 14px';
+                row.style.borderBottom = '1px solid var(--border)';
+                row.style.cursor = 'pointer';
+                row.style.transition = 'background-color 0.2s';
+                
+                const charLabel = item.character_jp || '';
+                const romajiLabel = item.romaji ? ` (${item.romaji})` : '';
+                
+                row.textContent = charLabel + romajiLabel;
+                row.dataset.stroke = item.stroke_image || '';
+
+                row.addEventListener('mouseover', () => row.style.backgroundColor = '#f9f9f9');
+                row.addEventListener('mouseout', () => row.style.backgroundColor = 'transparent');
+                
+                row.addEventListener('click', function () {
+                    if (this.dataset.stroke && this.dataset.stroke !== 'null') {
+                        previewImg.src = this.dataset.stroke;
+                        previewImg.parentElement.style.display = 'block';
+                    } else {
+                        previewImg.parentElement.style.display = 'none';
+                    }
+                    if (buttonEl) buttonEl.textContent = 'เลือก: ' + charLabel;
+                    const currentMode = mode === 'guide' ? 'guide' : 'test';
+                    const currentSelection = practiceSelections[currentMode];
+                    saveSelection(currentMode, currentSelection.type, currentSelection.group, charLabel, currentSelection.writingMode);
+                });
+                
+                listEl.appendChild(row);
+            });
+
+            if (listEl.lastChild) {
+                listEl.lastChild.style.borderBottom = 'none';
+            }
+
+            container.appendChild(listEl);
+        }
+
+        function loadCharacters(type, container, previewImg, buttonEl, defaultLabel, mode) {
+            container.innerHTML = '<p style="color:#888; margin-top: 10px;">กำลังโหลดข้อมูล...</p>';
+            if (!type) {
+                container.innerHTML = '';
+                previewImg.parentElement.style.display = 'none';
+                if (buttonEl) buttonEl.textContent = defaultLabel;
+                return;
+            }
+
+            const apiParams = mode === 'test'
+                ? `type=${encodeURIComponent(type)}&quiz_group=1`
+                : `type=${encodeURIComponent(type)}&group=1`;
+
+            fetch(`../connectapi/Ex2.php?${apiParams}`)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(list => {
+                    if (list && !Array.isArray(list)) {
+                        throw new Error(list.error || 'Invalid group response');
+                    }
+                    renderList(list, container, previewImg, buttonEl, defaultLabel, type, mode);
+                })
+                .catch(err => {
+                    console.error('API fetch error', err);
+                    container.innerHTML = '<p style="color:#c00; margin-top: 10px;">โหลดข้อมูลไม่สำเร็จ</p>';
+                });
+        }
+
+        guideSetSelect.addEventListener('change', function (e) {
+            loadCharacters(e.target.value, guideList, guidePreview, startGuideBtn, 'เริ่มฝึกเขียน', 'guide');
+        });
+
+        testSetSelect.addEventListener('change', function (e) {
+            loadCharacters(e.target.value, testList, testPreview, startTestBtn, 'เริ่มทดสอบ', 'test');
+        });
+
+        startGuideBtn.addEventListener('click', function () {
+            goToWriting('guide');
+        });
+
+        startTestBtn.addEventListener('click', function () {
+            goToWriting('test');
+        });
+    });
+    </script>
+</body>
+</html>

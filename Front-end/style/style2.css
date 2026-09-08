@@ -1,0 +1,97 @@
+:root {
+    --bg-main: #f6f3ef;
+    --bg-card: #ffffff;
+    --text-dark: #1b120d;
+    --text-main: #222222;
+    --text-light: #666666;
+    --accent: #d94a35;
+    --border: #e5dfda;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Noto Sans Thai', sans-serif;
+}
+
+body {
+    background: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+}
+
+
+
+/* Register Box */
+.container {
+    display: flex;
+    justify-content: center;
+    padding: 32px 20px;
+}
+
+.register-box {
+    width: min(560px, 100%);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+}
+
+.icon {
+    text-align: center;
+    font-size: 40px;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.register-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.register-box label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.register-box input {
+    width: 100%;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.register-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(217, 74, 53, 0.12);
+}
+
+.submit-btn {
+    width: 100%;
+    height: 46px;
+    margin-top: 22px;
+    background: var(--text-dark);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: var(--accent);
+    transform: translateY(-1px);
+}

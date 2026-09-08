@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เพิ่มเฉลยเส้นตัวอักษร</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/writing_svg_reference.css">
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <main class="main-content">
+    <div class="reference-card">
+      <div class="reference-header">
+        <div><h1><i class="fa-solid fa-pen-ruler"></i> เพิ่มเฉลยเส้นตัวอักษร</h1><p>วาดตามลำดับเส้นจริง ระบบจะใช้ข้อมูลนี้ตรวจคำตอบและส่งให้ AI อ้างอิง</p></div>
+        <a class="btn-light" href="/projectjapan/backend/php/srceen/index.php" style="text-decoration:none;">กลับหน้าหลัก</a>
+      </div>
+      <div class="reference-layout">
+        <section class="control-panel">
+          <div><label class="form-label" for="type">ประเภทตัวอักษร</label><select id="type" class="form-control"><option value="katakana">Katakana</option><option value="hiragana">Hiragana</option></select></div>
+          <div><label class="form-label" for="character">ตัวอักษร</label><select id="character" class="form-control"><option value="">กำลังโหลด...</option></select></div>
+          <div id="characterPreview" class="character-preview">?</div>
+          <div><label class="form-label" for="versionName">กรณีเฉลย</label><input id="versionName" class="form-control" value="default" maxlength="100" placeholder="เช่น แบบเขียนเร็ว"></div>
+           <div><label class="form-label" for="variantSelect">กรณีที่บันทึกไว้</label><select id="variantSelect" class="form-control"><option value="">ยังไม่มีข้อมูล</option></select><div class="tool-row" style="margin-top:8px;"><button id="newVariant" class="btn-light" type="button">เพิ่มกรณีใหม่</button><button id="deleteVariant" class="btn-light" type="button">ลบกรณีที่เลือก</button></div></div>
+          <div><label class="form-label" for="glifFile">ไฟล์ GLIF เฉลย</label><input id="glifFile" class="form-control" type="file" accept=".glif,application/xml,text/xml"><small>ระบบจะแสดงโครงร่างทันที และตรวจชื่อ glyph ให้ตรงกับตัวอักษร</small></div>
+          <div><label class="form-label" for="viewBox">viewBox ของ SVG</label><input id="viewBox" class="form-control" value="0 0 620 420"></div>
+          <div><label class="form-label" for="shapeTolerance">ค่าผ่อนผันรูปทรง</label><input id="shapeTolerance" class="form-control" type="number" min="0.05" max="1" step="0.01" value="0.25"></div>
+          <div><label class="form-label" for="positionTolerance">ค่าผ่อนผันตำแหน่ง</label><input id="positionTolerance" class="form-control" type="number" min="0.05" max="1" step="0.01" value="0.20"></div>
+          <label><input id="requireOrder" type="checkbox" checked> ตรวจลำดับเส้น</label>
+          <ol id="strokeList" class="stroke-list"><li>ยังไม่มีเส้นเฉลย</li></ol>
+        </section>
+        <section>
+          <div class="canvas-wrap"><canvas id="referenceCanvas" width="620" height="420"></canvas></div>
+          <p class="canvas-help">ลากทีละเส้นตามลำดับจริง เมื่อปล่อยเมาส์/นิ้วจะขึ้นเส้นถัดไป</p>
+           <div class="tool-row" style="margin-top:12px;"><select id="generateStyle" class="form-control" style="width:auto; min-width:170px;"><option value="auto">รูปแบบอัตโนมัติ</option><option value="cursive">กึ่งหวัดลื่นไหล</option><option value="flowing">ตวัดหาง/เส้นโค้ง</option><option value="tilted_brush">เอียงแบบพู่กัน</option><option value="compact">เขียนเร็วรวบรัด</option></select><button id="generate" class="btn-light" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> สร้างและบันทึกกรณีใหม่</button><button id="undo" class="btn-light" type="button"><i class="fa-solid fa-rotate-left"></i> ย้อนเส้นล่าสุด</button><button id="clear" class="btn-light" type="button"><i class="fa-solid fa-trash"></i> ล้างทั้งหมด</button></div>
+          <div class="action-row" style="margin-top:18px;"><button id="save" class="btn-save" type="button"><i class="fa-solid fa-floppy-disk"></i> บันทึกเฉลย</button></div>
+          <div id="status" class="status" role="alert"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script src="/projectjapan/backend/script.js"></script>
+  <script>
+    const api = '/projectjapan/backend/php/action/writing_svg_reference_api.php';
+    const typeSelect = document.getElementById('type');
+    const characterSelect = document.getElementById('character');
+    const variantSelect = document.getElementById('variantSelect');
+    const preview = document.getElementById('characterPreview');
+    const canvas = document.getElementById('referenceCanvas');
+    const context = canvas.getContext('2d');
+    const strokes = [];
+    let currentStroke = null;
+    let characters = [];
+    let selectedGlifFileName = '';
+    let selectedGlifContent = '';
+
+    function draw() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.lineCap = 'round'; context.lineJoin = 'round'; context.lineWidth = 14; context.strokeStyle = '#111827';
+      strokes.forEach((stroke, index) => { context.beginPath(); stroke.points.forEach((point, pointIndex) => pointIndex ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y)); context.stroke(); context.fillStyle = '#ef4444'; context.font = 'bold 16px sans-serif'; context.fillText(String(index + 1), stroke.points[0].x + 5, stroke.points[0].y - 5); });
+      document.getElementById('strokeList').innerHTML = strokes.length ? strokes.map((stroke, index) => `<li>เส้นที่ ${index + 1}: ${stroke.points.length} จุด</li>`).join('') : '<li>ยังไม่มีเส้นเฉลย</li>';
+    }
+    function centerReferenceStrokes(items) {
+      const points = items.flatMap((stroke) => stroke.points || []);
+      if (!points.length) return items;
+      const minX = Math.min(...points.map((point) => point.x));
+      const maxX = Math.max(...points.map((point) => point.x));
+      const minY = Math.min(...points.map((point) => point.y));
+      const maxY = Math.max(...points.map((point) => point.y));
+      const width = Math.max(1, maxX - minX);
+      const height = Math.max(1, maxY - minY);
+      const scale = Math.min(1.5, 390 / width, 270 / height);
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      return items.map((stroke) => ({ points: (stroke.points || []).map((point) => ({
+        x: ((point.x - centerX) * scale) + canvas.width / 2,
+        y: ((point.y - centerY) * scale) + canvas.height / 2
+      })) }));
+    }
+    function parseGlif(text, character) {
+      const xml = new DOMParser().parseFromString(text, 'application/xml');
+      if (xml.querySelector('parsererror')) throw new Error('ไฟล์ GLIF ไม่ถูกต้อง');
+      const glyph = xml.querySelector('glyph');
+      if (!glyph) throw new Error('ไม่พบข้อมูล glyph ในไฟล์ GLIF');
+      const glyphName = glyph.getAttribute('name') || '';
+      const codePoint = character.japanese_char.codePointAt(0).toString(16).toUpperCase();
+      const validNames = [character.japanese_char, character.romaji, `uni${codePoint}`, `u${codePoint}`].filter(Boolean).map(String);
+      if (glyphName && !validNames.some((name) => name.toLowerCase() === glyphName.toLowerCase())) {
+        throw new Error(`ไฟล์นี้เป็น glyph "${glyphName}" ไม่ตรงกับ "${character.japanese_char}"`);
+      }
+      const contours = [...xml.querySelectorAll('outline contour')].map((contour) => [...contour.querySelectorAll('point')]
+        .map((point) => ({ x: Number(point.getAttribute('x')), y: 420 - Number(point.getAttribute('y')) })))
+        .filter((points) => points.length > 1 && points.every((point) => Number.isFinite(point.x) && Number.isFinite(point.y)));
+      if (!contours.length) throw new Error('ไฟล์ GLIF ไม่มีข้อมูล outline');
+      return centerReferenceStrokes(contours.map((points) => ({ points })));
+    }
+    async function loadVariants(characterId, selectedVersion = '') {
+      variantSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
+      if (!characterId) { variantSelect.innerHTML = '<option value="">ยังไม่มีข้อมูล</option>'; return; }
+      const result = await fetch(`${api}?action=variants&character_id=${Number(characterId)}`, { credentials: 'same-origin' }).then((response) => response.json());
+      const variants = result.items || [];
+      variantSelect.innerHTML = variants.length ? variants.map((item) => `<option value="${item.version_name}">${item.version_name} (${item.stroke_count} เส้น)</option>`).join('') : '<option value="">ยังไม่มีข้อมูล</option>';
+      if (selectedVersion && variants.some((item) => item.version_name === selectedVersion)) variantSelect.value = selectedVersion;
+    }
+    function point(event) { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; }
+    canvas.addEventListener('pointerdown', (event) => { canvas.setPointerCapture(event.pointerId); currentStroke = { points: [point(event)] }; });
+    canvas.addEventListener('pointermove', (event) => { if (!currentStroke) return; currentStroke.points.push(point(event)); draw(); context.beginPath(); context.moveTo(currentStroke.points[0].x, currentStroke.points[0].y); currentStroke.points.slice(1).forEach((item) => context.lineTo(item.x, item.y)); context.stroke(); });
+    canvas.addEventListener('pointerup', () => { if (!currentStroke) return; if (currentStroke.points.length > 1) strokes.push(currentStroke); currentStroke = null; draw(); });
+    document.getElementById('undo').addEventListener('click', () => { strokes.pop(); draw(); });
+    document.getElementById('clear').addEventListener('click', () => { strokes.length = 0; draw(); });
+    document.getElementById('generate').addEventListener('click', async () => { const status = document.getElementById('status'); if (!characterSelect.value) { status.textContent = 'กรุณาเลือกตัวอักษรก่อน'; return; } status.textContent = 'กำลังสร้างและตรวจความซ้ำของกรณีใหม่...'; try { const response = await fetch(api, { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'generate_variant', character_id:Number(characterSelect.value), style:document.getElementById('generateStyle').value, save:true }) }); const result = await response.json(); if (!result.success) throw new Error(result.message); strokes.length = 0; centerReferenceStrokes(result.trajectory.strokes || []).forEach((stroke) => strokes.push(stroke)); document.getElementById('versionName').value = result.version_name; draw(); await loadVariants(characterSelect.value, result.version_name); const sourceNote = result.source === 'official_stroke_template' ? ' ใช้ต้นแบบลำดับเส้นมาตรฐานของระบบ' : ''; status.textContent = `${result.message} บันทึกแล้ว (${result.stroke_count} เส้น)${sourceNote}`; } catch (error) { status.textContent = error.message || 'สร้างเฉลยไม่สำเร็จ'; } });
+    async function loadCharacters() { const result = await fetch(`${api}?action=characters&type=${typeSelect.value}`).then((response) => response.json()); characters = result.items || []; characterSelect.innerHTML = '<option value="">เลือกตัวอักษร</option>' + characters.map((item) => `<option value="${item.id}">${item.japanese_char} (${item.romaji || ''})</option>`).join(''); const initialId = new URLSearchParams(location.search).get('character_id'); if (initialId && characters.some((item) => String(item.id) === initialId)) { characterSelect.value = initialId; characterSelect.dispatchEvent(new Event('change')); } }
+    characterSelect.addEventListener('change', async () => { const item = characters.find((entry) => String(entry.id) === characterSelect.value); preview.textContent = item?.japanese_char || '?'; strokes.length = 0; await loadVariants(characterSelect.value); if (characterSelect.value && variantSelect.value) { const result = await fetch(`${api}?action=get&character_id=${Number(characterSelect.value)}&version_name=${encodeURIComponent(variantSelect.value)}`, { credentials:'same-origin' }).then((response) => response.json()); const existing = result.item?.trajectory?.strokes || []; centerReferenceStrokes(existing).forEach((stroke) => strokes.push(stroke)); document.getElementById('versionName').value = variantSelect.value; draw(); } else { draw(); } });
+    variantSelect.addEventListener('change', async () => { if (!characterSelect.value || !variantSelect.value) return; const result = await fetch(`${api}?action=get&character_id=${Number(characterSelect.value)}&version_name=${encodeURIComponent(variantSelect.value)}`, { credentials:'same-origin' }).then((response) => response.json()); strokes.length = 0; (result.item?.trajectory?.strokes || []).forEach((stroke) => strokes.push(stroke)); draw(); document.getElementById('versionName').value = variantSelect.value; });
+    document.getElementById('glifFile').addEventListener('change', async (event) => { const file = event.target.files[0]; const item = characters.find((entry) => String(entry.id) === characterSelect.value); const status = document.getElementById('status'); if (!file || !item) { status.textContent = 'กรุณาเลือกตัวอักษรก่อนเลือกไฟล์ GLIF'; event.target.value = ''; return; } try { const glifContent = await file.text(); const importedStrokes = parseGlif(glifContent, item); strokes.length = 0; importedStrokes.forEach((stroke) => strokes.push(stroke)); selectedGlifFileName = file.name; selectedGlifContent = glifContent; draw(); status.textContent = `โหลด ${file.name} สำเร็จ ${strokes.length} contour`; } catch (error) { event.target.value = ''; selectedGlifFileName = ''; selectedGlifContent = ''; status.textContent = error.message; } });
+    typeSelect.addEventListener('change', loadCharacters);
+    function newVariantName() { return `variant-${new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)}`; }
+    function resetVariantEditor() {
+      strokes.length = 0;
+      currentStroke = null;
+      selectedGlifFileName = '';
+      selectedGlifContent = '';
+      document.getElementById('glifFile').value = '';
+      document.getElementById('versionName').value = newVariantName();
+      variantSelect.value = '';
+      draw();
+    }
+    document.getElementById('newVariant').addEventListener('click', () => {
+      resetVariantEditor();
+      document.getElementById('status').textContent = 'เริ่มสร้างเฉลยกรณีใหม่แล้ว วาดหรือนำเข้าไฟล์ GLIF ได้เลย';
+    });
+    document.getElementById('deleteVariant').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      const versionName = variantSelect.value;
+      if (!characterSelect.value || !versionName) { status.textContent = 'กรุณาเลือกตัวอักษรและกรณีเฉลยที่ต้องการลบ'; return; }
+      if (!confirm(`ต้องการลบกรณีเฉลย "${versionName}" ใช่หรือไม่? การลบนี้ไม่สามารถย้อนกลับได้`)) return;
+      try {
+        const response = await fetch(api, { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'delete_variant', character_id:Number(characterSelect.value), version_name:versionName }) });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        resetVariantEditor();
+        await loadVariants(characterSelect.value);
+        status.textContent = result.message;
+      } catch (error) { status.textContent = error.message || 'ลบกรณีเฉลยไม่สำเร็จ'; }
+    });
+    document.getElementById('save').addEventListener('click', async () => { const status = document.getElementById('status'); status.textContent = ''; if (!characterSelect.value || !strokes.length) { status.textContent = 'กรุณาเลือกตัวอักษรและวาด/นำเข้าเฉลยก่อน'; return; } const versionName = document.getElementById('versionName').value.trim() || 'default'; const result = await fetch(api, { method: 'POST', credentials:'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save', character_id: Number(characterSelect.value), version_name: versionName, trajectory: { strokes }, glif_file: selectedGlifFileName, glif_content: selectedGlifContent, view_box: document.getElementById('viewBox').value, shape_tolerance: Number(document.getElementById('shapeTolerance').value), position_tolerance: Number(document.getElementById('positionTolerance').value), require_stroke_order: document.getElementById('requireOrder').checked ? 1 : 0 }) }).then((response) => response.json()); status.textContent = result.success ? result.message : (result.message || 'บันทึกไม่สำเร็จ'); if (result.success) { await loadVariants(characterSelect.value); variantSelect.value = versionName; } });
+    loadCharacters().catch(() => { document.getElementById('status').textContent = 'โหลดตัวอักษรไม่สำเร็จ'; });
+  </script>
+</body>
+</html>

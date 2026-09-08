@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดผลแบบทดสอบย้อนหลัง | JP Learning</title>
+    <link rel="stylesheet" href="../style/test-history-detail.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-history-detail">
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+    <main class="history-detail-main">
+        <section class="history-detail-panel" aria-labelledby="detailTitle">
+            <div class="history-detail-header">
+                <div>
+                    <p class="history-detail-eyebrow"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> ผลการทำแบบทดสอบย้อนหลัง</p>
+                    <h1 id="detailTitle">รายละเอียดผลแบบทดสอบ</h1>
+                    <p class="history-detail-description" id="detailDescription">กำลังโหลดข้อมูลของรอบแบบทดสอบ...</p>
+                </div>
+                <div class="history-detail-actions">
+                    <a class="detail-button detail-button--secondary" href="../data/history.php"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> กลับประวัติ</a>
+                    <button class="detail-button detail-button--primary" id="retryButton" type="button" hidden><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> ทำอีกครั้ง</button>
+                </div>
+            </div>
+
+            <div class="history-detail-status" id="detailStatus" role="status"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> กำลังโหลดผลย้อนหลัง</div>
+
+            <div class="history-summary-grid" id="summaryGrid" hidden>
+                <article class="history-summary-card">
+                    <span class="summary-card-label">ทำได้</span>
+                    <strong id="completedValue">-</strong>
+                </article>
+                <article class="history-summary-card">
+                    <span class="summary-card-label">ความคืบหน้า</span>
+                    <strong id="percentageValue">-</strong>
+                </article>
+                <article class="history-summary-card">
+                    <span class="summary-card-label">เวลาที่ใช้</span>
+                    <strong id="timeValue">-</strong>
+                </article>
+                <article class="history-summary-card">
+                    <span class="summary-card-label">วันที่ทำ</span>
+                    <strong class="summary-date" id="dateValue">-</strong>
+                </article>
+                <article class="history-summary-card">
+                    <span class="summary-card-label">คะแนนเฉลี่ย</span>
+                    <strong id="scoreValue">-</strong>
+                </article>
+                <article class="history-summary-card">
+                    <span class="summary-card-label">ผ่านเกณฑ์</span>
+                    <strong id="passedValue">-</strong>
+                </article>
+            </div>
+
+            <div class="history-meta-grid" id="metaGrid" hidden>
+                <div class="history-meta-item"><span>ชุดตัวอักษร</span><strong id="typeValue">-</strong></div>
+                <div class="history-meta-item"><span>วรรค</span><strong id="groupValue">-</strong></div>
+                <div class="history-meta-item"><span>โหมด</span><strong id="modeValue">-</strong></div>
+                <div class="history-meta-item"><span>สถานะ</span><strong id="statusValue">-</strong></div>
+            </div>
+
+            <section class="attempt-section" id="attemptSection" hidden aria-labelledby="attemptTitle">
+                <div class="attempt-section-heading">
+                    <div>
+                        <h2 id="attemptTitle">รายละเอียดตัวอักษรที่วาด</h2>
+                        <p id="attemptCaption">คลิกแต่ละรายการเพื่อดูภาพวาดขนาดใหญ่</p>
+                    </div>
+                    <span class="attempt-count" id="attemptCount">0 รายการ</span>
+                </div>
+                <div class="attempt-list" id="attemptList"></div>
+            </section>
+        </section>
+    </main>
+
+    <div class="drawing-modal" id="drawingModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="drawing-modal__dialog">
+            <button class="drawing-modal__close" id="closeModalButton" type="button" aria-label="ปิด"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <h2 id="modalTitle">ภาพที่วาด</h2>
+            <div class="drawing-modal__image-wrap"><img id="modalImage" alt="ภาพตัวอักษรที่ผู้ใช้วาด"></div>
+            <div class="drawing-modal__details"><span id="modalTime">เวลา -</span><span id="modalStroke">จำนวนเส้น -</span></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const elements = {
+                description: document.getElementById('detailDescription'), status: document.getElementById('detailStatus'),
+                summary: document.getElementById('summaryGrid'), meta: document.getElementById('metaGrid'),
+                attemptSection: document.getElementById('attemptSection'), attempts: document.getElementById('attemptList'),
+                completed: document.getElementById('completedValue'), percentage: document.getElementById('percentageValue'),
+                time: document.getElementById('timeValue'), date: document.getElementById('dateValue'),
+                score: document.getElementById('scoreValue'), passed: document.getElementById('passedValue'),
+                type: document.getElementById('typeValue'), group: document.getElementById('groupValue'),
+                mode: document.getElementById('modeValue'),
+                testStatus: document.getElementById('statusValue'), count: document.getElementById('attemptCount'),
+                caption: document.getElementById('attemptCaption'), retry: document.getElementById('retryButton'),
+                modal: document.getElementById('drawingModal'), modalTitle: document.getElementById('modalTitle'),
+                modalImage: document.getElementById('modalImage'), modalTime: document.getElementById('modalTime'),
+                modalStroke: document.getElementById('modalStroke'), closeModal: document.getElementById('closeModalButton')
+            };
+
+            const sessionId = new URLSearchParams(window.location.search).get('session_id');
+            if (!sessionId || !/^\d+$/.test(sessionId)) {
+                showError('ไม่พบรหัสผลแบบทดสอบที่ต้องการ');
+                return;
+            }
+
+            try {
+                const response = await fetch(`../connectapi/writing_progress.php?action=get_test_history_detail&writing_session_id=${encodeURIComponent(sessionId)}`, {
+                    credentials: 'same-origin', cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => null);
+                if (response.status === 401) {
+                    window.location.replace('../sceens/login.html');
+                    return;
+                }
+                if (!response.ok || !payload || payload.status !== 'success' || !payload.session) {
+                    throw new Error(payload && payload.message ? payload.message : 'ไม่สามารถโหลดผลแบบทดสอบย้อนหลังได้');
+                }
+                renderResult(payload.session, Array.isArray(payload.attempts) ? payload.attempts : []);
+            } catch (error) {
+                showError(error.message || 'ไม่สามารถโหลดผลแบบทดสอบย้อนหลังได้');
+            }
+
+            function renderResult(session, attempts) {
+                const total = Number(session.total_characters) || 0;
+                const completed = Number(session.completed_characters) || 0;
+                const percentage = total ? Math.round((completed / total) * 100) : 0;
+                const type = String(session.writing_type || '').toLowerCase() === 'katakana' ? 'Katakana' : 'Hiragana';
+                const completedAll = total > 0 && completed >= total;
+                const statusText = completedAll ? 'ทำครบแล้ว' : 'บันทึกผลแล้ว';
+                const scoredAttempts = attempts.filter(attempt => Number.isFinite(Number(attempt.total_score)));
+                const averageScore = scoredAttempts.length
+                    ? scoredAttempts.reduce((sum, attempt) => sum + clampScore(attempt.total_score), 0) / scoredAttempts.length
+                    : 0;
+                const passedCount = scoredAttempts.filter(attempt => Number(attempt.is_passed) === 1 || clampScore(attempt.total_score) >= 60).length;
+                const writingMode = String(session.writing_mode || '').toLowerCase() === 'assisted'
+                    ? 'มีตัวช่วย'
+                    : 'ไม่มีตัวช่วย';
+
+                elements.description.textContent = `ผลการทำแบบทดสอบ ${type}${session.group_name ? ` · วรรค ${session.group_name}` : ''}`;
+                elements.status.className = 'history-detail-status history-detail-status--ready';
+                elements.status.innerHTML = `<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${statusText}`;
+                elements.completed.textContent = `${completed} / ${total}`;
+                elements.percentage.textContent = `${percentage}%`;
+                elements.time.textContent = formatDuration(session.total_time_ms);
+                elements.date.textContent = formatDate(session.completed_at);
+                elements.score.textContent = scoredAttempts.length ? `${formatScore(averageScore)}%` : '-';
+                elements.passed.textContent = scoredAttempts.length ? `${passedCount} / ${scoredAttempts.length}` : '-';
+                elements.type.textContent = type;
+                elements.group.textContent = session.group_name || '-';
+                elements.mode.textContent = writingMode;
+                elements.testStatus.textContent = statusText;
+                elements.summary.hidden = false;
+                elements.meta.hidden = false;
+                elements.attemptSection.hidden = false;
+                elements.count.textContent = `${attempts.length} รายการ`;
+                elements.caption.textContent = attempts.length ? 'คลิกแต่ละรายการเพื่อดูภาพวาดขนาดใหญ่' : 'ไม่พบภาพวาดในรอบแบบทดสอบนี้';
+
+                attempts.forEach((attempt, index) => appendAttempt(attempt, index + 1));
+                if (!attempts.length) {
+                    elements.attempts.innerHTML = '<p class="attempt-empty">ยังไม่มีรายละเอียดการวาดที่บันทึกไว้</p>';
+                }
+
+                elements.retry.hidden = false;
+                elements.retry.addEventListener('click', () => {
+                    const writingType = String(session.writing_type || '').toLowerCase() === 'katakana' ? 'katakana' : 'hiragana';
+                    const group = session.group_name ? `วรรค ${session.group_name}` : '';
+                    const practiceMode = String(session.practice_mode || 'test').toLowerCase() === 'guide' ? 'guide' : 'test';
+                    const writingMode = String(session.writing_mode || 'assisted').toLowerCase() === 'unassisted' ? 'unassisted' : 'assisted';
+                    window.location.href = `../data/writing.php?type=${writingType}&group_name=${encodeURIComponent(group)}&mode=${practiceMode}&writing_mode=${writingMode}`;
+                });
+            }
+
+            function appendAttempt(attempt, position) {
+                const button = document.createElement('button');
+                button.className = 'attempt-card';
+                button.type = 'button';
+                const character = attempt.target_character || attempt.romaji || '-';
+                const romaji = attempt.romaji && attempt.romaji !== character ? attempt.romaji : '';
+                const image = document.createElement('img');
+                image.className = 'attempt-card__image';
+                image.src = attempt.image_url || '';
+                image.alt = `ภาพที่วาด: ${character}`;
+                image.loading = 'lazy';
+                image.addEventListener('error', () => { image.replaceWith(createNoImage()); }, { once: true });
+
+                const number = document.createElement('span');
+                number.className = 'attempt-card__number';
+                number.textContent = `ข้อที่ ${position}`;
+                const copy = document.createElement('span');
+                copy.className = 'attempt-card__copy';
+                const title = document.createElement('strong');
+                title.textContent = character;
+                const subtitle = document.createElement('small');
+                subtitle.textContent = `${romaji ? `${romaji} · ` : ''}${formatDuration(attempt.time_spent_ms)} · ${Number(attempt.stroke_count) || 0} เส้น`;
+                copy.append(number, title, subtitle);
+                const icon = document.createElement('i');
+                icon.className = 'fa-solid fa-magnifying-glass-plus attempt-card__icon';
+                icon.setAttribute('aria-hidden', 'true');
+                button.append(image, copy, icon);
+                button.addEventListener('click', () => openModal(attempt, position, character, romaji));
+                elements.attempts.appendChild(button);
+            }
+
+            function createNoImage() {
+                const placeholder = document.createElement('span');
+                placeholder.className = 'attempt-card__placeholder';
+                placeholder.textContent = 'ไม่มีภาพ';
+                return placeholder;
+            }
+
+            function openModal(attempt, position, character, romaji) {
+                elements.modalTitle.textContent = `ข้อที่ ${position}: ${character}${romaji ? ` (${romaji})` : ''}`;
+                elements.modalImage.src = attempt.image_url || '';
+                elements.modalTime.textContent = `เวลาที่ใช้ ${formatDuration(attempt.time_spent_ms)}`;
+                elements.modalStroke.textContent = `จำนวนเส้น ${Number(attempt.stroke_count) || 0} เส้น`;
+                elements.modal.classList.add('drawing-modal--open');
+                elements.modal.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeModal() {
+                elements.modal.classList.remove('drawing-modal--open');
+                elements.modal.setAttribute('aria-hidden', 'true');
+            }
+
+            elements.closeModal.addEventListener('click', closeModal);
+            elements.modal.addEventListener('click', (event) => { if (event.target === elements.modal) closeModal(); });
+            document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+
+            function formatDuration(milliseconds) {
+                const seconds = Math.max(0, Math.round(Number(milliseconds) / 1000));
+                return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+            }
+
+            function clampScore(value) {
+                return Math.max(0, Math.min(100, Number(value) || 0));
+            }
+
+            function formatScore(value) {
+                return Number(value).toFixed(1).replace(/\.0$/, '');
+            }
+
+            function formatDate(value) {
+                if (!value) return '-';
+                const date = new Date(String(value).replace(' ', 'T'));
+                if (Number.isNaN(date.getTime())) return String(value);
+                return new Intl.DateTimeFormat('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date);
+            }
+
+            function showError(message) {
+                elements.status.className = 'history-detail-status history-detail-status--error';
+                elements.status.innerHTML = `<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> ${escapeHtml(message)}`;
+                elements.description.textContent = 'กรุณากลับไปเลือกผลแบบทดสอบจากหน้าประวัติอีกครั้ง';
+            }
+
+            function escapeHtml(value) {
+                return String(value || '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+            }
+        });
+    </script>
+</body>
+</html>

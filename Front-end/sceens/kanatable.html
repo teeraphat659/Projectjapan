@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฝึกเขียนตัวอักษรญี่ปุ่น</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/kanatable.css">
+    <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+</head>
+<body class="member-page member-characters">
+    <script>
+    (function () {
+        fetch('../connectapi/nav_state.php', { cache: 'no-store', credentials: 'same-origin' })
+            .then(response => response.json())
+            .then(data => {
+                if (!data || !data.loggedIn) {
+                    window.location.replace('../sceens/login.html');
+                    return;
+                }
+
+                if (data.role === 'admin') {
+                    return;
+                }
+
+                if (data.role === 'member') {
+                    return;
+                }
+
+                window.location.replace('../sceens/login.html');
+            })
+            .catch(() => {
+                window.location.replace('../sceens/login.html');
+            });
+    })();
+    </script>
+
+    <div data-member-navbar></div>
+    <script src="../sceens/member-navbar.js?v=member-nav-6"></script>
+
+    <main class="kanatable-page">
+        <section class="page-header">
+            <div class="character-page-copy">
+                <p class="character-eyebrow"><span></span> CHARACTER LIBRARY</p>
+                <h1>ตารางตัวอักษรญี่ปุ่น</h1>
+                <p>เริ่มจากคาตากานะทีละวรรค กดการ์ดเพื่อดูเสียงอ่านและรายละเอียดการเขียนของตัวอักษร</p>
+                <a class="character-practice-link" href="../data/ex2.php"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> ไปฝึกเขียนตัวอักษร</a>
+            </div>
+            <div class="character-feature-card" aria-label="ตัวอย่างตัวอักษรคาตากานะ"><span>ア</span><strong>a</strong><small>Katakana</small></div>
+        </section>
+
+        <section class="table-controls">
+            <div class="control-group character-status-card">
+                <span class="character-status-icon"><i class="fa-solid fa-book-open" aria-hidden="true"></i></span>
+                <div><label>ตารางตัวอักษร</label><div id="statusText" class="status-text">กำลังโหลดข้อมูลตัวอักษร...</div></div>
+            </div>
+        </section>
+
+        <section class="group-list" id="groupList"></section>
+
+        <div id="charModal" class="modal" aria-hidden="true">
+            <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+                <button class="close-btn" type="button" aria-label="ปิดรายละเอียด" onclick="closeModal()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                <div class="modal-header">
+                    <div class="modal-char" id="modalChar">あ</div>
+                    <div class="modal-heading-copy">
+                        <p class="modal-kicker">CHARACTER NOTE</p>
+                        <h2 class="modal-title" id="modalTitle">รายละเอียดตัวอักษร</h2>
+                        <p id="modalRomaji">เสียงอ่าน: -</p>
+                        <p class="modal-writing-guide" id="modalWritingGuide">เลือกดูภาพลำดับเส้นก่อนเริ่มฝึกเขียน</p>
+                    </div>
+                </div>
+                <div class="modal-detail-chips" aria-label="ข้อมูลตัวอักษร">
+                    <div class="modal-detail-chip"><i class="fa-solid fa-language" aria-hidden="true"></i><span>หมวดหมู่</span><strong id="modalType">Katakana</strong></div>
+                    <div class="modal-detail-chip"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>วรรค</span><strong id="modalGroup">-</strong></div>
+                </div>
+                <div class="modal-body">
+                    <section class="modal-study-resource modal-row preview-row" aria-labelledby="strokeHeading">
+                        <div class="stroke-section-heading"><span id="strokeHeading"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> ภาพลำดับเส้น</span><small>ดูทิศทางการเขียนก่อนเริ่มฝึก</small></div>
+                        <div class="stroke-preview-frame">
+                            <span class="stroke-preview-label">ตัวอย่างการเขียน</span>
+                            <img id="modalStroke" src="" alt="ภาพลำดับเส้น" loading="lazy">
+                            <div id="modalStrokeEmpty" class="modal-stroke-empty"><i class="fa-regular fa-image" aria-hidden="true"></i><span>ยังไม่มีภาพลำดับเส้นสำหรับตัวอักษรนี้</span></div>
+                        </div>
+                    </section>
+                    <section class="modal-study-resource modal-video-resource" id="modalVideoSection" hidden aria-labelledby="videoHeading">
+                        <div class="stroke-section-heading"><span id="videoHeading"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> วิดีโอวิธีเขียน</span><small>เมื่อเพิ่มวิดีโอแล้ว จะเปิดจากตรงนี้ได้ทันที</small></div>
+                        <a class="modal-video-link" id="modalVideoLink" href="#" target="_blank" rel="noopener"><i class="fa-solid fa-play" aria-hidden="true"></i> ดูวิดีโอสาธิตการเขียน</a>
+                    </section>
+                </div>
+                <button class="audio-btn" type="button" onclick="playAudio()"><i class="fa-solid fa-volume-high" aria-hidden="true"></i> ฟังเสียงอ่าน</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const navUsername = document.getElementById('navUsername'); 
+        const groupList = document.getElementById('groupList');
+        const statusText = document.getElementById('statusText');
+        const modal = document.getElementById('charModal');
+        const modalChar = document.getElementById('modalChar');
+        const modalRomaji = document.getElementById('modalRomaji');
+        const modalType = document.getElementById('modalType');
+        const modalGroup = document.getElementById('modalGroup');
+        const modalStroke = document.getElementById('modalStroke');
+        const modalStrokeEmpty = document.getElementById('modalStrokeEmpty');
+        const modalWritingGuide = document.getElementById('modalWritingGuide');
+        const modalVideoSection = document.getElementById('modalVideoSection');
+        const modalVideoLink = document.getElementById('modalVideoLink');
+
+        let currentChar = null;
+        let lastTrigger = null;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>'"]/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            })[char]);
+        }
+
+        function normalizeGroupName(groupName) {
+            return String(groupName ?? '').replace(/^วรรค\s*/i, '').trim();
+        }
+
+        function formatGroupName(groupName) {
+            const name = normalizeGroupName(groupName);
+            return name ? `วรรค ${name.charAt(0).toUpperCase()}${name.slice(1)}` : '-';
+        }
+
+        function loadUserName() {
+            if (!navUsername) return;
+            fetch('../connectapi/nav_state.php', { cache: 'no-store', credentials: 'same-origin' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.loggedIn) {
+                        navUsername.textContent = data.username || data.name || 'ผู้ใช้';
+                    } else {
+                        navUsername.textContent = 'ผู้ใช้';
+                    }
+                })
+                .catch(() => {
+                    navUsername.textContent = 'ผู้ใช้';
+                });
+        }
+
+        function loadAllGroups() {
+            statusText.textContent = 'กำลังโหลดตัวอักษรทั้งหมด...';
+            fetch(`../data/api.php?type=katakana&group=1`)
+                .then(response => response.json())
+                .then(groups => {
+                    if (!Array.isArray(groups) || !groups.length) {
+                        statusText.textContent = 'ไม่พบข้อมูลวรรค';
+                        return;
+                    }
+
+                    // ลำดับวรรคภาษาญี่ปุ่นมาตรฐาน (Gojūon Order)
+                    const gojuonOrder = [
+                        'a', 'ka', 'sa', 'ta', 'na', 
+                        'ha', 'ma', 'ya', 'ra', 'wa', 'n',
+                        'ga', 'za', 'da', 'ba', 'pa',
+                        'kya', 'sha', 'cha', 'nya', 'hya', 'mya', 'rya',
+                        'gya', 'ja', 'dya', 'bya', 'pya'
+                    ];
+
+                    // ทำการจัดเรียง (Sort) ข้อมูลวรรคที่ดึงมาจากฐานข้อมูล ให้เรียงตามลำดับข้างต้น
+                    groups.sort((a, b) => {
+                        const nameA = normalizeGroupName(a.group_name).toLowerCase();
+                        const nameB = normalizeGroupName(b.group_name).toLowerCase();
+                        
+                        let idxA = gojuonOrder.indexOf(nameA);
+                        let idxB = gojuonOrder.indexOf(nameB);
+                        
+                        // ถ้าไม่พบใน gojuonOrder ให้ไปต่อท้ายสุด
+                        if (idxA === -1) idxA = 999;
+                        if (idxB === -1) idxB = 999;
+                        
+                        return idxA - idxB;
+                    });
+
+                    groupList.innerHTML = '';
+                    
+                    // เนื่องจาก Promise.all จะแสดงผลลัพธ์ตามลำดับของ Array เสมอ 
+                    // พอเราจัดเรียงตัวแปร groups ด้านบนแล้ว การแสดงผลบนหน้าจอจึงถูกต้องตามลำดับด้วย
+                    const groupPromises = groups.map(group => {
+                        return fetch(`../data/api.php?type=katakana&group_name=${encodeURIComponent(group.group_name)}`)
+                            .then(response => response.json())
+                            .then(chars => ({ group: group.group_name, chars }))
+                            .catch(error => {
+                                console.error('API error for group', group.group_name, error);
+                                return { group: group.group_name, chars: [] };
+                            });
+                    });
+
+                    Promise.all(groupPromises).then(results => {
+                        groupList.innerHTML = '';
+                        let totalChars = 0;
+                        results.forEach(({ group, chars }) => {
+                            totalChars += Array.isArray(chars) ? chars.length : 0;
+                            renderGroupSection(group, chars || []);
+                        });
+                        statusText.textContent = `แสดง ${totalChars} ตัวอักษรจาก ${results.length} วรรค`;
+                    });
+                })
+                .catch(error => {
+                    console.error('API error', error);
+                    statusText.textContent = 'ไม่สามารถโหลดข้อมูลวรรคได้';
+                });
+        }
+
+        function renderGroupSection(groupName, chars) {
+            const section = document.createElement('section');
+            section.className = 'group-section';
+
+            const title = document.createElement('h2');
+            title.className = 'group-title';
+            // ปรับตัวพิมพ์ใหญ่ให้กับชื่อวรรค
+            title.textContent = formatGroupName(groupName);
+            section.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = 'group-grid';
+
+            if (!Array.isArray(chars) || !chars.length) {
+                const emptyText = document.createElement('p');
+                emptyText.className = 'group-empty';
+                emptyText.textContent = 'ไม่มีตัวอักษรในวรรคนี้';
+                section.appendChild(emptyText);
+                groupList.appendChild(section);
+                return;
+            }
+
+            chars.forEach(item => {
+                const card = document.createElement('article');
+                card.className = 'char-card';
+                card.tabIndex = 0;
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-label', `ดูรายละเอียดตัวอักษร ${item.character_jp || ''} ${item.romaji || ''}`);
+                card.innerHTML = `
+                    <div class="char-symbol">${escapeHtml(item.character_jp || '-')}</div>
+                    <div class="char-name">${escapeHtml(item.romaji || '-')}</div>
+                    <div class="char-actions">
+                        <button type="button" class="play-btn" aria-label="ฟังเสียง ${item.character_jp || item.romaji || ''}">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <span class="view-label">รายละเอียด <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                `;
+
+                const soundUrl = resolveAudioUrl(item.sound_file);
+                const playBtn = card.querySelector('.play-btn');
+                if (playBtn) {
+                    if (soundUrl) {
+                        playBtn.title = `ฟังเสียง ${item.character_jp || item.romaji || ''}`;
+                        playBtn.addEventListener('click', event => {
+                            event.stopPropagation();
+                            playAdminAudio(soundUrl);
+                        });
+                    } else {
+                        playBtn.disabled = true;
+                        playBtn.classList.add('disabled');
+                        playBtn.title = 'ยังไม่มีไฟล์เสียงจากแอดมิน';
+                        playBtn.setAttribute('aria-disabled', 'true');
+                        playBtn.addEventListener('click', event => {
+                            event.stopPropagation();
+                        });
+                    }
+                }
+
+                card.addEventListener('click', event => {
+                    currentChar = item;
+                    openModal(item, groupName, event.currentTarget);
+                });
+                card.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        currentChar = item;
+                        openModal(item, groupName, event.currentTarget);
+                    }
+                });
+
+                grid.appendChild(card);
+            });
+
+            section.appendChild(grid);
+            groupList.appendChild(section);
+        }
+
+        function resolveAudioUrl(value) {
+            if (!value || typeof value !== 'string') return '';
+            const trimmed = value.trim();
+            if (!trimmed) return '';
+            if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed;
+            if (/^\/projectjapan\//i.test(trimmed)) return trimmed;
+            if (trimmed.startsWith('/')) return trimmed;
+            return `/projectjapan/${trimmed.replace(/^\.\.\//, '').replace(/^\.\//, '')}`;
+        }
+
+        let activeAudio = null;
+        function playAdminAudio(soundFile) {
+            const url = resolveAudioUrl(soundFile);
+            if (!url) return;
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+            }
+            activeAudio = new Audio(url);
+            activeAudio.play().catch(error => {
+                console.warn('Audio playback error:', error);
+            });
+        }
+
+        function openModal(item, groupName, trigger) {
+            lastTrigger = trigger || document.activeElement;
+            modalChar.textContent = item.character_jp || '-';
+            modalRomaji.textContent = `เสียงอ่าน: ${item.romaji || '-'}`;
+            modalType.textContent = 'Katakana';
+            modalGroup.textContent = formatGroupName(groupName);
+            modalWritingGuide.textContent = `เริ่มเขียน 「${item.character_jp || '-'}」 ตามทิศทางในภาพ แล้วค่อยฝึกตามด้วยตัวเอง`;
+
+            const videoUrl = typeof item.video_url === 'string' ? item.video_url.trim() : '';
+            modalVideoSection.hidden = !videoUrl;
+            if (videoUrl) modalVideoLink.href = videoUrl;
+            else modalVideoLink.removeAttribute('href');
+            
+            if (item.stroke_image) {
+                modalStroke.src = item.stroke_image;
+                modalStroke.alt = `ภาพลำดับเส้นของ ${item.character_jp}`;
+                modalStroke.style.display = 'block';
+                modalStrokeEmpty.hidden = true;
+            } else {
+                modalStroke.removeAttribute('src');
+                modalStroke.style.display = 'none';
+                modalStrokeEmpty.hidden = false;
+            }
+
+            const soundUrl = resolveAudioUrl(item.sound_file);
+            const audioBtn = modal.querySelector('.audio-btn');
+            if (audioBtn) {
+                if (soundUrl) {
+                    audioBtn.disabled = false;
+                    audioBtn.classList.remove('disabled');
+                    audioBtn.innerHTML = '<i class="fa-solid fa-volume-high" aria-hidden="true"></i> ฟังเสียงอ่าน';
+                    audioBtn.title = 'ฟังเสียงอ่าน';
+                } else {
+                    audioBtn.disabled = true;
+                    audioBtn.classList.add('disabled');
+                    audioBtn.innerHTML = '<i class="fa-solid fa-volume-xmark" aria-hidden="true"></i> ยังไม่มีไฟล์เสียง';
+                    audioBtn.title = 'ยังไม่มีไฟล์เสียงจากแอดมิน';
+                }
+            }
+
+            modal.setAttribute('aria-hidden', 'false');
+            modal.classList.add('open');
+            document.body.classList.add('modal-open');
+            requestAnimationFrame(() => modal.querySelector('.close-btn').focus());
+        }
+
+        function closeModal() {
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+            }
+            modal.setAttribute('aria-hidden', 'true');
+            modal.classList.remove('open');
+            document.body.classList.remove('modal-open');
+            if (lastTrigger instanceof HTMLElement) lastTrigger.focus();
+        }
+
+        modalStroke.addEventListener('error', () => {
+            modalStroke.removeAttribute('src');
+            modalStroke.style.display = 'none';
+            modalStrokeEmpty.hidden = false;
+        });
+
+        function playAudio() {
+            if (!currentChar) return;
+            const soundUrl = resolveAudioUrl(currentChar.sound_file);
+            if (soundUrl) {
+                playAdminAudio(soundUrl);
+            }
+        }
+
+        document.addEventListener('click', event => {
+            if (event.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && modal.classList.contains('open')) closeModal();
+        });
+
+        loadAllGroups();
+        loadUserName();
+    </script>
+</body>
+</html>

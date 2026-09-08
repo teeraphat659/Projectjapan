@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{pageTitle}}</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/manage_write_quiz.css">
+  
+  <style>
+    .quiz-list { display: block; margin-top: 16px; }
+
+    .group-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0 22px;
+    }
+
+    .mode-filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+    .mode-filter-btn { border: 1px solid #d1d5db; background: #fff; color: #374151; padding: 8px 14px; border-radius: 999px; font-weight: 600; cursor: pointer; }
+    .mode-filter-btn.active { background: #111827; color: #fff; border-color: #111827; }
+
+    .group-filter-btn {
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: #374151;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .group-filter-btn.active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+      box-shadow: 0 10px 18px rgba(37, 99, 235, 0.16);
+    }
+
+    .quiz-group-section { margin-bottom: 32px; }
+
+    .quiz-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .quiz-group-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .btn-add-group {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-add-group:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    .quiz-group-items { display: grid; gap: 16px; }
+
+    .empty-group-text {
+      color: #9ca3af;
+      font-size: 14px;
+      padding: 24px;
+      background: #f9fafb;
+      border: 1px dashed #d1d5db;
+      border-radius: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .quiz-row {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+
+    .quiz-row:hover { border-color: #d1d5db; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .quiz-row h3 { margin: 0 0 6px; font-size: 18px; color: #111827; }
+    .quiz-row p { margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5; }
+
+    .quiz-meta {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; color: #4b5563;
+    }
+
+    .quiz-meta span {
+      display: inline-flex; align-items: center; gap: 6px; background: #f3f4f6;
+      padding: 6px 12px; border-radius: 99px; font-weight: 500;
+    }
+
+    .quiz-meta .tag-type { background: #e0e7ff; color: #3730a3; }
+    .quiz-meta .tag-group { background: #dcfce7; color: #166534; }
+
+    .row-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .row-actions button, .row-actions a {
+      border: 0; border-radius: 8px; padding: 10px 16px; text-decoration: none;
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+    }
+    .row-actions button:hover, .row-actions a:hover { opacity: 0.85; }
+    .edit-btn { color: #fff; background: #111827; }
+    .delete-btn { color: #b91c1c; background: #fee2e2; }
+
+    .quiz-message { margin-bottom: 14px; color: #b91c1c; font-weight: 500; white-space: pre-line; }
+
+    @media (max-width: 640px) {
+      .quiz-row { align-items: flex-start; flex-direction: column; }
+      .row-actions { width: 100%; justify-content: flex-start; }
+      .quiz-group-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .group-filter-bar { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  
+  <main class="main-content">
+    <div class="quiz-container-card">
+      <div class="quiz-header">
+        <div class="quiz-title-group">
+          <h2 class="quiz-title">{{heading}}</h2>
+          <p class="quiz-subtitle">จัดการแบบทดสอบการเขียน (พิมพ์ตอบ) และหมวดหมู่วรรคตัวอักษร</p>
+        </div>
+        <a href="{{createUrl}}" class="btn-add-top"><i class="fa-solid fa-plus"></i> เพิ่มแบบทดสอบใหม่</a>
+      </div>
+      
+      <div class="quiz-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="searchInput" type="search" placeholder="ค้นหาชื่อ, คำอธิบาย หรือวรรค...">
+      </div>
+      
+      <div class="quiz-count-label" id="quizCount">กำลังโหลดข้อมูล...</div>
+      <div id="quizMessage" class="quiz-message" role="alert"></div>
+      <div id="modeFilterBar" class="mode-filter-bar" aria-label="ตัวกรองตามโหมดการเขียน"></div>
+      <div id="groupFilterBar" class="group-filter-bar" aria-label="ตัวกรองตามวรรค"></div>
+      <div id="quizList" class="quiz-list"></div>
+    </div>
+  </main>
+
+  <script src="/projectjapan/backend/script.js"></script>
+  <script>
+    const quizKind = '{{quizKind}}'; 
+    const createUrl = '{{createUrl}}';
+    const endpoint = '/projectjapan/backend/php/action/admin_api.php';
+    
+    // ระบุ Path API วรรคตัวอักษรให้ถูกต้อง
+    // แก้ไขบรรทัดนี้ใน JS
+    const groupsEndpoint = '/projectjapan/backend/php/action/alphabet_groups.php';
+    
+    const list = document.getElementById('quizList');
+    const count = document.getElementById('quizCount');
+    const message = document.getElementById('quizMessage');
+    const modeFilterBar = document.getElementById('modeFilterBar');
+    const groupFilterBar = document.getElementById('groupFilterBar');
+    let timer;
+    let selectedGroupCode = '';
+    let selectedWritingMode = '';
+
+    const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;' }[char]));
+    
+    // ต่อ Parameter group_code เพื่อใช้กรองหรือล็อกวรรคในหน้าสร้างแบบทดสอบ
+    const getCreateUrlWithGroup = (groupCode) => {
+      if (!groupCode) return createUrl;
+      const separator = createUrl.includes('?') ? '&' : '?';
+      return `${createUrl}${separator}group_code=${encodeURIComponent(groupCode)}`;
+    };
+
+    // ฟังก์ชันช่วยดักจับว่า API ตอบกลับมาเป็น JSON หรือไม่ (แก้ปัญหา Unexpected token '<')
+    async function fetchJson(url, options = {}) {
+      const res = await fetch(url, options);
+      const contentType = res.headers.get('content-type') || '';
+
+      if (!contentType.includes('application/json')) {
+        throw new Error(`ไฟล์ API (${url}) ไม่ได้ส่งข้อมูล JSON กลับมา (HTTP Status: ${res.status})\nโปรดตรวจสอบว่า Path ไฟล์ถูกต้อง หรือมี Error ในระบบ PHP`);
+      }
+
+      return await res.json();
+    }
+
+    // ฟังก์ชันสร้างการ์ดรายข้อ
+    const createQuizCard = (item) => `
+      <article class="quiz-row">
+        <div>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.description || 'ไม่มีคำอธิบาย')}</p>
+          <div class="quiz-meta">
+            <span class="tag-type"><i class="fa-solid fa-language"></i> ${item.alphabet_type === 'hiragana' ? 'Hiragana' : 'Katakana'}</span>
+            <span class="tag-group"><i class="fa-solid fa-layer-group"></i> ${escapeHtml(item.group_name_th || 'รวมทุกวรรค')}</span>
+            <span><i class="fa-solid fa-wand-magic-sparkles"></i> ${item.writing_mode === 'unassisted' ? 'ไม่มีตัวช่วย' : 'มีตัวช่วย'}</span>
+            <span><i class="fa-solid fa-list-ol"></i> ${Number(item.question_count || 0)} ข้อ</span>
+            <span><i class="fa-solid fa-check-to-slot"></i> ผ่าน ${Number(item.pass_score || 0)}%</span>
+            ${Number(item.time_limit_minutes) ? `<span><i class="fa-regular fa-clock"></i> ${Number(item.time_limit_minutes)} นาที</span>` : ''}
+          </div>
+        </div>
+        <div class="row-actions">
+          <a class="edit-btn" href="${createUrl}${createUrl.includes('?') ? '&' : '?'}id=${Number(item.id)}"><i class="fa-solid fa-pen"></i> แก้ไข</a>
+          <button class="delete-btn" data-id="${Number(item.id)}"><i class="fa-solid fa-trash"></i> ลบ</button>
+        </div>
+      </article>
+    `;
+
+    function renderGroupFilter(groups) {
+      const buttons = [{ label: 'ทั้งหมด', code: '' }, ...groups.map((group) => ({
+        label: group.group_name_th || group.group_name || 'วรรค',
+        code: String(group.group_code || '')
+      }))];
+
+      groupFilterBar.innerHTML = buttons.map((button) => `
+        <button type="button" class="group-filter-btn ${selectedGroupCode === button.code ? 'active' : ''}" data-group-code="${escapeHtml(button.code)}">
+          ${escapeHtml(button.label)}
+        </button>
+      `).join('');
+
+      groupFilterBar.querySelectorAll('.group-filter-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedGroupCode = button.dataset.groupCode || '';
+          renderGroupFilter(groups);
+          load();
+        });
+      });
+    }
+
+    function renderModeFilter() {
+      const modes = [
+        { label: 'ทุกโหมด', code: '' },
+        { label: 'มีตัวช่วย', code: 'assisted' },
+        { label: 'ไม่มีตัวช่วย', code: 'unassisted' }
+      ];
+      modeFilterBar.innerHTML = modes.map((mode) => `
+        <button type="button" class="mode-filter-btn ${selectedWritingMode === mode.code ? 'active' : ''}" data-writing-mode="${mode.code}">
+          ${mode.label}
+        </button>
+      `).join('');
+      modeFilterBar.querySelectorAll('.mode-filter-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedWritingMode = button.dataset.writingMode || '';
+          load();
+        });
+      });
+    }
+
+    function render(groups, quizzes) {
+      const filteredQuizzes = selectedWritingMode
+        ? quizzes.filter((quiz) => (quiz.writing_mode || 'assisted') === selectedWritingMode)
+        : quizzes;
+      count.textContent = `แบบทดสอบทั้งหมด (${filteredQuizzes.length})`;
+      quizzes = filteredQuizzes;
+      renderModeFilter();
+      renderGroupFilter(groups);
+
+      let htmlString = '';
+      const renderedQuizIds = new Set();
+      const visibleGroups = groups.filter((group) => {
+        if (!selectedGroupCode) return true;
+        const groupCode = String(group.group_code || '');
+        return groupCode === selectedGroupCode || String(group.group_name_th || '') === selectedGroupCode;
+      });
+
+      if (!visibleGroups.length && selectedGroupCode) {
+        htmlString = `
+          <div class="quiz-group-section">
+            <div class="quiz-group-header">
+              <h3 class="quiz-group-title">วรรคที่เลือก</h3>
+            </div>
+            <div class="empty-group-text">
+              <span>ยังไม่มีแบบทดสอบในวรรคที่เลือก</span>
+              <a href="${getCreateUrlWithGroup(selectedGroupCode)}" class="btn-add-group">
+                <i class="fa-solid fa-plus"></i> สร้างแบบทดสอบในวรรคนี้
+              </a>
+            </div>
+          </div>
+        `;
+        list.innerHTML = htmlString;
+        return;
+      }
+
+      if (visibleGroups.length > 0) {
+        visibleGroups.forEach(group => {
+          const groupCode = group.group_code || '';
+          const groupName = group.group_name_th || group.name || 'ไม่ทราบชื่อวรรค';
+
+          const groupQuizzes = quizzes.filter(q =>
+            (groupCode && q.group_code === groupCode) || q.group_name_th === groupName || q.group_name === groupName
+          );
+
+          const addQuizUrl = getCreateUrlWithGroup(groupCode);
+
+          htmlString += `
+            <div class="quiz-group-section">
+              <div class="quiz-group-header">
+                <h3 class="quiz-group-title">วรรค ${escapeHtml(groupName)}</h3>
+                <a href="${addQuizUrl}" class="btn-add-group">
+                  <i class="fa-solid fa-plus"></i> เพิ่มในวรรคนี้
+                </a>
+              </div>
+              <div class="quiz-group-items">
+          `;
+
+          if (groupQuizzes.length > 0) {
+            htmlString += groupQuizzes.map(item => {
+              renderedQuizIds.add(item.id);
+              return createQuizCard(item);
+            }).join('');
+          } else {
+            htmlString += `
+              <div class="empty-group-text">
+                <span>ยังไม่มีแบบทดสอบในวรรคนี้</span>
+                <a href="${addQuizUrl}" class="btn-add-group">
+                  <i class="fa-solid fa-plus"></i> เพิ่มแบบทดสอบวรรค ${escapeHtml(groupName)}
+                </a>
+              </div>
+            `;
+          }
+
+          htmlString += `</div></div>`;
+        });
+      }
+
+      const otherQuizzes = quizzes.filter(q => !renderedQuizIds.has(q.id));
+
+      if (otherQuizzes.length > 0 && !selectedGroupCode) {
+        htmlString += `
+          <div class="quiz-group-section">
+            <div class="quiz-group-header">
+              <h3 class="quiz-group-title" style="color: #6b7280;">อื่นๆ / รวมทุกวรรค</h3>
+            </div>
+            <div class="quiz-group-items">
+              ${otherQuizzes.map(item => createQuizCard(item)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (groups.length === 0 && quizzes.length === 0) {
+        htmlString = `<div class="empty-group-text" style="margin-top: 30px;">ไม่พบข้อมูลใดๆ กรุณาสร้างแบบทดสอบก่อน</div>`;
+      }
+
+      list.innerHTML = htmlString;
+    }
+
+    async function load() {
+      const search = document.getElementById('searchInput').value.trim();
+
+      try {
+        message.textContent = '';
+
+        const [groupData, quizData] = await Promise.all([
+          fetchJson(`${groupsEndpoint}?action=get_groups&kind=${encodeURIComponent(quizKind)}`, { credentials: 'same-origin' }),
+          fetchJson(`${endpoint}?action=quiz_list&kind=${encodeURIComponent(quizKind)}&search=${encodeURIComponent(search)}`, { credentials: 'same-origin' })
+        ]);
+
+        if (!quizData.success) throw new Error(quizData.message || 'ไม่สามารถดึงข้อมูลแบบทดสอบได้');
+
+        const groupsArray = Array.isArray(groupData) ? groupData : (groupData.data || groupData.items || []);
+        const quizzesArray = quizData.items || quizData.data || [];
+
+        render(groupsArray, quizzesArray);
+
+      } catch (error) {
+        count.textContent = 'ไม่สามารถโหลดรายการได้';
+        message.textContent = error.message;
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', () => { 
+      clearTimeout(timer); 
+      timer = setTimeout(load, 300); 
+    });
+
+    list.addEventListener('click', async (event) => { 
+      const button = event.target.closest('.delete-btn'); 
+      if (!button || !confirm('ต้องการลบชุดแบบทดสอบนี้ใช่หรือไม่? ข้อมูลคำถามทั้งหมดจะถูกลบไปด้วย')) return; 
+      
+      const originalText = button.innerHTML;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      button.disabled = true;
+
+      try {
+        const result = await fetchJson(endpoint, { 
+          method: 'POST', 
+          credentials: 'same-origin', 
+          headers: {'Content-Type': 'application/json'}, 
+          body: JSON.stringify({action: 'quiz_delete', id: Number(button.dataset.id)}) 
+        });
+
+        if (!result.success) throw new Error(result.message); 
+        load(); 
+      } catch (error) {
+        message.textContent = error.message || 'ลบข้อมูลไม่สำเร็จ';
+        button.innerHTML = originalText;
+        button.disabled = false;
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>
