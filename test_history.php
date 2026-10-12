@@ -1,0 +1,1 @@
+<?php $_SERVER['REQUEST_METHOD']='GET'; $_GET['action']='get_test_history'; $_SERVER['HTTP_ORIGIN']='http://localhost'; session_start(); $_SESSION['member']['id']=12; require 'c:/xampp/htdocs/projectjapan/Front-end/connectapi/writing_progress.php';

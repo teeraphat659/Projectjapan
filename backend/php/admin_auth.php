@@ -42,7 +42,7 @@ if ($login === '' || $password === '') {
 }
 
 try {
-    $stmt = $conn->prepare('SELECT admin_id, username, password, name, email FROM admin WHERE username = :login OR email = :login LIMIT 1');
+    $stmt = $conn->prepare('SELECT admin_id, username, password, name, email FROM admin WHERE email = :login LIMIT 1');
     $stmt->execute([':login' => $login]);
     $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 

@@ -585,7 +585,7 @@ try {
             $quizCounts = array_map('intval', $counts);
         }
         if (tableExists($conn, 'writing_sessions')) {
-            $counts = $conn->query("SELECT user_id, COUNT(*) AS total FROM writing_sessions WHERE practice_mode = 'test' AND completed_at IS NOT NULL GROUP BY user_id")->fetchAll(PDO::FETCH_KEY_PAIR);
+            $counts = $conn->query("SELECT user_id, COUNT(*) AS total FROM writing_sessions WHERE practice_mode = 'test' GROUP BY user_id")->fetchAll(PDO::FETCH_KEY_PAIR);
             $writingCounts = array_map('intval', $counts);
         }
         foreach ($users as &$user) {
@@ -659,9 +659,17 @@ try {
             }
             $result['attempts'] = [];
             if (tableExists($conn, 'writing_attempts')) {
+                $attemptColumns = getTableColumns($conn, 'writing_attempts');
+                $shapeAccuracy = in_array('shape_accuracy', $attemptColumns, true) ? 'shape_accuracy' : 'NULL';
+                $positionAccuracy = in_array('position_accuracy', $attemptColumns, true)
+                    ? 'position_accuracy'
+                    : (in_array('alignment_score', $attemptColumns, true) ? 'alignment_score' : 'NULL');
+                $startPosition = in_array('is_start_position_correct', $attemptColumns, true)
+                    ? 'is_start_position_correct'
+                    : 'NULL';
                 $attempts = $conn->prepare(
-                    'SELECT writing_attempt_id, target_character, romaji, sequence_no, time_spent_ms, stroke_count,
-                            is_start_position_correct, shape_accuracy, alignment_score, ai_feedback, is_completed, completed_at
+                    'SELECT sequence_no, target_character, romaji, ' . $shapeAccuracy . ' AS shape_accuracy,
+                            ' . $positionAccuracy . ' AS position_accuracy, ' . $startPosition . ' AS is_start_position_correct
                      FROM writing_attempts WHERE writing_session_id = :id ORDER BY sequence_no, writing_attempt_id'
                 );
                 $attempts->execute([':id' => $resultId]);
@@ -689,9 +697,9 @@ try {
                         CONCAT('แบบทดสอบเขียน ', UPPER(w.writing_type), IF(w.group_name <> '', CONCAT(' — ', w.group_name), '')) AS quiz_title,
                         w.completed_characters AS score, w.total_characters AS total_questions,
                         CASE WHEN w.total_characters > 0 THEN ROUND(w.completed_characters * 100 / w.total_characters, 1) ELSE 0 END AS percentage,
-                        w.completed_at, '-' AS wrong_characters
+                        COALESCE(w.completed_at, w.started_at) AS completed_at, '-' AS wrong_characters
                  FROM writing_sessions w INNER JOIN users u ON u.id = w.user_id
-                 WHERE w.practice_mode = 'test' AND w.completed_at IS NOT NULL"
+                 WHERE w.practice_mode = 'test'"
                 . (tableExists($conn, 'admin_writing_test_users') ? ' AND w.user_id NOT IN (SELECT user_id FROM admin_writing_test_users)' : '')
             );
             $rows = array_merge($rows, $result->fetchAll(PDO::FETCH_ASSOC));

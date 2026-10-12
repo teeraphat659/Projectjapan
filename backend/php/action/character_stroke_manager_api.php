@@ -121,7 +121,7 @@ function fetchKanjiVgSvgContent(string $symbol): string|false
         $baseUrl . strtolower($codePoint) . '.svg',
         $baseUrl . $codePoint . '.svg',
     ];
-
+    
     foreach ($candidates as $url) {
         if (!function_exists('curl_init')) {
             $ctx = stream_context_create(['http' => ['timeout' => 8, 'user_agent' => 'ProjectJapan-StrokeManager/1.0']]);

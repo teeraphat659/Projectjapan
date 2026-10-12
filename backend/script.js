@@ -1,10 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Backend templates are legacy static HTML; rewrite absolute project URLs for subdirectory deployments.
   const backendMarker = "/backend/";
   const currentPath = window.location.pathname;
   const projectBase = currentPath.includes(backendMarker)
     ? currentPath.slice(0, currentPath.indexOf(backendMarker))
     : "";
+  const appUrl = (path) => `${projectBase}/${path.replace(/^\/+/, "")}`;
+
   document.querySelectorAll("[href], [src], [action]").forEach((element) => {
     ["href", "src", "action"].forEach((attribute) => {
       const value = element.getAttribute(attribute);
@@ -16,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   console.log("กำลังเริ่มโหลด Navbar..."); // เช็คว่าสคริปต์ทำงานไหม
 
-  fetch("/projectjapan/backend/navbar/navbarbackend.html")
+  fetch(appUrl("backend/navbar/navbarbackend.html"))
     .then((response) => {
       if (!response.ok) throw new Error("ไม่พบไฟล์ Navbar (HTTP " + response.status + ")");
       return response.text();
@@ -28,10 +29,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       
-      container.innerHTML = data;
+      container.innerHTML = data.replaceAll("/projectjapan/", `${projectBase}/`);
       console.log("✅ โหลด Navbar ลงหน้าเว็บสำเร็จ");
 
-      fetch("/projectjapan/Front-end/connectapi/nav_state.php", { credentials: "same-origin" })
+      fetch(appUrl("Front-end/connectapi/nav_state.php"), { credentials: "same-origin" })
         .then((response) => response.json())
         .then((state) => {
           if (state.role !== "admin") return;

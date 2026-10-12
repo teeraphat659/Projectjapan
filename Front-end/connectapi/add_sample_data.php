@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_sample'])) {
             ");
 
             $stmt->execute([
-                ':user_id' => $user_id,
+                ':user_id' => $member_id,
                 ':quiz_type' => $test['quiz_type'],
                 ':score' => $test['score'],
                 ':total_questions' => $test['total'],
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_sample'])) {
 
 // ดึงข้อมูลทดสอบที่มีอยู่
 $stmt = $conn->prepare("SELECT COUNT(*) as total FROM quizzes WHERE user_id = :user_id");
-$stmt->execute([':user_id' => $user_id]);
+$stmt->execute([':user_id' => $member_id]);
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $total_tests = $result['total'];
 

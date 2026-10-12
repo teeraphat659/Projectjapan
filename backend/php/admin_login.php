@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (isset($_SESSION['admin'])) {
-  header('Location: /projectjapan/backend/php/srceen/index.php');
+  header('Location: ' . appUrl('backend/php/srceen/index.php'));
   exit;
 }
 $error = $_GET['error'] ?? '';
@@ -45,7 +45,7 @@ $success = $_GET['success'] ?? '';
       <form action="admin_auth.php" method="POST" autocomplete="off">
         <div class="form-group">
           <label for="login">อีเมลผู้ดูแลระบบ</label>
-          <input type="text" id="login" name="login" placeholder="admin@example.com" required autocomplete="username" />
+          <input type="email" id="login" name="login" placeholder="admin@example.com" required autocomplete="username" />
         </div>
         <div class="form-group">
           <label for="password">รหัสผ่าน</label>

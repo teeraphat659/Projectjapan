@@ -179,7 +179,6 @@
             </div>
         </section>
     </main>
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const characterList = document.getElementById('characterList');
@@ -235,8 +234,11 @@
             
             // --- ปรับแก้: รับค่า group_id จาก URL (รองรับ group_name กรณีเก่ายังค้างอยู่) ---
             const initialGroupId = params.get('group_id') || params.get('quiz_set_id') || params.get('group_name') || '';
-            const initialMode = params.get('mode') === 'test' ? 'test' : 'guide';
-            const initialWritingMode = params.get('writing_mode') === 'unassisted' ? 'unassisted' : 'assisted';
+            const rawWritingMode = params.get('writing_mode');
+            const rawMode = params.get('mode');
+            const isAssisted = rawWritingMode === 'assisted' || (rawMode === 'guide' && rawWritingMode !== 'unassisted');
+            const initialMode = isAssisted ? 'guide' : (rawMode === 'test' ? 'test' : 'guide');
+            const initialWritingMode = isAssisted ? 'assisted' : 'unassisted';
             const initialCharacter = params.get('character') || '';
             const initialSessionId = Number(params.get('session_id') || 0);
             const initialQuizSetId = Number(params.get('quiz_set_id') || 0);
@@ -255,21 +257,37 @@
             };
             
             function updateEvaluateButton() {
+                const isAssistedMode = state.mode !== 'test' || state.writingMode === 'assisted';
+                if (isAssistedMode) {
+                    evaluateBtn.style.display = 'none';
+                    evaluationCriteria.hidden = true;
+                    currentEvaluation.hidden = true;
+                    criteriaState.textContent = 'ฝึกเขียนตามตัวอย่าง';
+                    criteriaState.classList.remove('is-ready');
+                    updateNextButton();
+                    return;
+                }
                 const canEvaluate = state.mode === 'test' && state.testStarted && hasDrawing;
+                evaluateBtn.style.display = '';
+                evaluationCriteria.hidden = false;
                 evaluateBtn.disabled = !canEvaluate;
-                criteriaState.textContent = canEvaluate ? 'พร้อมประมวลผล' : (state.mode === 'test' && !state.testStarted ? 'รอเริ่มแบบทดสอบ' : 'รอการวาด');
+                criteriaState.textContent = canEvaluate ? 'พร้อมประมวลผล' : (!state.testStarted ? 'รอเริ่มแบบทดสอบ' : 'รอการวาด');
                 criteriaState.classList.toggle('is-ready', canEvaluate);
+                updateNextButton();
             }
 
             function updateTestControls() {
                 const locked = state.mode === 'test' && !state.testStarted;
                 clearBtn.disabled = locked;
-                nextBtn.disabled = locked;
                 canvas.setAttribute('aria-disabled', locked ? 'true' : 'false');
                 updateEvaluateButton();
             }
 
             function showCurrentEvaluation(evaluation) {
+                if (state.mode !== 'test' || state.writingMode === 'assisted') {
+                    currentEvaluation.hidden = true;
+                    return;
+                }
                 const safeNumber = value => Math.max(0, Math.min(100, Number(value) || 0));
                 const cleanMessage = value => String(value || '')
                     .replace(/\s+/g, ' ').replace(/[•/|]{2,}/g, '•').trim();
@@ -318,6 +336,7 @@
             }
 
             function openEvaluationPopup() {
+                if (state.mode !== 'test' || state.writingMode === 'assisted') return;
                 currentEvaluation.classList.add('is-popup');
                 currentEvaluation.setAttribute('role', 'dialog');
                 currentEvaluation.setAttribute('aria-modal', 'true');
@@ -531,6 +550,10 @@
             });
 
             function showSavedEvaluation(attempt) {
+                if (state.mode !== 'test' || state.writingMode === 'assisted') {
+                    clearCurrentEvaluation();
+                    return;
+                }
                 if (!attempt || (!attempt.totalScore && !attempt.feedback)) {
                     clearCurrentEvaluation();
                     return;
@@ -548,9 +571,10 @@
                 showReplay(attempt);
             }
 
-            if (state.mode === 'guide') {
+            if (state.mode === 'guide' || state.writingMode === 'assisted') {
                 evaluateBtn.style.display = 'none';
                 evaluationCriteria.hidden = true;
+                currentEvaluation.hidden = true;
             }
 
             let drawing = false;
@@ -698,11 +722,20 @@
                 openLeavePracticePrompt(destination.href);
             }, true);
 
+            function getMissingCharacters() {
+                return state.characters.filter((item) => !attemptsByCharacter.has(getCharacterKey(item)));
+            }
+
             function updateNextButton() {
                 const isLastCharacter = state.index + 1 >= state.characters.length;
                 const currentKey = state.characters[state.index] ? getCharacterKey(state.characters[state.index]) : '';
                 const currentWritten = currentKey !== '' && attemptsByCharacter.has(currentKey);
-                nextBtn.textContent = isLastCharacter && currentWritten ? 'สรุปผล' : 'ถัดไป';
+                const allCharactersWritten = state.characters.length > 0 && getMissingCharacters().length === 0;
+                nextBtn.textContent = isLastCharacter
+                    ? (allCharactersWritten ? 'สรุปผล' : (currentWritten ? 'ไปตัวที่ยังไม่ทำ' : 'ถัดไป'))
+                    : 'ถัดไป';
+                const locked = state.mode === 'test' && !state.testStarted;
+                nextBtn.disabled = locked || (!currentWritten && !hasDrawing);
             }
 
             function formatGroupName(groupName) {
@@ -1322,6 +1355,7 @@
                 drawingNeedsSave = false;
                 renderDrawnStrokeControls();
                 practiceHint.textContent = 'แก้ไขเส้นที่วาดต่อได้ แล้วกดบันทึกอีกครั้ง';
+                updateEvaluateButton();
                 return true;
             }
 
@@ -1461,6 +1495,11 @@
                 drawingNeedsSave = true;
                 strokeCount = getNextStrokeNumber();
                 
+                if (!currentTrajectory.canvas_width) {
+                    currentTrajectory.canvas_width = drawingRect.width || 620;
+                    currentTrajectory.canvas_height = drawingRect.height || 420;
+                }
+
                 const point = getPoint(event);
 
                 ctx.save();
@@ -1653,7 +1692,11 @@
                         const currentAttempt = attemptsByCharacter.get(getCharacterKey(currentItem));
                         if (currentAttempt && currentAttempt.imageUrl) {
                             renderSavedDrawingOnCanvas(currentAttempt.imageUrl, currentAttempt.trajectory);
-                            showSavedEvaluation(currentAttempt);
+                            if (state.mode === 'test' && state.writingMode !== 'assisted') {
+                                showSavedEvaluation(currentAttempt);
+                            } else {
+                                clearCurrentEvaluation();
+                            }
                         }
                     }
 
@@ -1742,7 +1785,11 @@
                 const savedAttempt = attemptsByCharacter.get(getCharacterKey(item));
                 if (savedAttempt && savedAttempt.imageUrl) {
                     renderSavedDrawingOnCanvas(savedAttempt.imageUrl, savedAttempt.trajectory);
-                    showSavedEvaluation(savedAttempt);
+                    if (state.mode === 'test' && state.writingMode !== 'assisted') {
+                        showSavedEvaluation(savedAttempt);
+                    } else {
+                        clearCurrentEvaluation();
+                    }
                 } else {
                     clearCanvas(true);
                 }
@@ -1982,7 +2029,7 @@
                         stroke_count: strokeCount,
                         image: base64Img,
                         analysis_profile: characterItem.analysis_profile || {},
-                        trajectory: Object.assign({}, currentTrajectory, {
+                        trajectory: Object.assign(currentTrajectory, {
                             canvas_width: Math.round(canvas.clientWidth || canvas.width),
                             canvas_height: Math.round(canvas.clientHeight || canvas.height)
                         })
@@ -2010,7 +2057,9 @@
                     strokeMetrics: Array.isArray(metrics.stroke_metrics) ? metrics.stroke_metrics : [],
                     scoreBreakdown: Array.isArray(metrics.score_breakdown) ? metrics.score_breakdown : []
                 });
-                requestAiEvaluation(result.writing_attempt_id, characterItem);
+                if (state.mode === 'test' && state.writingMode !== 'assisted') {
+                    requestAiEvaluation(result.writing_attempt_id, characterItem);
+                }
                 completedCharacters.add(getCharacterKey(characterItem));
                 hasDrawing = false;
                 drawingNeedsSave = false;
@@ -2027,6 +2076,7 @@
             }
 
             async function requestAiEvaluation(attemptId, characterItem) {
+                if (state.mode !== 'test' || state.writingMode === 'assisted') return;
                 if (!attemptId || !writingSessionId) return;
                 try {
                     const response = await fetch('../connectapi/writing_progress.php', {
@@ -2048,7 +2098,7 @@
                         accuracy: Number(result.ai_evaluation.shape_accuracy ?? attempt.accuracy),
                         alignment: Number(result.ai_evaluation.alignment_score ?? attempt.alignment),
                         totalScore: Number(result.ai_evaluation.total_score ?? attempt.totalScore),
-                        feedback: result.ai_evaluation.ai_feedback || attempt.feedback,
+                        feedback: result.ai_feedback || attempt.feedback,
                         evaluationSource: 'ai+rules',
                         errorReasons: Array.isArray(result.ai_evaluation.error_reasons) ? result.ai_evaluation.error_reasons : attempt.errorReasons,
                         aiExplanation: result.ai_evaluation.ai_explanation || attempt.aiExplanation,
@@ -2056,8 +2106,10 @@
                         strokeMetrics: Array.isArray(result.ai_evaluation.stroke_metrics) ? result.ai_evaluation.stroke_metrics : attempt.strokeMetrics
                     });
                     if (state.characters[state.index] && getCharacterKey(state.characters[state.index]) === key) {
-                        showCurrentEvaluation(result.ai_evaluation);
-                        showReplay(attempt);
+                        if (state.mode === 'test' && state.writingMode !== 'assisted') {
+                            showCurrentEvaluation(result.ai_evaluation);
+                            showReplay(attempt);
+                        }
                     }
                     renderCharacterList();
                 } catch (error) {
@@ -2082,7 +2134,7 @@
                     practiceHint.textContent = 'ไม่มีตัวอักษรให้ประเมิน';
                     return false;
                 }
-                const missingCharacters = state.characters.filter((item) => !attemptsByCharacter.has(getCharacterKey(item)));
+                const missingCharacters = getMissingCharacters();
                 if (missingCharacters.length > 0) {
                     practiceHint.textContent = `กรุณาเขียนให้ครบทุกตัวก่อนสรุปผล (เหลือ ${missingCharacters.length} ตัว)`;
                     return false;
@@ -2108,7 +2160,7 @@
             }
 
             evaluateBtn.addEventListener('click', async function () {
-                if (state.mode !== 'test' || !hasDrawing) return;
+                if (state.mode !== 'test' || state.writingMode === 'assisted' || !hasDrawing) return;
                 evaluateBtn.disabled = true;
                 criteriaState.textContent = 'กำลังประมวลผล...';
                 practiceHint.textContent = 'กำลังวิเคราะห์ตัวอักษรนี้...';
@@ -2143,6 +2195,12 @@
 
                     const isLastCharacter = state.index + 1 >= state.characters.length;
                     if (isLastCharacter) {
+                        const missingCharacters = getMissingCharacters();
+                        if (missingCharacters.length > 0) {
+                            setCharacter(state.characters.indexOf(missingCharacters[0]));
+                            practiceHint.textContent = `ยังเขียนไม่ครบ ${missingCharacters.length} ตัว จึงยังสรุปผลไม่ได้ กำลังพาไปยังตัวที่ยังไม่ทำ`;
+                            return;
+                        }
                         await finalizePractice();
                         return;
                     }

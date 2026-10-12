@@ -5,7 +5,7 @@ require_once __DIR__ . '/character_sound_upload.php';
 require_once __DIR__ . '/quiz_character_relink_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php');
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php'));
     exit;
 }
 
@@ -66,7 +66,7 @@ if (!in_array($charType, ['Katakana', 'Hiragana'], true)) {
 $allowedGroups = ['a', 'ka', 'sa', 'ta', 'na', 'ha', 'ma', 'ya', 'ra', 'wa', 'n'];
 
 if ($japaneseChar === '' || mb_strlen($japaneseChar, 'UTF-8') !== 1 || $charGroup === '' || !in_array($charGroup, $allowedGroups, true)) {
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=invalid');
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=invalid'));
     exit;
 }
 
@@ -76,42 +76,42 @@ $isHiragana = ($ord >= 0x3041 && $ord <= 0x3096);
 $isKatakana = ($ord >= 0x30A1 && $ord <= 0x30FA) || ($ord === 0x30FC);
 
 if ($charType === 'Katakana' && !$isKatakana) {
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=invalid_katakana');
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=invalid_katakana'));
     exit;
 }
 if ($charType === 'Hiragana' && !$isHiragana) {
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=invalid_hiragana');
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=invalid_hiragana'));
     exit;
 }
 
 if (character_image_upload_error() !== '') {
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=image_upload_' . rawurlencode(character_image_upload_error()));
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=image_upload_' . rawurlencode(character_image_upload_error())));
     exit;
 }
 
 if (character_sound_upload_error() !== '') {
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=sound_upload_' . rawurlencode(character_sound_upload_error()));
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=sound_upload_' . rawurlencode(character_sound_upload_error())));
     exit;
 }
 
 $duplicateStmt = $conn->prepare('SELECT COUNT(*) FROM japanese_characters WHERE LOWER(char_type) = LOWER(:type) AND japanese_char = :japanese_char');
 $duplicateStmt->execute([':type' => $charType, ':japanese_char' => $japaneseChar]);
 if ((int)$duplicateStmt->fetchColumn() > 0) {
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=duplicate');
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=duplicate'));
     exit;
 }
 
 if ($soundFile !== '') {
     if (!is_sound_file_extension_valid($soundFile)) {
-        header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=sound_ext');
+        header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=sound_ext'));
         exit;
     }
     if ($romaji === '') {
-        header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=missing_romaji');
+        header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=missing_romaji'));
         exit;
     }
     if ($uploadedSound === '' && !sound_file_matches_character($soundFile, $japaneseChar, $romaji)) {
-        header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=sound_mismatch');
+        header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=sound_mismatch'));
         exit;
     }
 }
@@ -162,11 +162,11 @@ try {
     addCharacterToWritingQuizSets($conn, $newCharId, $japaneseChar, $romaji, $charGroup);
 
     $conn->commit();
-    header('Location: /projectjapan/backend/php/srceen/manage_katakana.php?success=created');
+    header('Location: ' . appUrl('backend/php/srceen/manage_katakana.php?success=created'));
     exit;
 } catch (Throwable $exception) {
     $conn->rollBack();
     error_log('create_katakana error: ' . $exception->getMessage());
-    header('Location: /projectjapan/backend/php/srceen/create_katagana.php?error=1');
+    header('Location: ' . appUrl('backend/php/srceen/create_katagana.php?error=1'));
     exit;
 }

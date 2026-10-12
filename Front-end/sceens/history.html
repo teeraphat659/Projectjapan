@@ -203,7 +203,7 @@
                     const modeIcon = isMatching ? 'fa-puzzle-piece' : (assisted ? 'fa-wand-magic-sparkles' : 'fa-bullseye');
                     const sessionId = encodeURIComponent(item.writing_session_id);
                     const typeParam = type.toLowerCase();
-                    const practiceMode = String(item.practice_mode || 'test').toLowerCase() === 'guide' ? 'guide' : 'test';
+                    const practiceMode = assisted ? 'guide' : (String(item.practice_mode || 'test').toLowerCase() === 'guide' ? 'guide' : 'test');
                     const continueUrl = `../data/writing.php?type=${typeParam}&group_id=${encodeURIComponent(item.group_name || '')}&mode=${practiceMode}&writing_mode=${assisted ? 'assisted' : 'unassisted'}&session_id=${sessionId}`;
                     const matchingUrl = `../data/jpmatch.php?type=${typeParam}&quiz_set_id=${encodeURIComponent(item.quiz_set_id || '')}`;
                     const action = isMatching

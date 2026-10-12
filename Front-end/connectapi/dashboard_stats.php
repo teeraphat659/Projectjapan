@@ -64,7 +64,7 @@ try {
     $writingStats = $writingStatsStatement->fetch(PDO::FETCH_ASSOC) ?: [];
 
     $quizHistoryStatement = $conn->prepare(
-        'SELECT quiz_type, score, total_questions, completed_at
+        'SELECT id as quiz_id, quiz_type, score, total_questions, completed_at
          FROM quizzes
          WHERE user_id = :user_id
          ORDER BY completed_at DESC, id DESC
@@ -74,11 +74,12 @@ try {
     $recentTests = [];
     foreach ($quizHistoryStatement->fetchAll(PDO::FETCH_ASSOC) as $row) {
         $recentTests[] = [
+            'quiz_id' => $row['quiz_id'],
             'title' => $row['quiz_type'] ?: 'แบบทดสอบจับคู่',
             'score' => (int)$row['score'],
             'maxScore' => (int)$row['total_questions'],
             'date' => $row['completed_at'],
-            'url' => '../data/history.php',
+            'url' => '../data/matchhistorydetail.php?quiz_id=' . rawurlencode((string)$row['quiz_id']),
         ];
     }
 

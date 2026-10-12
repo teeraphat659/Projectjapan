@@ -393,10 +393,11 @@ try {
             referenceResponse(422, ['success' => false, 'message' => 'ประเภทตัวอักษรไม่ถูกต้อง']);
         }
         $statement = $conn->prepare(
-            'SELECT character_id AS id, japanese_char, romaji, char_group, stroke_count
-             FROM japanese_characters
-             WHERE LOWER(char_type) = :type
-             ORDER BY character_id'
+            'SELECT c.character_id AS id, c.japanese_char, c.romaji, c.char_group, c.stroke_count
+             FROM japanese_characters c
+             LEFT JOIN alphabet_groups g ON LOWER(TRIM(g.group_code)) = LOWER(TRIM(c.char_group))
+             WHERE LOWER(c.char_type) = :type
+             ORDER BY g.sort_order, c.japanese_char'
         );
         $statement->execute([':type' => $type]);
         referenceResponse(200, ['success' => true, 'items' => $statement->fetchAll(PDO::FETCH_ASSOC)]);
@@ -420,7 +421,7 @@ try {
              {$where}
              GROUP BY c.character_id, c.japanese_char, c.romaji, c.char_type, c.char_group,
                       c.stroke_count, g.group_name_th, g.sort_order
-             ORDER BY c.char_type, g.sort_order, c.character_id"
+             ORDER BY c.char_type, g.sort_order, c.japanese_char"
         );
         if ($where !== '') $statement->execute([':type' => $type]);
         else $statement->execute();
@@ -437,7 +438,7 @@ try {
              WHERE character_id = :character_id AND version_name = :version_name AND is_active = 1
              LIMIT 1'
         );
-        $statement->execute([':character_id' => $characterId, ':version_name' => (string)($input['version_name'] ?? 'default')]);
+        $statement->execute([':character_id' => $characterId, ':version_name' => (string)($input['version_name'] ?? $_GET['version_name'] ?? 'default')]);
         $item = $statement->fetch(PDO::FETCH_ASSOC);
         if (!$item) referenceResponse(200, ['success' => true, 'item' => null]);
         $item['trajectory'] = json_decode((string)$item['trajectory_json'], true) ?: null;

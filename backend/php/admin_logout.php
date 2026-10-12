@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../Front-end/connectapi/app_config.php';
+
 session_start();
 $_SESSION = [];
 if (ini_get('session.use_cookies')) {
@@ -9,5 +11,5 @@ if (ini_get('session.use_cookies')) {
     );
 }
 session_destroy();
-header('Location: /projectjapan/Front-end/sceens/login.html?success=' . rawurlencode('ออกจากระบบเรียบร้อยแล้ว'));
+header('Location: ' . appUrl('Front-end/sceens/login.html?success=' . rawurlencode('ออกจากระบบเรียบร้อยแล้ว')));
 exit;

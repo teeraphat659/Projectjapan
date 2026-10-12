@@ -1,1 +1,564 @@
-<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ข้อมูลส่วนตัว</title><link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css"><link rel="stylesheet" href="/projectjapan/backend/styel/style.css"><style>.profile-card{max-width:620px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:28px}.field{margin:16px 0}.field label{display:block;margin-bottom:6px;font-weight:600}.field input{box-sizing:border-box;width:100%;padding:10px;border:1px solid #d1d5db;border-radius:7px}.submit{background:#111827;color:#fff;border:0;border-radius:7px;padding:10px 16px;cursor:pointer}.message{margin:12px 0}</style></head><body><div id="navbar-container"></div><main class="main-content"><div class="profile-card"><h2>ข้อมูลส่วนตัว</h2><p>แก้ไขข้อมูลบัญชีผู้ดูแลระบบ</p><p class="message" id="message"></p><form id="profileForm"><div class="field"><label for="firstname">ชื่อ</label><input id="firstname" required maxlength="100"></div><div class="field"><label for="lastname">นามสกุล</label><input id="lastname" required maxlength="100"></div><div class="field"><label for="email">อีเมล</label><input id="email" type="email" required maxlength="255"></div><button class="submit">บันทึกข้อมูล</button></form></div></main><script src="/projectjapan/backend/script.js"></script><script>const endpoint='/projectjapan/backend/php/action/admin_api.php',message=document.getElementById('message');fetch(endpoint+'?action=profile_get',{credentials:'same-origin'}).then(r=>r.json()).then(r=>{if(!r.success)throw Error(r.message);for(const key of ['firstname','lastname','email'])document.getElementById(key).value=r.item[key]||'';}).catch(e=>message.textContent=e.message||'โหลดข้อมูลไม่สำเร็จ');document.getElementById('profileForm').addEventListener('submit',e=>{e.preventDefault();fetch(endpoint,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'profile_update',firstname:firstname.value,lastname:lastname.value,email:email.value})}).then(r=>r.json()).then(r=>{message.textContent=r.message;if(!r.success)throw Error(r.message);}).catch(e=>message.textContent=e.message||'บันทึกข้อมูลไม่สำเร็จ');});</script></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f6f7">
+  <title>ข้อมูลส่วนตัว | Admin Panel</title>
+  <link rel="stylesheet" href="/projectjapan/backend/styel/navbarbackend.css">
+  <link rel="stylesheet" href="/projectjapan/backend/styel/style.css">
+  <style>
+    :root {
+      --profile-ink: #172a35;
+      --profile-muted: #667982;
+      --profile-line: #dce5e7;
+      --profile-paper: #fff;
+      --profile-canvas: #f3f6f7;
+      --profile-accent: #e78a30;
+      --profile-accent-dark: #a84d16;
+      --profile-green: #197455;
+      --profile-red: #ad3d34;
+    }
+
+    body {
+      background: var(--profile-canvas);
+      color: var(--profile-ink);
+    }
+
+    .profile-page,
+    .profile-page * {
+      box-sizing: border-box;
+    }
+
+    .profile-page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding-bottom: 48px;
+      animation: profile-arrive 360ms ease-out both;
+    }
+
+    .profile-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin: 8px 0 28px;
+    }
+
+    .profile-eyebrow {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--profile-accent-dark);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+    }
+
+    .profile-heading h1 {
+      color: var(--profile-ink);
+      font-size: 30px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .profile-heading p {
+      margin-top: 8px;
+      color: var(--profile-muted);
+      font-size: 14px;
+    }
+
+    .profile-record {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border: 1px solid #d8e3e1;
+      border-radius: 6px;
+      background: #fff;
+      color: #315d50;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .profile-record-mark {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3b9a72;
+      box-shadow: 0 0 0 3px #e1f2e9;
+    }
+
+    .profile-sheet {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.65fr);
+      min-height: 470px;
+      overflow: hidden;
+      border: 1px solid var(--profile-line);
+      border-radius: 8px;
+      background: var(--profile-paper);
+      box-shadow: 0 12px 32px rgb(23 42 53 / 6%);
+    }
+
+    .profile-identity {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 36px 30px;
+      border-right: 1px solid var(--profile-line);
+      background: #edf3f2;
+    }
+
+    .profile-identity::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--profile-accent);
+      content: "";
+    }
+
+    .profile-monogram {
+      display: grid;
+      width: 72px;
+      height: 72px;
+      place-items: center;
+      margin-bottom: 22px;
+      border: 1px solid #cfddda;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--profile-ink);
+      font-size: 27px;
+      font-weight: 700;
+    }
+
+    .profile-identity h2 {
+      color: var(--profile-ink);
+      font-size: 19px;
+      line-height: 1.4;
+    }
+
+    .profile-role {
+      margin-top: 7px;
+      color: var(--profile-accent-dark);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .profile-identity-note {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid #d5e0de;
+      color: var(--profile-muted);
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .profile-form-panel {
+      padding: 38px clamp(24px, 5vw, 56px);
+    }
+
+    .profile-form-heading {
+      padding-bottom: 21px;
+      border-bottom: 1px solid #e8edef;
+    }
+
+    .profile-form-heading h2 {
+      color: var(--profile-ink);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .profile-form-heading p {
+      margin-top: 6px;
+      color: var(--profile-muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .profile-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px 18px;
+      padding: 26px 0 22px;
+    }
+
+    .profile-field {
+      min-width: 0;
+    }
+
+    .profile-field-full {
+      grid-column: 1 / -1;
+    }
+
+    .profile-field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #344b55;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .profile-field input {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 13px;
+      border: 1px solid #cbd7da;
+      border-radius: 5px;
+      outline: none;
+      background: #fff;
+      color: var(--profile-ink);
+      font: inherit;
+      font-size: 14px;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .profile-field input::placeholder {
+      color: #98a8ad;
+    }
+
+    .profile-field input:focus {
+      border-color: var(--profile-accent);
+      box-shadow: 0 0 0 3px rgb(231 138 48 / 16%);
+    }
+
+    .profile-form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 19px;
+      border-top: 1px solid #e8edef;
+    }
+
+    .profile-message {
+      min-height: 20px;
+      color: var(--profile-muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .profile-message[data-state="success"] {
+      color: var(--profile-green);
+    }
+
+    .profile-message[data-state="error"] {
+      color: var(--profile-red);
+    }
+
+    .profile-submit {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 17px;
+      border: 0;
+      border-radius: 5px;
+      background: #172a35;
+      color: #fff;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease, transform 150ms ease;
+    }
+
+    .profile-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: #294452;
+    }
+
+    .profile-submit:focus-visible {
+      outline: 3px solid rgb(231 138 48 / 42%);
+      outline-offset: 3px;
+    }
+
+    .profile-submit:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+
+    .profile-submit-mark {
+      color: #f3b366;
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    @keyframes profile-arrive {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding-left: 0;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        height: auto;
+        min-height: 62px;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 14px;
+      }
+
+      .sidebar-brand {
+        flex: 0 0 auto;
+        padding: 7px 9px;
+      }
+
+      .sidebar-brand .brand-name {
+        display: none;
+      }
+
+      .nav-menu {
+        min-width: 0;
+        flex: 1 1 auto;
+        flex-direction: row;
+        gap: 3px;
+        overflow-x: auto;
+        margin: 0;
+        scrollbar-width: none;
+      }
+
+      .nav-menu::-webkit-scrollbar {
+        display: none;
+      }
+
+      .nav-item {
+        flex: 0 0 auto;
+        padding: 9px 10px;
+        font-size: 12px;
+      }
+
+      .sidebar-profile {
+        width: auto;
+        flex: 0 0 auto;
+        margin: 0;
+      }
+
+      .profile-btn {
+        max-width: 145px;
+        gap: 8px;
+        padding: 9px 10px;
+        font-size: 12px;
+      }
+
+      .main-content {
+        padding: 24px 24px 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .main-content {
+        padding: 20px 16px 0;
+      }
+
+      .profile-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        margin: 4px 0 20px;
+      }
+
+      .profile-heading h1 {
+        font-size: 25px;
+      }
+
+      .profile-sheet {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-identity {
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        column-gap: 15px;
+        align-items: center;
+        padding: 19px 20px;
+        border-right: 0;
+        border-bottom: 1px solid var(--profile-line);
+      }
+
+      .profile-monogram {
+        grid-row: span 2;
+        width: 56px;
+        height: 56px;
+        margin: 0;
+        font-size: 22px;
+      }
+
+      .profile-identity h2 {
+        align-self: end;
+        font-size: 16px;
+      }
+
+      .profile-role {
+        align-self: start;
+        margin-top: 2px;
+      }
+
+      .profile-identity-note {
+        display: none;
+      }
+
+      .profile-form-panel {
+        padding: 24px 20px;
+      }
+
+      .profile-fields {
+        grid-template-columns: 1fr;
+        gap: 17px;
+      }
+
+      .profile-field-full {
+        grid-column: auto;
+      }
+
+      .profile-form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+      }
+
+      .profile-submit {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .profile-page {
+        animation: none;
+      }
+
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <main class="main-content">
+    <section class="profile-page" aria-labelledby="pageTitle">
+      <header class="profile-heading">
+        <div>
+          <span class="profile-eyebrow">ADMINISTRATION / ACCOUNT</span>
+          <h1 id="pageTitle">ข้อมูลส่วนตัว</h1>
+          <p>จัดการข้อมูลบัญชีผู้ดูแลระบบของคุณ</p>
+        </div>
+        <div class="profile-record">
+          <span class="profile-record-mark" aria-hidden="true"></span>
+          บัญชีผู้ดูแลระบบ
+        </div>
+      </header>
+
+      <div class="profile-sheet">
+        <aside class="profile-identity" aria-label="ประเภทบัญชี">
+          <div class="profile-monogram" aria-hidden="true">A</div>
+          <h2>ผู้ดูแลระบบ</h2>
+          <span class="profile-role">ADMINISTRATOR</span>
+          <p class="profile-identity-note">ข้อมูลบัญชีนี้ใช้สำหรับระบุตัวตนในระบบจัดการ JP Notes</p>
+        </aside>
+
+        <section class="profile-form-panel" aria-labelledby="formTitle">
+          <div class="profile-form-heading">
+            <h2 id="formTitle">ข้อมูลบัญชี</h2>
+            <p>แก้ไขชื่อและอีเมลที่ผูกกับบัญชีผู้ดูแลระบบ</p>
+          </div>
+
+          <form id="profileForm">
+            <div class="profile-fields">
+              <div class="profile-field">
+                <label for="firstname">ชื่อ</label>
+                <input id="firstname" name="firstname" type="text" autocomplete="given-name" maxlength="100" required>
+              </div>
+              <div class="profile-field">
+                <label for="lastname">นามสกุล</label>
+                <input id="lastname" name="lastname" type="text" autocomplete="family-name" maxlength="100" required>
+              </div>
+              <div class="profile-field profile-field-full">
+                <label for="email">อีเมล</label>
+                <input id="email" name="email" type="email" autocomplete="email" maxlength="255" required>
+              </div>
+            </div>
+            <div class="profile-form-actions">
+              <p class="profile-message" id="message" role="status" aria-live="polite">กำลังโหลดข้อมูลบัญชี...</p>
+              <button class="profile-submit" id="saveProfile" type="submit">
+                <span class="profile-submit-mark" aria-hidden="true">&#10003;</span>
+                <span id="saveLabel">บันทึกข้อมูล</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="/projectjapan/backend/script.js"></script>
+  <script>
+    const profileEndpoint = '/projectjapan/backend/php/action/admin_api.php';
+    const profileForm = document.getElementById('profileForm');
+    const profileMessage = document.getElementById('message');
+    const saveProfileButton = document.getElementById('saveProfile');
+    const saveLabel = document.getElementById('saveLabel');
+    const profileFields = ['firstname', 'lastname', 'email'];
+
+    fetch(profileEndpoint + '?action=profile_get', { credentials: 'same-origin' })
+      .then((response) => response.json())
+      .then((result) => {
+        if (!result.success) throw new Error(result.message || 'โหลดข้อมูลไม่สำเร็จ');
+        profileFields.forEach((field) => {
+          document.getElementById(field).value = result.item[field] || '';
+        });
+        profileMessage.textContent = '';
+      })
+      .catch((error) => {
+        profileMessage.dataset.state = 'error';
+        profileMessage.textContent = 'โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+      });
+
+    profileForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const values = Object.fromEntries(profileFields.map((field) => [
+        field,
+        document.getElementById(field).value.trim()
+      ]));
+
+      saveProfileButton.disabled = true;
+      saveLabel.textContent = 'กำลังบันทึก...';
+      profileMessage.textContent = '';
+      delete profileMessage.dataset.state;
+
+      fetch(profileEndpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'profile_update', ...values })
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          profileMessage.textContent = result.message || (result.success ? 'บันทึกข้อมูลแล้ว' : 'บันทึกข้อมูลไม่สำเร็จ');
+          profileMessage.dataset.state = result.success ? 'success' : 'error';
+        })
+        .catch((error) => {
+          profileMessage.dataset.state = 'error';
+          profileMessage.textContent = 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+        })
+        .finally(() => {
+          saveProfileButton.disabled = false;
+          saveLabel.textContent = 'บันทึกข้อมูล';
+        });
+    });
+  </script>
+</body>
+</html>

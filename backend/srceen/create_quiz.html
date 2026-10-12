@@ -106,7 +106,10 @@
                             <div class="page-title" style="font-size: 16px;">คำถาม</div>
                             <div class="page-subtitle">เลือกตัวอักษรที่มีอยู่จริงในระบบ</div>
                         </div>
-                        <button type="button" id="addQuestion" class="btn-add-question">เพิ่มข้อ</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" id="autoGenerateBtn" class="btn-add-question" style="background-color: #10b981; border-color: #10b981;">สุ่มข้ออัตโนมัติ</button>
+                            <button type="button" id="addQuestion" class="btn-add-question">เพิ่มข้อ</button>
+                        </div>
                     </div>
 
                     <div id="questions"></div>
@@ -155,6 +158,24 @@
                 ).join('');
         }
 
+        function generateRandomChoices(correctRomaji) {
+            if (!state.characters || state.characters.length === 0) return [correctRomaji, '', '', ''];
+            const validChars = state.characters.filter(c => c.romaji);
+            if (validChars.length < 4) {
+                const arr = [...new Set([correctRomaji, ...validChars.map(c => c.romaji)])];
+                while(arr.length < 4) arr.push('');
+                return arr;
+            }
+            
+            const choices = [correctRomaji];
+            const others = validChars.filter(c => c.romaji !== correctRomaji);
+            
+            const shuffledOthers = others.sort(() => 0.5 - Math.random());
+            choices.push(...shuffledOthers.slice(0, 3).map(c => c.romaji));
+            
+            return choices.sort(() => 0.5 - Math.random());
+        }
+
         function renumberQuestions() {
             [...questionsContainer.children].forEach((card, index) => {
                 card.querySelector('.section-box-title').textContent = `ข้อที่ ${index + 1}`;
@@ -165,13 +186,27 @@
             const characterId = Number(card.querySelector('.character-id')?.value || 0);
             const character = state.characters.find((item) => Number(item.id) === characterId);
             const hint = card.querySelector('.audio-current');
+            const previewContainer = card.querySelector('.audio-preview-container');
             if (!hint) return;
+            
+            let audioUrl = '';
+            
             if (card.dataset.audioFile) {
                 hint.textContent = 'ใช้ไฟล์เสียงเฉพาะข้อสอบ (เลือกไฟล์ใหม่เพื่อแทนที่)';
+                audioUrl = card.dataset.audioFile;
             } else if (character?.sound_file) {
                 hint.textContent = 'ใช้เสียงที่แอดมินอัปโหลดไว้สำหรับตัวอักษรนี้อัตโนมัติ';
+                audioUrl = character.sound_file;
             } else {
                 hint.textContent = 'ตัวอักษรนี้ยังไม่มีเสียงจากแอดมิน สามารถอัปโหลดเสียงเฉพาะข้อนี้ได้';
+            }
+            
+            if (previewContainer) {
+                if (audioUrl) {
+                    previewContainer.innerHTML = `<audio controls src="${esc(audioUrl)}" style="height: 35px; border-radius: 4px;"></audio>`;
+                } else {
+                    previewContainer.innerHTML = '';
+                }
             }
         }
 
@@ -200,9 +235,10 @@
 
             const fallbackCharacterId = validCharacterId;
 
-            const choiceOptionsValue = Array.isArray(values.choice_options) 
-                ? values.choice_options.join(', ') 
-                : (values.choice_options || '');
+            const choiceArray = Array.isArray(values.choice_options) 
+                ? values.choice_options 
+                : (values.choice_options ? values.choice_options.split(',').map(s => s.trim()) : ['', '', '', '']);
+            while (choiceArray.length < 4) choiceArray.push('');
 
             card.innerHTML = `
                 <button type="button" class="remove-question">ลบ</button>
@@ -224,13 +260,21 @@
                     <input class="form-control question-text" value="${esc(values.question_text)}" placeholder="เว้นว่างเพื่อใช้คำถามมาตรฐาน">
                 </div>
                 <div class="form-group choice-only" ${quizKind === 'choice' ? '' : 'hidden'}>
-                    <label class="form-label">ตัวเลือก (คั่นด้วยจุลภาค) *</label>
-                    <input class="form-control choice-options" value="${esc(choiceOptionsValue)}" placeholder="เช่น a, i, u, e">
+                    <label class="form-label">ตัวเลือก 4 ข้อ *</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input class="form-control choice-option-item" required value="${esc(choiceArray[0])}" placeholder="ตัวเลือกที่ 1">
+                        <input class="form-control choice-option-item" required value="${esc(choiceArray[1])}" placeholder="ตัวเลือกที่ 2">
+                        <input class="form-control choice-option-item" required value="${esc(choiceArray[2])}" placeholder="ตัวเลือกที่ 3">
+                        <input class="form-control choice-option-item" required value="${esc(choiceArray[3])}" placeholder="ตัวเลือกที่ 4">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">เสียงประกอบคำถาม <small>(MP3, WAV, OGG, WEBM, M4A ไม่เกิน 8 MB)</small></label>
                     <input class="form-control audio-file" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/webm,audio/mp4,audio/x-m4a">
-                    <small class="audio-current">${values.audio_file ? 'มีเสียงเดิมอยู่แล้ว เลือกไฟล์ใหม่เพื่อแทนที่' : 'ยังไม่มีไฟล์เสียง'}</small>
+                    <div style="margin-top: 8px;">
+                        <small class="audio-current">${values.audio_file ? 'มีเสียงเดิมอยู่แล้ว เลือกไฟล์ใหม่เพื่อแทนที่' : 'ยังไม่มีไฟล์เสียง'}</small>
+                        <div class="audio-preview-container" style="margin-top: 8px;"></div>
+                    </div>
                 </div>
             `;
 
@@ -246,14 +290,40 @@
             card.querySelector('.character-id').addEventListener('change', (event) => {
                 const character = state.characters.find((item) => Number(item.id) === Number(event.target.value));
                 const answerInput = card.querySelector('.correct-answer');
-                if (character && !answerInput.value) {
+                const choiceInputs = card.querySelectorAll('.choice-option-item');
+                
+                if (character) {
                     answerInput.value = character.romaji || '';
+                    if (quizKind === 'choice' && choiceInputs.length > 0) {
+                        const generated = generateRandomChoices(character.romaji);
+                        choiceInputs.forEach((input, idx) => {
+                            if (generated[idx] !== undefined) input.value = generated[idx];
+                        });
+                    }
                 }
+                
                 if (card.dataset.audioFile) card.dataset.audioFile = '';
                 const audioInput = card.querySelector('.audio-file');
                 if (audioInput) audioInput.value = '';
                 updateCharacterAudioHint(card);
             });
+            
+            // Audio File Selection Preview
+            const audioInput = card.querySelector('.audio-file');
+            if (audioInput) {
+                audioInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    const previewContainer = card.querySelector('.audio-preview-container');
+                    const hint = card.querySelector('.audio-current');
+                    if (file && previewContainer) {
+                        const localUrl = URL.createObjectURL(file);
+                        hint.textContent = 'เตรียมอัปโหลดไฟล์เสียง: ' + file.name;
+                        previewContainer.innerHTML = `<audio controls src="${esc(localUrl)}" style="height: 35px; border-radius: 4px;"></audio>`;
+                    } else {
+                        updateCharacterAudioHint(card); // Revert to default/character sound
+                    }
+                });
+            }
 
             questionsContainer.appendChild(card);
             card.dataset.audioFile = values.audio_file || '';
@@ -273,7 +343,7 @@
                         character_id: card.querySelector('.character-id').value,
                         correct_answer: card.querySelector('.correct-answer').value,
                         question_text: card.querySelector('.question-text').value,
-                        choice_options: card.querySelector('.choice-options')?.value || '',
+                        choice_options: [...card.querySelectorAll('.choice-option-item')].map(inp => inp.value),
                         audio_file: card.dataset.audioFile || ''
                     }));
 
@@ -329,6 +399,34 @@
         });
 
         document.getElementById('addQuestion').addEventListener('click', () => addQuestion());
+        
+        document.getElementById('autoGenerateBtn').addEventListener('click', () => {
+            if (!state.characters || state.characters.length === 0) {
+                alert('ไม่พบข้อมูลตัวอักษร');
+                return;
+            }
+            
+            const count = prompt('ต้องการสุ่มกี่ข้อ?', '5');
+            if (count === null) return;
+            const num = parseInt(count);
+            if (isNaN(num) || num <= 0) return;
+            
+            const validChars = state.characters.filter(c => c.romaji);
+            if (validChars.length === 0) {
+                alert('ไม่มีตัวอักษรที่มีข้อมูล romaji สำหรับใช้สร้างคำตอบ');
+                return;
+            }
+            
+            for (let i = 0; i < num; i++) {
+                const randomChar = validChars[Math.floor(Math.random() * validChars.length)];
+                addQuestion({
+                    character_id: randomChar.id,
+                    correct_answer: randomChar.romaji,
+                    choice_options: quizKind === 'choice' ? generateRandomChoices(randomChar.romaji) : ''
+                });
+            }
+            renumberQuestions();
+        });
 
         document.getElementById('quizForm').addEventListener('submit', (event) => {
             event.preventDefault();
@@ -347,7 +445,7 @@
                     character_id: Number(card.querySelector('.character-id').value),
                     correct_answer: card.querySelector('.correct-answer').value,
                     question_text: card.querySelector('.question-text').value,
-                        choice_options: card.querySelector('.choice-options')?.value || [],
+                    choice_options: [...card.querySelectorAll('.choice-option-item')].map(inp => inp.value),
                     audio_file: card.dataset.audioFile || '',
                     audio_upload_index: card.querySelector('.audio-file')?.files?.length ? [...questionsContainer.children].indexOf(card) : ''
                 }))

@@ -335,7 +335,9 @@ function finishGame() {
                 questions: answerHistory
             }
         })
-    }).catch(() => {});
+    })
+    .then(r => r.json().then(data => console.log(data)))
+    .catch((err) => console.error("Save error:", err));
 }
 
 fetch(`../connectapi/match_quiz.php?${new URLSearchParams({ mode, type, group_name, quiz_set_id }).toString()}`, { credentials: 'same-origin' })

@@ -260,3 +260,136 @@
 [2026-09-08 21:50:08] login_attempt: login=admin@test.com
 [2026-09-08 21:50:08] admin_lookup: found admin_id=1 for login=admin@test.com
 [2026-09-08 21:50:08] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-20 10:20:15] login_attempt: login=admin@test.com
+[2026-09-20 10:20:15] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-20 10:20:15] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-20 10:22:00] login_attempt: login=yamada@gmail.com
+[2026-09-20 10:22:00] member_login_success: id=16 login=yamada@gmail.com
+[2026-09-20 11:41:48] login_attempt: login=admin@test.com
+[2026-09-20 11:41:48] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-20 11:41:48] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-20 13:12:08] login_attempt: login=yamada
+[2026-09-20 13:12:08] member_login_success: id=16 login=yamada
+[2026-09-20 13:25:21] login_attempt: login=yamada
+[2026-09-20 13:25:21] member_login_success: id=16 login=yamada
+[2026-09-20 13:26:34] login_attempt: login=admin@test.com
+[2026-09-20 13:26:34] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-20 13:26:34] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-20 13:34:17] login_attempt: login=yamada
+[2026-09-20 13:34:17] member_login_success: id=16 login=yamada
+[2026-09-20 13:36:18] login_attempt: login=yamada
+[2026-09-20 13:36:18] member_login_success: id=16 login=yamada
+[2026-09-20 13:50:52] login_attempt: login=admin@test.com
+[2026-09-20 13:50:52] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-20 13:50:52] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-20 14:02:22] login_attempt: login=yamada
+[2026-09-20 14:02:22] member_login_success: id=16 login=yamada
+[2026-09-20 14:03:24] login_attempt: login=yamada
+[2026-09-20 14:03:24] member_login_success: id=16 login=yamada
+[2026-09-20 14:05:58] login_attempt: login=yamada
+[2026-09-20 14:05:58] member_login_success: id=16 login=yamada
+[2026-09-20 14:14:02] login_attempt: login=admin@test.com
+[2026-09-20 14:14:02] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-20 14:14:02] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-20 14:15:57] login_attempt: login=yamada@gmail.com
+[2026-09-20 14:15:57] member_login_success: id=16 login=yamada@gmail.com
+[2026-09-20 14:16:09] login_attempt: login=yamada@gmail.com
+[2026-09-20 14:16:09] member_login_success: id=16 login=yamada@gmail.com
+[2026-09-20 14:16:30] login_attempt: login=admin@test.com
+[2026-09-20 14:16:30] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-20 14:16:30] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-20 15:01:24] login_attempt: login=yamada
+[2026-09-20 15:01:24] login_failed: login=yamada
+[2026-09-20 15:01:24] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-20 15:01:33] login_attempt: login=yamada@gmail.com
+[2026-09-20 15:01:33] member_login_success: id=16 login=yamada@gmail.com
+[2026-09-20 17:03:28] login_attempt: login=admin@test.com
+[2026-09-20 17:03:28] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-20 17:03:28] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-21 04:28:09] login_attempt: login=admin@test.com
+[2026-09-21 04:28:09] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-21 04:28:09] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-21 16:29:45] login_attempt: login=yamada@gmail.com
+[2026-09-21 16:29:45] member_login_success: id=16 login=yamada@gmail.com
+[2026-09-22 13:58:34] login_attempt: login=admin@test.com
+[2026-09-22 13:58:34] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-22 13:58:34] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-22 13:58:52] login_attempt: login=yamada@gmail.com
+[2026-09-22 13:58:52] member_login_success: id=16 login=yamada@gmail.com
+[2026-09-23 16:08:11] login_attempt: login=admin@test.com
+[2026-09-23 16:08:11] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-23 16:08:11] admin_login_success: admin_id=1 login=admin@test.com
+[2026-09-26 05:03:50] login_attempt: login=yamada@gmail.com
+[2026-09-26 05:03:50] login_failed: login=yamada@gmail.com
+[2026-09-26 05:03:50] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-09-26 05:04:00] login_attempt: login=yamada@gmail.com
+[2026-09-26 05:04:00] member_login_success: id=16 login=yamada@gmail.com
+[2026-09-28 16:39:20] login_attempt: login=admin@test.com
+[2026-09-28 16:39:20] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-09-28 16:39:21] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-01 14:38:19] login_attempt: login=yamada@gmail.com
+[2026-10-01 14:38:19] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-01 20:25:57] login_attempt: login=admin@test.com
+[2026-10-01 20:25:57] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-01 20:25:57] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-02 08:44:06] login_attempt: login=yamada@gmail.com
+[2026-10-02 08:44:06] login_failed: login=yamada@gmail.com
+[2026-10-02 08:44:06] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-10-02 08:44:15] login_attempt: login=yamada@gmail.com
+[2026-10-02 08:44:15] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-02 10:09:14] login_attempt: login=admin@test.com
+[2026-10-02 10:09:14] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-02 10:09:14] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-02 10:19:36] login_attempt: login=yamada@gmail.com
+[2026-10-02 10:19:36] login_failed: login=yamada@gmail.com
+[2026-10-02 10:19:36] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-10-02 13:42:29] login_attempt: login=yamada@gmail.com
+[2026-10-02 13:42:29] login_failed: login=yamada@gmail.com
+[2026-10-02 13:42:29] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-10-02 13:42:37] login_attempt: login=yamada@gmail.com
+[2026-10-02 13:42:37] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-04 11:59:37] login_attempt: login=yamada@gmail.com
+[2026-10-04 11:59:37] login_failed: login=yamada@gmail.com
+[2026-10-04 11:59:37] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-10-04 11:59:50] login_attempt: login=yamada@gmail.com
+[2026-10-04 11:59:50] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-05 10:29:45] login_attempt: login=admin@test.com
+[2026-10-05 10:29:45] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-05 10:29:45] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-05 22:02:25] login_attempt: login=yamada@gmail.com
+[2026-10-05 22:02:25] login_failed: login=yamada@gmail.com
+[2026-10-05 22:02:25] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-10-05 22:02:35] login_attempt: login=yamada@gmail.com
+[2026-10-05 22:02:35] login_failed: login=yamada@gmail.com
+[2026-10-05 22:02:35] login_error: ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+[2026-10-05 22:02:42] login_attempt: login=yamada@gmail.com
+[2026-10-05 22:02:42] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-05 22:04:43] login_attempt: login=admin@test.com
+[2026-10-05 22:04:43] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-05 22:04:43] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-06 04:45:47] login_attempt: login=admin@test.com
+[2026-10-06 04:45:47] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-06 04:45:48] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-08 13:10:57] login_attempt: login=yamada@gmail.com
+[2026-10-08 13:10:57] pdo_exception: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'jp_learning.users' doesn't exist in engine
+[2026-10-08 13:10:57] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-10-08 13:11:04] login_attempt: login=yamada@gmail.com
+[2026-10-08 13:11:04] pdo_exception: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'jp_learning.users' doesn't exist in engine
+[2026-10-08 13:11:04] login_error: เกิดปัญหาในระบบ กรุณาลองใหม่อีกครั้ง
+[2026-10-08 13:17:54] login_attempt: login=yamada@gmail.com
+[2026-10-08 13:17:54] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-08 14:06:14] login_attempt: login=yamada@gmail.com
+[2026-10-08 14:06:14] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-08 15:35:36] login_attempt: login=admin@test.com
+[2026-10-08 15:35:36] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-08 15:35:36] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-10 15:07:27] login_attempt: login=admin@test.com
+[2026-10-10 15:07:27] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-10 15:07:27] admin_login_success: admin_id=1 login=admin@test.com
+[2026-10-11 22:21:27] login_attempt: login=yamada@gmail.com
+[2026-10-11 22:21:27] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-11 22:22:28] login_attempt: login=yamada@gmail.com
+[2026-10-11 22:22:28] member_login_success: id=16 login=yamada@gmail.com
+[2026-10-12 06:52:03] login_attempt: login=admin@test.com
+[2026-10-12 06:52:03] admin_lookup: found admin_id=1 for login=admin@test.com
+[2026-10-12 06:52:03] admin_login_success: admin_id=1 login=admin@test.com

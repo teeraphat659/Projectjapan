@@ -24,6 +24,7 @@
                 <div class="member-hero-actions">
                     <a class="dashboard-primary-action" href="../data/kanatable.php">เริ่มเรียนตัวอักษร <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
                     <a class="dashboard-secondary-action" href="../data/ex2.php">ไปหน้าฝึกเขียน</a>
+                    <a class="dashboard-secondary-action" id="latestMatchBtn" href="../data/history.php" style="display: none;"><i class="fa-solid fa-puzzle-piece"></i> ดูผลจับคู่ล่าสุด</a>
                 </div>
             </div>
             <aside class="member-kana-note" aria-label="ตัวอย่างบทเรียนคาตากานะ">
@@ -104,6 +105,18 @@
             const navUsername = document.getElementById('navUsername');
             if (navUsername) navUsername.textContent = user.navUsername || 'ผู้ใช้งาน';
             document.getElementById('user-firstname').textContent = user.firstname || 'ผู้ใช้งาน';
+            
+            // Show latest match button if there is a match in recentTests
+            if (data.recentTests && data.recentTests.length > 0) {
+                const latestMatch = data.recentTests.find(test => test.quiz_id);
+                if (latestMatch) {
+                    const btn = document.getElementById('latestMatchBtn');
+                    if (btn) {
+                        btn.href = latestMatch.url;
+                        btn.style.display = 'inline-flex';
+                    }
+                }
+            }
         }
     </script>
 </body>

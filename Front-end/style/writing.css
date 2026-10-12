@@ -218,6 +218,93 @@ body {
     color: var(--text-dark);
 }
 
+.container > .writing-guide {
+    grid-column: 1 / -1;
+    height: auto;
+}
+
+.writing-guide-header h2 {
+    color: var(--text-dark);
+    font-size: 22px;
+}
+
+.writing-guide-header p:not(.eyebrow) {
+    margin-top: 6px;
+    color: var(--text-light);
+}
+
+.writing-guide-categories {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.writing-guide-category,
+.writing-guide-item {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.writing-guide-category {
+    padding: 14px 16px;
+}
+
+.writing-guide-category > summary,
+.writing-guide-item > summary {
+    cursor: pointer;
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.writing-guide-category > summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.writing-guide-category > summary span {
+    flex: 0 0 auto;
+    color: var(--accent);
+    font-size: 13px;
+}
+
+.writing-guide-item {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #faf8f6;
+}
+
+.writing-guide-item > summary {
+    font-size: 14px;
+}
+
+.writing-guide-item p {
+    margin-top: 8px;
+    color: var(--text-light);
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+.writing-guide-toggle {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.writing-guide-toggle:hover,
+.writing-guide-toggle:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .control-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1087,6 +1174,8 @@ body.is-drawing .trace-guide-stroke.is-current {
         grid-template-columns: 1fr;
         align-items: start;
     }
+
+    .writing-guide-categories { grid-template-columns: 1fr; }
 
     .panel { height: auto; }
 

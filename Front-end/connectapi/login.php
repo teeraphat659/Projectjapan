@@ -36,12 +36,12 @@ log_debug_login("login_attempt: login={$login}");
 
 if ($login === '' || $password === '') {
     recordFailedLoginAttempt('member_login', $rateLimitIdentifier, 900);
-    redirect_with_error('กรุณากรอกชื่อผู้ใช้งานหรืออีเมล และรหัสผ่าน');
+    redirect_with_error('กรุณากรอกอีเมล และรหัสผ่าน');
 }
 
 try {
     // 1. ค้นหาในตาราง users (สมาชิกทั่วไป)
-    $query = 'SELECT id, firstname, lastname, username, email, created_at, password_hash FROM users WHERE (username = :login OR email = :login) AND deleted_at IS NULL LIMIT 1';
+    $query = 'SELECT id, firstname, lastname, username, email, created_at, password_hash FROM users WHERE email = :login AND deleted_at IS NULL LIMIT 1';
     $stmt = $conn->prepare($query);
     $stmt->execute([':login' => $login]);
     $member = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -73,7 +73,7 @@ try {
     }
 
 // 2. ค้นหาในตาราง admin ด้วย schema เดียวกับระบบหลังบ้าน
-    $stmt2 = $conn->prepare('SELECT admin_id, username, password, name, email FROM admin WHERE username = :login OR email = :login LIMIT 1');
+    $stmt2 = $conn->prepare('SELECT admin_id, username, password, name, email FROM admin WHERE email = :login LIMIT 1');
     $stmt2->execute([':login' => $login]);
     $admin = $stmt2->fetch(PDO::FETCH_ASSOC);
 

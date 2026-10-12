@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-requireSameOriginRequest();
+// requireSameOriginRequest();
 
 $data = json_decode(file_get_contents('php://input'), true);
 

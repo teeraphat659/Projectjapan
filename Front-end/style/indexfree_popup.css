@@ -1,0 +1,144 @@
+.character-dialog {
+    width: min(880px, calc(100% - 32px));
+    padding: 30px;
+}
+
+.character-dialog .dialog-summary {
+    padding-bottom: 20px;
+}
+
+.character-dialog .dialog-detail-grid {
+    gap: 12px;
+    padding-top: 16px;
+}
+
+.character-dialog .detail-block {
+    border-radius: 12px;
+}
+
+.character-dialog .video-block {
+    display: block;
+}
+
+.character-dialog .video-block > .detail-icon {
+    display: none;
+}
+
+.character-dialog .video-block > div {
+    width: 100%;
+}
+
+.character-dialog .video-player-frame {
+    width: min(100%, 520px);
+    max-width: none;
+    margin: 14px auto 0;
+    border-radius: 12px;
+    background: #202b3c;
+    box-shadow: 0 14px 34px rgba(32, 43, 60, 0.16);
+}
+
+.character-dialog .svg-stage {
+    width: min(100%, 430px);
+    margin: 0 auto;
+}
+
+.character-dialog .video-controls-bar {
+    gap: 13px;
+    padding: 16px 18px;
+    background: #202b3c;
+}
+
+.character-dialog .timeline-track,
+.character-dialog .stroke-pct-label {
+    display: none;
+}
+
+.character-dialog .timeline-wrapper {
+    gap: 0;
+}
+
+.character-dialog .timeline-meta {
+    justify-content: flex-start;
+    padding: 0;
+    color: #e8edf3;
+    font-size: 12px;
+}
+
+.character-dialog .stroke-counter-label {
+    color: #fff;
+}
+
+.character-dialog .player-ctrl-btn {
+    min-height: 36px;
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    background: #344257;
+    color: #fff;
+    font: 600 12px 'Noto Sans Thai', sans-serif;
+}
+
+.character-dialog .player-ctrl-btn:hover {
+    border-color: rgba(255, 255, 255, 0.34);
+    background: #43536b;
+}
+
+.character-dialog .player-ctrl-btn.primary-btn {
+    border-color: #e85d4a;
+    background: #e85d4a;
+    box-shadow: 0 4px 12px rgba(232, 93, 74, 0.26);
+}
+
+.character-dialog .player-ctrl-btn.primary-btn:hover {
+    border-color: #d94a35;
+    background: #d94a35;
+}
+
+.character-dialog .player-ctrl-btn:focus-visible,
+.character-dialog .step-btn-pill:focus-visible {
+    outline: 3px solid rgba(232, 93, 74, 0.55);
+    outline-offset: 2px;
+}
+
+.character-dialog .step-pills-container {
+    padding-top: 10px;
+}
+
+.character-dialog .step-btn-pill {
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 8px;
+}
+
+@media (max-width: 640px) {
+    .character-dialog {
+        width: calc(100% - 20px);
+        max-height: calc(100vh - 20px);
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .character-dialog .video-block {
+        display: block;
+    }
+
+    .character-dialog .video-block > .detail-icon {
+        display: none;
+    }
+
+    .character-dialog .video-player-frame {
+        width: 100%;
+    }
+
+    .character-dialog .svg-stage {
+        width: min(100%, 380px);
+    }
+
+    .character-dialog .video-controls-bar {
+        padding: 14px;
+    }
+
+    .character-dialog .controls-action-row {
+        justify-content: flex-start;
+    }
+}

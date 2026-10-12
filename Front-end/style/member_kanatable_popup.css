@@ -1,0 +1,116 @@
+.member-characters .modal {
+    z-index: 3000;
+}
+
+.member-characters .modal-content {
+    width: min(820px, calc(100% - 48px));
+}
+
+.member-characters .modal-body {
+    overflow-x: hidden;
+}
+
+.member-characters .video-player-frame {
+    width: min(100%, 420px);
+    max-width: 420px;
+    margin: 14px auto 0;
+    border-radius: 12px;
+    background: #202b3c;
+    box-shadow: 0 14px 34px rgba(32, 43, 60, 0.16);
+}
+
+.member-characters .svg-stage {
+    width: min(100%, 360px);
+    margin: 0 auto;
+}
+
+.member-characters .video-controls-bar {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+    gap: 13px;
+    padding: 16px 18px;
+    background: #202b3c;
+}
+
+.member-characters .timeline-track,
+.member-characters .stroke-pct-label {
+    display: none;
+}
+
+.member-characters .timeline-wrapper {
+    gap: 0;
+}
+
+.member-characters .timeline-meta {
+    justify-content: flex-start;
+    padding: 0;
+    color: #e8edf3;
+    font-size: 12px;
+}
+
+.member-characters .stroke-counter-label {
+    color: #fff;
+}
+
+.member-characters .player-ctrl-btn {
+    min-height: 36px;
+    pointer-events: auto;
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    background: #344257;
+    color: #fff;
+    font: 600 12px 'Noto Sans Thai', sans-serif;
+}
+
+.member-characters .player-ctrl-btn:hover {
+    border-color: rgba(255, 255, 255, 0.34);
+    background: #43536b;
+}
+
+.member-characters .player-ctrl-btn.primary-btn {
+    border-color: #e85d4a;
+    background: #e85d4a;
+    box-shadow: 0 4px 12px rgba(232, 93, 74, 0.26);
+}
+
+.member-characters .player-ctrl-btn.primary-btn:hover {
+    border-color: #d94a35;
+    background: #d94a35;
+}
+
+.member-characters .player-ctrl-btn:focus-visible,
+.member-characters .step-btn-pill:focus-visible {
+    outline: 3px solid rgba(232, 93, 74, 0.55);
+    outline-offset: 2px;
+}
+
+.member-characters .step-pills-container {
+    padding-top: 10px;
+}
+
+.member-characters .step-btn-pill {
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 8px;
+    pointer-events: auto;
+}
+
+@media (max-width: 560px) {
+    .member-characters .modal-content {
+        width: 100%;
+    }
+
+    .member-characters .video-player-frame {
+        width: 100%;
+    }
+
+    .member-characters .video-controls-bar {
+        padding: 14px;
+    }
+
+    .member-characters .controls-action-row {
+        justify-content: flex-start;
+    }
+}

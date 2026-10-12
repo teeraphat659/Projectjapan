@@ -653,7 +653,7 @@ function evaluateTrajectory(
                 ($normalizedUserPoints[0]['x'] - $normalizedReferencePoints[0]['x']) ** 2
                 + ($normalizedUserPoints[0]['y'] - $normalizedReferencePoints[0]['y']) ** 2
             );
-            $startPositionScore = clampScore((1 - min(1.0, $startDistance / 0.25)) * 100);
+            $startPositionScore = clampScore((1 - min(1.0, $startDistance / max(0.35, $positionTolerance * 1.5))) * 100);
         }
     }
     $hasEnoughPoints = count($points) >= max(12, $expectedStrokeCount * 3);
@@ -717,8 +717,8 @@ function evaluateTrajectory(
         );
         $strokeMetrics[] = [
             'stroke_number' => $index + 1,
-            'start_position_score' => clampScore((1 - min(1.0, $startDistance / 0.25)) * 100),
-            'end_position_score' => clampScore((1 - min(1.0, $endDistance / 0.25)) * 100),
+            'start_position_score' => clampScore((1 - min(1.0, $startDistance / max(0.35, $positionTolerance * 1.5))) * 100),
+            'end_position_score' => clampScore((1 - min(1.0, $endDistance / max(0.35, $positionTolerance * 1.5))) * 100),
             'direction_score' => $directionScore,
             'shape_score' => $strokeShapeScore,
             'length_score' => $lengthScore,
@@ -753,7 +753,7 @@ function evaluateTrajectory(
         ($strokeShapeAverage * 0.70) + ($strokeDetailScore * 0.30)
     );
     $referenceGatePassed = $referenceGatePassed
-        && $minimumStrokeScore >= 45;
+        && $minimumStrokeScore >= 35;
 
     return [
         'stroke_order_score' => $strokeOrderScore,
@@ -1527,7 +1527,7 @@ try {
             if (!$referenceStrokes) $errorReasons[] = 'ยังไม่มีต้นแบบสำหรับตรวจตัวอักษรนี้';
             if ($strokeCount !== (int)$character['stroke_count']) $errorReasons[] = 'จำนวนเส้นยังไม่ตรงกับต้นแบบ';
             if (($ruleResult['geometry_score'] ?? 0) < 55) $errorReasons[] = 'รูปทรงหรือทิศทางของเส้นยังต่างจากต้นแบบ';
-            if (($ruleResult['minimum_stroke_score'] ?? 0) < 45) $errorReasons[] = 'มีเส้นที่ควรปรับจุดเริ่ม จุดจบ หรือทิศทาง';
+            if (($ruleResult['minimum_stroke_score'] ?? 0) < 35) $errorReasons[] = 'มีเส้นที่ควรปรับจุดเริ่ม จุดจบ หรือทิศทาง';
         }
         $errorReasons = array_values(array_unique(array_map('strval', $errorReasons)));
         $aiExplanation = (string)($aiResult['ai_explanation'] ?? '');

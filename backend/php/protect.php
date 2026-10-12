@@ -37,3 +37,17 @@ try {
     header('Location: ' . $loginUrl);
     exit;
 }
+
+function renderAdminTemplate(string $path, array $replacements = []): void
+{
+    $template = file_get_contents($path);
+    if ($template === false) {
+        throw new RuntimeException('Unable to read admin template: ' . $path);
+    }
+
+    if ($replacements !== []) {
+        $template = strtr($template, $replacements);
+    }
+
+    echo str_replace('/projectjapan/', appBasePath() . '/', $template);
+}

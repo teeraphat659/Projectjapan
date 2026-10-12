@@ -19,6 +19,12 @@ check(appBasePath() === '/jp-learning', 'Base path normalization failed');
 check(appUrl('Front-end/data/member.php') === '/jp-learning/Front-end/data/member.php', 'URL generation failed');
 putenv('PROJECTJAPAN_BASE_PATH');
 
+$_SERVER['SCRIPT_NAME'] = '/Front-end/connectapi/login.php';
+check(appBasePath() === '', 'Root deployment base path detection failed');
+$_SERVER['SCRIPT_NAME'] = '/projectjapan/Front-end/connectapi/login.php';
+check(appBasePath() === '/projectjapan', 'Subdirectory deployment base path detection failed');
+unset($_SERVER['SCRIPT_NAME']);
+
 $_SERVER['HTTPS'] = 'off';
 securityStartSession();
 $token = csrfToken();

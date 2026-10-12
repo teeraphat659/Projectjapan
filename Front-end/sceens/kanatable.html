@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ฝึกเขียนตัวอักษรญี่ปุ่น</title>
+    <title>ตารางตัวอักษรคาตาคานะ - ตัวอักษรญี่ปุ่น</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style/kanatable.css">
     <link rel="stylesheet" href="../style/member-ui.css?v=member-nav-5">
+    <link rel="stylesheet" href="../style/japanese_stroke_player.css?v=member-controls-3">
+    <link rel="stylesheet" href="../style/member_kanatable_popup.css?v=member-controls-2">
 </head>
 <body class="member-page member-characters">
     <script>
@@ -43,17 +45,17 @@
         <section class="page-header">
             <div class="character-page-copy">
                 <p class="character-eyebrow"><span></span> CHARACTER LIBRARY</p>
-                <h1>ตารางตัวอักษรญี่ปุ่น</h1>
-                <p>เริ่มจากคาตากานะทีละวรรค กดการ์ดเพื่อดูเสียงอ่านและรายละเอียดการเขียนของตัวอักษร</p>
-                <a class="character-practice-link" href="../data/ex2.php"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> ไปฝึกเขียนตัวอักษร</a>
+                <h1>ตารางตัวอักษรคาตาคานะ</h1>
+                <p>เริ่มต้นเรียนรู้ภาษาญี่ปุ่นด้วยตารางตัวอักษรคาตาคานะทีละวรรค คุณสามารถคลิกที่ตัวอักษรเพื่อฟังเสียงอ่านและดูรายละเอียดลำดับการเขียนของแต่ละตัวอักษรได้</p>
+                <a class="character-practice-link" href="../data/ex2.php"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> ฝึกเขียนตัวอักษรญี่ปุ่น</a>
             </div>
-            <div class="character-feature-card" aria-label="ตัวอย่างตัวอักษรคาตากานะ"><span>ア</span><strong>a</strong><small>Katakana</small></div>
+            <div class="character-feature-card" aria-label="ตัวอย่างตัวอักษรคาตาคานะ"><span>ア</span><strong>a</strong><small>Katakana</small></div>
         </section>
 
         <section class="table-controls">
             <div class="control-group character-status-card">
                 <span class="character-status-icon"><i class="fa-solid fa-book-open" aria-hidden="true"></i></span>
-                <div><label>ตารางตัวอักษร</label><div id="statusText" class="status-text">กำลังโหลดข้อมูลตัวอักษร...</div></div>
+                <div><label>ตารางตัวอักษร</label><div id="statusText" class="status-text">กำลังโหลดข้อมูลตารางตัวอักษร...</div></div>
             </div>
         </section>
 
@@ -61,14 +63,14 @@
 
         <div id="charModal" class="modal" aria-hidden="true">
             <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-                <button class="close-btn" type="button" aria-label="ปิดรายละเอียด" onclick="closeModal()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                <button class="close-btn" type="button" aria-label="ปิดหน้าต่างรายละเอียด" onclick="closeModal()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                 <div class="modal-header">
-                    <div class="modal-char" id="modalChar">あ</div>
+                    <div class="modal-char" id="modalChar">ア</div>
                     <div class="modal-heading-copy">
                         <p class="modal-kicker">CHARACTER NOTE</p>
                         <h2 class="modal-title" id="modalTitle">รายละเอียดตัวอักษร</h2>
-                        <p id="modalRomaji">เสียงอ่าน: -</p>
-                        <p class="modal-writing-guide" id="modalWritingGuide">เลือกดูภาพลำดับเส้นก่อนเริ่มฝึกเขียน</p>
+                        <p id="modalRomaji">เสียงอ่าน -</p>
+                        <p class="modal-writing-guide" id="modalWritingGuide">เลื่อนดูภาพลำดับเส้นก่อนเริ่มฝึกเขียน</p>
                     </div>
                 </div>
                 <div class="modal-detail-chips" aria-label="ข้อมูลตัวอักษร">
@@ -77,15 +79,89 @@
                 </div>
                 <div class="modal-body">
                     <section class="modal-study-resource modal-row preview-row" aria-labelledby="strokeHeading">
-                        <div class="stroke-section-heading"><span id="strokeHeading"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> ภาพลำดับเส้น</span><small>ดูทิศทางการเขียนก่อนเริ่มฝึก</small></div>
-                        <div class="stroke-preview-frame">
+                        <div id="videoPlayerSection" style="display: none; margin-bottom: 20px;">
+                            <div class="stroke-section-heading"><span><i class="fa-solid fa-circle-play" aria-hidden="true"></i> แอนิเมชันลำดับเส้น</span><small>ดูการเคลื่อนไหวของการเขียน</small></div>
+                            <div class="video-player-frame" id="strokeVideoPlayerContainer" style="margin-top: 10px;">
+                                <div class="svg-stage">
+                                    <div class="svg-grid-bg"></div>
+                                    <svg id="strokeVideoSvg" viewBox="0 0 109 109"></svg>
+                                    <div class="stroke-player-badge" id="strokeStatusBadge">
+                                        <span class="status-dot"></span>
+                                        <span id="strokeStatusText">พร้อมเล่น</span>
+                                    </div>
+                                </div>
+                                <div class="video-controls-bar">
+                                    <!-- Interactive Timeline -->
+                                    <div class="timeline-wrapper">
+                                        <div class="timeline-track" id="strokeTimelineTrack" title="คลิกหรือลากเพื่อเลื่อนช่วงเวลา">
+                                            <div class="timeline-progress" id="strokeTimelineProgress"></div>
+                                            <div class="timeline-thumb" id="strokeTimelineThumb"></div>
+                                        </div>
+                                        <div class="timeline-meta">
+                                            <span class="stroke-counter-label" id="strokeCounterLabel">เส้นที่ 0 / 0</span>
+                                            <span class="stroke-pct-label" id="strokePctLabel">0%</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Main Controls Row -->
+                                    <div class="controls-action-row">
+                                        <div class="controls-group-left">
+                                            <button type="button" id="btnPrevStroke" class="player-ctrl-btn" title="เส้นก่อนหน้า" aria-label="เส้นก่อนหน้า">
+                                                <i class="fa-solid fa-backward-step"></i>
+                                            </button>
+                                            <button type="button" id="btnPlayStrokeVideo" class="player-ctrl-btn primary-btn" title="เล่น / หยุด">
+                                                <i class="fa-solid fa-play" id="strokePlayIcon"></i>
+                                                <span id="strokePlayText">เล่นวิดีโอ</span>
+                                            </button>
+                                            <button type="button" id="btnNextStroke" class="player-ctrl-btn" title="เส้นถัดไป" aria-label="เส้นถัดไป">
+                                                <i class="fa-solid fa-forward-step"></i>
+                                            </button>
+                                            <button type="button" id="btnReplayStrokeVideo" class="player-ctrl-btn" title="เริ่มใหม่ตั้งแต่ต้น" aria-label="เริ่มใหม่">
+                                                <i class="fa-solid fa-rotate-left"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="controls-group-right">
+                                            <!-- Speed menu toggle -->
+                                            <div class="speed-dropdown-wrapper">
+                                                <button type="button" id="btnSpeedToggle" class="player-ctrl-btn speed-btn" title="ปรับความเร็วการเล่น">
+                                                    <i class="fa-solid fa-gauge-high"></i>
+                                                    <span id="strokeSpeedText">0.75x</span>
+                                                </button>
+                                                <div class="speed-menu" id="speedMenu">
+                                                    <button type="button" class="speed-item" data-speed="0.5">0.5x ช้ามาก</button>
+                                                    <button type="button" class="speed-item active" data-speed="0.75">0.75x ช้า</button>
+                                                    <button type="button" class="speed-item" data-speed="1.0">1.0x ปกติ</button>
+                                                    <button type="button" class="speed-item" data-speed="1.25">1.25x เร็ว</button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Loop toggle button -->
+                                            <button type="button" id="btnLoopToggle" class="player-ctrl-btn loop-btn" title="เปิด/ปิดการเล่นวนซ้ำ">
+                                                <i class="fa-solid fa-repeat"></i>
+                                                <span id="loopBtnText">วนซ้ำ: ปิด</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step pills row -->
+                                    <div class="step-pills-container">
+                                        <span class="step-pills-heading"><i class="fa-solid fa-list-ol"></i> เลือกดูทีละเส้น:</span>
+                                        <div class="step-pills-row" id="strokeStepPillsRow"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stroke-section-heading" id="imageHeadingSection"><span id="strokeHeading"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> ภาพลำดับเส้น</span><small>ดูทิศทางการเขียนก่อนเริ่มฝึก</small></div>
+                        <div class="stroke-preview-frame" id="imagePreviewFrame">
                             <span class="stroke-preview-label">ตัวอย่างการเขียน</span>
                             <img id="modalStroke" src="" alt="ภาพลำดับเส้น" loading="lazy">
                             <div id="modalStrokeEmpty" class="modal-stroke-empty"><i class="fa-regular fa-image" aria-hidden="true"></i><span>ยังไม่มีภาพลำดับเส้นสำหรับตัวอักษรนี้</span></div>
                         </div>
                     </section>
                     <section class="modal-study-resource modal-video-resource" id="modalVideoSection" hidden aria-labelledby="videoHeading">
-                        <div class="stroke-section-heading"><span id="videoHeading"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> วิดีโอวิธีเขียน</span><small>เมื่อเพิ่มวิดีโอแล้ว จะเปิดจากตรงนี้ได้ทันที</small></div>
+                        <div class="stroke-section-heading"><span id="videoHeading"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> วิดีโอวิธีเขียน</span><small>เมื่อเปิดลิงก์แล้ว จะเปิดหน้าต่างใหม่ทันที</small></div>
                         <a class="modal-video-link" id="modalVideoLink" href="#" target="_blank" rel="noopener"><i class="fa-solid fa-play" aria-hidden="true"></i> ดูวิดีโอสาธิตการเขียน</a>
                     </section>
                 </div>
@@ -133,23 +209,23 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.loggedIn) {
-                        navUsername.textContent = data.username || data.name || 'ผู้ใช้';
+                        navUsername.textContent = data.username || data.name || 'ผู้ใช้งาน';
                     } else {
-                        navUsername.textContent = 'ผู้ใช้';
+                        navUsername.textContent = 'ผู้ใช้งาน';
                     }
                 })
                 .catch(() => {
-                    navUsername.textContent = 'ผู้ใช้';
+                    navUsername.textContent = 'ผู้ใช้งาน';
                 });
         }
 
         function loadAllGroups() {
-            statusText.textContent = 'กำลังโหลดตัวอักษรทั้งหมด...';
+            statusText.textContent = 'กำลังโหลดตารางตัวอักษรคาตาคานะทั้งหมด...';
             fetch(`../data/api.php?type=katakana&group=1`)
                 .then(response => response.json())
                 .then(groups => {
                     if (!Array.isArray(groups) || !groups.length) {
-                        statusText.textContent = 'ไม่พบข้อมูลวรรค';
+                        statusText.textContent = 'ไม่พบข้อมูลวรรคตัวอักษร';
                         return;
                     }
 
@@ -170,7 +246,7 @@
                         let idxA = gojuonOrder.indexOf(nameA);
                         let idxB = gojuonOrder.indexOf(nameB);
                         
-                        // ถ้าไม่พบใน gojuonOrder ให้ไปต่อท้ายสุด
+                        // ถ้าไม่พบใน gojuonOrder ให้อยู่ท้ายสุด
                         if (idxA === -1) idxA = 999;
                         if (idxB === -1) idxB = 999;
                         
@@ -179,8 +255,8 @@
 
                     groupList.innerHTML = '';
                     
-                    // เนื่องจาก Promise.all จะแสดงผลลัพธ์ตามลำดับของ Array เสมอ 
-                    // พอเราจัดเรียงตัวแปร groups ด้านบนแล้ว การแสดงผลบนหน้าจอจึงถูกต้องตามลำดับด้วย
+                    // เนื่องจาก Promise.all จะแสดงผลลัพธ์ตามลำดับของ Array เสมอ
+                    // พอเราจัดเรียง groups แล้ว การแสดงผลก็จะถูกต้องตามลำดับด้วย
                     const groupPromises = groups.map(group => {
                         return fetch(`../data/api.php?type=katakana&group_name=${encodeURIComponent(group.group_name)}`)
                             .then(response => response.json())
@@ -198,7 +274,7 @@
                             totalChars += Array.isArray(chars) ? chars.length : 0;
                             renderGroupSection(group, chars || []);
                         });
-                        statusText.textContent = `แสดง ${totalChars} ตัวอักษรจาก ${results.length} วรรค`;
+                        statusText.textContent = `แสดงผล ${totalChars} ตัวอักษร จาก ${results.length} วรรค`;
                     });
                 })
                 .catch(error => {
@@ -213,7 +289,7 @@
 
             const title = document.createElement('h2');
             title.className = 'group-title';
-            // ปรับตัวพิมพ์ใหญ่ให้กับชื่อวรรค
+            // ปรับตัวพิมพ์ใหญ่ให้ชื่อวรรค
             title.textContent = formatGroupName(groupName);
             section.appendChild(title);
 
@@ -239,7 +315,7 @@
                     <div class="char-symbol">${escapeHtml(item.character_jp || '-')}</div>
                     <div class="char-name">${escapeHtml(item.romaji || '-')}</div>
                     <div class="char-actions">
-                        <button type="button" class="play-btn" aria-label="ฟังเสียง ${item.character_jp || item.romaji || ''}">
+                        <button type="button" class="play-btn" aria-label="ฟังเสียงอ่าน ${item.character_jp || item.romaji || ''}">
                             <i class="fa-solid fa-volume-high"></i>
                         </button>
                         <span class="view-label">รายละเอียด <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
@@ -250,7 +326,7 @@
                 const playBtn = card.querySelector('.play-btn');
                 if (playBtn) {
                     if (soundUrl) {
-                        playBtn.title = `ฟังเสียง ${item.character_jp || item.romaji || ''}`;
+                        playBtn.title = `ฟังเสียงอ่าน ${item.character_jp || item.romaji || ''}`;
                         playBtn.addEventListener('click', event => {
                             event.stopPropagation();
                             playAdminAudio(soundUrl);
@@ -258,7 +334,7 @@
                     } else {
                         playBtn.disabled = true;
                         playBtn.classList.add('disabled');
-                        playBtn.title = 'ยังไม่มีไฟล์เสียงจากแอดมิน';
+                        playBtn.title = 'ยังไม่มีไฟล์เสียงอ่านสำหรับตัวนี้';
                         playBtn.setAttribute('aria-disabled', 'true');
                         playBtn.addEventListener('click', event => {
                             event.stopPropagation();
@@ -315,7 +391,7 @@
             modalRomaji.textContent = `เสียงอ่าน: ${item.romaji || '-'}`;
             modalType.textContent = 'Katakana';
             modalGroup.textContent = formatGroupName(groupName);
-            modalWritingGuide.textContent = `เริ่มเขียน 「${item.character_jp || '-'}」 ตามทิศทางในภาพ แล้วค่อยฝึกตามด้วยตัวเอง`;
+            modalWritingGuide.textContent = `เริ่มเขียนตัว "${item.character_jp || '-'}" ตามทิศทางในภาพ แล้วค่อยฝึกทำด้วยตัวเอง`;
 
             const videoUrl = typeof item.video_url === 'string' ? item.video_url.trim() : '';
             modalVideoSection.hidden = !videoUrl;
@@ -345,10 +421,11 @@
                     audioBtn.disabled = true;
                     audioBtn.classList.add('disabled');
                     audioBtn.innerHTML = '<i class="fa-solid fa-volume-xmark" aria-hidden="true"></i> ยังไม่มีไฟล์เสียง';
-                    audioBtn.title = 'ยังไม่มีไฟล์เสียงจากแอดมิน';
+                    audioBtn.title = 'ยังไม่มีไฟล์เสียงอ่านสำหรับตัวนี้';
                 }
             }
 
+            setupStrokePlayer(item.strokes_json, item.animation_style, item.stroke_duration);
             modal.setAttribute('aria-hidden', 'false');
             modal.classList.add('open');
             document.body.classList.add('modal-open');
@@ -359,6 +436,9 @@
             if (activeAudio) {
                 activeAudio.pause();
                 activeAudio.currentTime = 0;
+            }
+            if (typeof stopStrokePlayer === 'function') {
+                stopStrokePlayer();
             }
             modal.setAttribute('aria-hidden', 'true');
             modal.classList.remove('open');
@@ -390,5 +470,7 @@
         loadAllGroups();
         loadUserName();
     </script>
+<script src="../sceens/japanese_stroke_player.js?v=member-controls-3"></script>
+    <script src="../sceens/init_stroke_player.js?v=member-controls-3"></script>
 </body>
 </html>

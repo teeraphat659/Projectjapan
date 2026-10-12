@@ -687,6 +687,7 @@
 
         this.isPlaying = false;
         this.isCompleted = false;
+        this.playMode = 'all';
         this.currentStrokeIndex = 0;
         this.currentStrokeProgress = 0; // 0.0 to 1.0
         this.lastTimestamp = 0;
@@ -833,11 +834,12 @@
         this.applyCurrentState();
       }
 
-      play() {
+      play(mode = 'all') {
         if (!this.strokes.length) return;
         if (this.isCompleted) {
           this.resetToStart();
         }
+        this.playMode = mode;
         this.isPlaying = true;
         this.lastTimestamp = performance.now();
         if (isNaN(this.currentStrokeProgress)) {
@@ -882,7 +884,7 @@
         this.waitingPauseUntil = 0;
         this.isCompleted = false;
         this.applyCurrentState();
-        this.play();
+        this.play('single');
       }
 
       applyCurrentState() {
@@ -950,8 +952,8 @@
           this.waitingPauseUntil = 0;
         }
 
-        const rawDuration = (this.options.getDuration ? this.options.getDuration() : 0.75);
-        const durationSec = (!isNaN(rawDuration) && rawDuration > 0) ? rawDuration : 0.75;
+        const rawDuration = (this.options.getDuration ? this.options.getDuration() : 0.4);
+        const durationSec = (!isNaN(rawDuration) && rawDuration > 0) ? rawDuration : 0.4;
         const strokeDurationMs = Math.max(150, durationSec * 1000);
 
         if (isNaN(this.currentStrokeProgress)) {
@@ -971,6 +973,10 @@
             this.onVideoComplete();
             return;
           } else {
+            if (this.playMode === 'single') {
+              this.pause();
+              return;
+            }
             this.waitingPauseUntil = timestamp + this.pauseBetweenStrokesMs;
           }
         } else {
@@ -1037,18 +1043,18 @@
       if (videoPlayer.isPlaying) {
         videoPlayer.pause();
       } else {
-        videoPlayer.play();
+        videoPlayer.play('all');
       }
     });
 
     btnReplay.addEventListener('click', () => {
       videoPlayer.resetToStart();
-      videoPlayer.play();
+      videoPlayer.play('all');
     });
 
     animStyleSelect.addEventListener('change', () => {
       videoPlayer.buildSvgDom();
-      videoPlayer.play();
+      videoPlayer.play('all');
     });
 
     durationSelect.addEventListener('change', () => {
@@ -1085,7 +1091,7 @@
       allBtn.title = 'เล่นลำดับเส้นทั้งหมด';
       allBtn.addEventListener('click', () => {
         videoPlayer.resetToStart();
-        videoPlayer.play();
+        videoPlayer.play('all');
       });
       stepPillsRow.appendChild(allBtn);
 
@@ -1170,7 +1176,7 @@
           renderStrokeList();
           generateStepPills(loadedStrokes.length);
           videoPlayer.setStrokes(loadedStrokes);
-          videoPlayer.play(); // เริ่มเล่นวิดีโอทันทีเหมือนที่ผู้ใช้ต้องการ!
+          videoPlayer.play('all'); // เริ่มเล่นวิดีโอทันทีเหมือนที่ผู้ใช้ต้องการ!
         } else {
           badgeSvgStatus.textContent = 'ยังไม่มีเส้น SVG';
           badgeSvgStatus.className = 'badge-chip warning';
@@ -1338,7 +1344,7 @@
       tabGifMode.classList.remove('active');
       svgPlayerContainer.style.display = 'block';
       gifViewerContainer.style.display = 'none';
-      videoPlayer.play();
+      videoPlayer.play('all');
     });
 
     tabGifMode.addEventListener('click', () => {
